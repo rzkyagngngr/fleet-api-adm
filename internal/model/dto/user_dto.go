@@ -26,8 +26,9 @@ type LoginRequest struct {
 }
 
 type AuthResponse struct {
-	Token string       `json:"token"`
-	User  UserResponse `json:"user"`
+	Token string           `json:"token"`
+	User  UserResponse     `json:"user"`
+	Menus []MenuAccessNode `json:"menus"`
 }
 
 type UserResponse struct {
@@ -45,4 +46,24 @@ type UserResponse struct {
 	Superuser              bool       `json:"superuser"`
 	CreationDate           time.Time  `json:"creation_date"`
 	LastLoginAt            *time.Time `json:"last_login_at"`
+}
+
+type MenuAccessRow struct {
+	RolesID        int64   `gorm:"column:roles_id" json:"roles_id"`
+	MenuID         int64   `gorm:"column:menu_id" json:"menu_id"`
+	MenuCode       string  `gorm:"column:menu_code" json:"menu_code"`
+	MenuIcon       *string `gorm:"column:menu_icon" json:"menu_icon"`
+	MenuText       string  `gorm:"column:menu_text" json:"menu_text"`
+	MenuUrl        *string `gorm:"column:menu_url" json:"menu_url"`
+	View           int     `gorm:"column:view" json:"view"`
+	Insert         int     `gorm:"column:insert" json:"insert"`
+	Update         int     `gorm:"column:update" json:"update"`
+	Delete         int     `gorm:"column:delete" json:"delete"`
+	MenuLevel      int     `gorm:"column:menu_level" json:"menu_level"`
+	ParentMenuID   *int64  `gorm:"column:parent_menu_id" json:"parent_menu_id"`
+}
+
+type MenuAccessNode struct {
+	MenuAccessRow
+	Children []MenuAccessNode `json:"children"`
 }

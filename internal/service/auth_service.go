@@ -81,7 +81,34 @@ func (s *authService) Register(req *dto.UserRegisterRequest) (*dto.AuthResponse,
 	return &dto.AuthResponse{
 		Token: token,
 		User:  user.ToResponse(),
+		Menus: []dto.MenuAccessNode{},
 	}, nil
+}
+
+// buildTreeRecursive helps to convert flat menu rows into hierarchical nodes
+func buildTreeRecursive(parentID *int64, raw []dto.MenuAccessRow) []dto.MenuAccessNode {
+	var nodes []dto.MenuAccessNode
+	for _, row := range raw {
+		isChild := false
+		if parentID == nil && row.ParentMenuID == nil {
+			isChild = true
+		} else if parentID != nil && row.ParentMenuID != nil && *parentID == *row.ParentMenuID {
+			isChild = true
+		}
+
+		if isChild {
+			menuID := row.MenuID
+			node := dto.MenuAccessNode{
+				MenuAccessRow: row,
+				Children:      buildTreeRecursive(&menuID, raw),
+			}
+			nodes = append(nodes, node)
+		}
+	}
+	if nodes == nil {
+		nodes = []dto.MenuAccessNode{}
+	}
+	return nodes
 }
 
 func (s *authService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
@@ -110,8 +137,18 @@ func (s *authService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 		return nil, err
 	}
 
+	// Fetch Menus from vw_access_login
+	rawMenus, err := s.userRepo.GetUserMenusByRole(user.RoleID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build hierarchy tree
+	menuTree := buildTreeRecursive(nil, rawMenus)
+
 	return &dto.AuthResponse{
 		Token: token,
 		User:  user.ToResponse(),
+		Menus: menuTree,
 	}, nil
 }

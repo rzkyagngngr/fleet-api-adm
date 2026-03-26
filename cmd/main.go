@@ -57,20 +57,30 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// Auto Migrate dimatikan sesuai permintaan user agar tidak mengubah struktur DB
+
 	// Initialize utilities
 	jwtUtil := utils.NewJWTUtil(cfg.JWT.Secret, cfg.JWT.ExpiryHours)
 
 	// Initialize layers (Repository → Service → Handler)
 	userRepo := repository.NewUserRepository(db)
-	// cabangRepo := repository.NewCabangRepository(db)
+	menuRepo := repository.NewMenuRepository(db)
+	roleRepo := repository.NewRoleRepository(db)
+	accessRepo := repository.NewAccessRepository(db)
 	dermagaRepo := repository.NewDermagaRepository(db)
 
 	authService := service.NewAuthService(userRepo, jwtUtil)
 	userService := service.NewUserService(userRepo)
+	accessService := service.NewAccessService(accessRepo, menuRepo)
+	menuService := service.NewMenuService(menuRepo, accessService)
+	roleService := service.NewRoleService(roleRepo, accessService)
 	dermagaService := service.NewDermagaService(dermagaRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	userHandler := handler.NewUserHandler(userService)
+	menuHandler := handler.NewMenuHandler(menuService)
+	roleHandler := handler.NewRoleHandler(roleService)
+	accessHandler := handler.NewAccessHandler(accessService)
 	dermagaHandler := handler.NewDermagaHandler(dermagaService)
 
 	// Setup router
@@ -100,22 +110,49 @@ func main() {
 			auth.POST("/login", authHandler.Login)
 		}
 
-		// User routes (protected)
-		users := v1.Group("/users")
-		users.Use(middleware.AuthMiddleware(jwtUtil))
+		// Protected routes
+		protected := v1.Group("/")
+		protected.Use(middleware.AuthMiddleware(jwtUtil))
 		{
-			users.GET("/profile", userHandler.GetProfile)
-		}
+			// User routes
+			users := protected.Group("/users")
+			{
+				users.GET("/profile", userHandler.GetProfile)
+			}
 
-		// Dermaga routes (protected)
-		dermagas := v1.Group("/dermaga")
-		dermagas.Use(middleware.AuthMiddleware(jwtUtil))
-		{
-			dermagas.POST("", dermagaHandler.Create)
-			dermagas.GET("", dermagaHandler.FindAll)
-			dermagas.GET("/:id", dermagaHandler.FindByID)
-			dermagas.PUT("/:id", dermagaHandler.Update)
-			dermagas.DELETE("/:id", dermagaHandler.Delete)
+			// Master routes
+			master := protected.Group("/master")
+			{
+				// Menu routes
+				menus := master.Group("/menus")
+				{
+					menus.GET("", menuHandler.GetAllMenus)
+					menus.POST("", menuHandler.CreateMenu)
+					menus.PUT("/:id", menuHandler.UpdateMenu)
+					menus.DELETE("/:id", menuHandler.DeleteMenu)
+				}
+
+				// Role routes
+				roles := master.Group("/roles")
+				{
+					roles.GET("", roleHandler.GetAllRoles)
+					roles.POST("", roleHandler.CreateRole)
+					roles.PUT("/:id", roleHandler.UpdateRole)
+					roles.DELETE("/:id", roleHandler.DeleteRole)
+					roles.GET("/:id/access", accessHandler.GetRoleAccess)
+					roles.POST("/:id/access", accessHandler.UpdateRoleAccess)
+				}
+			}
+
+			// Dermaga routes
+			dermagas := protected.Group("/dermaga")
+			{
+				dermagas.POST("", dermagaHandler.Create)
+				dermagas.GET("", dermagaHandler.FindAll)
+				dermagas.GET("/:id", dermagaHandler.FindByID)
+				dermagas.PUT("/:id", dermagaHandler.Update)
+				dermagas.DELETE("/:id", dermagaHandler.Delete)
+			}
 		}
 	}
 

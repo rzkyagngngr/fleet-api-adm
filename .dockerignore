@@ -1,0 +1,9 @@
+.git
+.idea
+.vscode
+*.exe
+*.test
+*.out
+vendor
+Dockerfile
+deployment.yaml

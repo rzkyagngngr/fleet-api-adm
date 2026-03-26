@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"gin-boilerplate/internal/model/dto"
 	"gin-boilerplate/internal/model/entity"
 
 	"gorm.io/gorm"
@@ -11,6 +12,7 @@ type UserRepository interface {
 	FindByEmail(email string) (*entity.User, error)
 	FindByID(id uint64) (*entity.User, error)
 	FindByEmployeeID(employeeID string) (*entity.User, error)
+	GetUserMenusByRole(roleID *int) ([]dto.MenuAccessRow, error)
 }
 
 type userRepository struct {
@@ -50,4 +52,16 @@ func (r *userRepository) FindByEmployeeID(employeeID string) (*entity.User, erro
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *userRepository) GetUserMenusByRole(roleID *int) ([]dto.MenuAccessRow, error) {
+	var menus []dto.MenuAccessRow
+	if roleID == nil {
+		return menus, nil
+	}
+	err := r.db.Raw("SELECT roles_id, menu_id, menu_code, menu_icon, menu_text, menu_url, view, insert, update, delete, menu_level, parent_menu_id FROM vw_access_login WHERE roles_id = ?", *roleID).Scan(&menus).Error
+	if err != nil {
+		return nil, err
+	}
+	return menus, nil
 }
