@@ -1,0 +1,34 @@
+﻿go : # gin-boilerplate/interna
+l/handler
+At line:1 char:1
++ go build ./... 2>&1 | 
+Out-File -FilePath 
+final_build_errors.txt -Enco 
+...
++ ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (# gin-boi  
+  lerplate/internal/handler   
+ :String) [], RemoteExcept    
+ion
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+internal\handler\access_handle
+r.go:4:2: "context" imported 
+and not used
+internal\handler\auth_handler.
+go:4:2: "context" imported 
+and not used
+internal\handler\dermaga_handl
+er.go:4:2: "context" imported 
+and not used
+internal\handler\menu_handler.
+go:4:2: "context" imported 
+and not used
+internal\handler\role_handler.
+go:4:2: "context" imported 
+and not used
+internal\handler\user_handler.
+go:4:2: "context" imported 
+and not used

@@ -26,13 +26,13 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 // @Success 200 {object} utils.Response
 // @Router /api/v1/users/profile [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	userID, exists := c.Get(middleware.UserIDKey)
-	if !exists {
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
 		utils.ErrorResponse(c, http.StatusUnauthorized, "unauthorized")
 		return
 	}
 
-	profile, err := h.userService.GetProfile(userID.(uint64))
+	profile, err := h.userService.GetProfile(c.Request.Context(), userID)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to get profile")
 		return

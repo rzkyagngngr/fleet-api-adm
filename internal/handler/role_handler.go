@@ -19,7 +19,7 @@ func NewRoleHandler(roleService service.RoleService) *RoleHandler {
 }
 
 func (h *RoleHandler) GetAllRoles(c *gin.Context) {
-	roles, err := h.roleService.FindAll()
+	roles, err := h.roleService.FindAll(c.Request.Context())
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to get roles")
 		return
@@ -34,7 +34,7 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 
-	if err := h.roleService.Create(&role); err != nil {
+	if err := h.roleService.Create(c.Request.Context(), &role); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to create role")
 		return
 	}
@@ -54,7 +54,7 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 		return
 	}
 
-	if err := h.roleService.Update(id, &role); err != nil {
+	if err := h.roleService.Update(c.Request.Context(), id, &role); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to update role")
 		return
 	}
@@ -68,7 +68,7 @@ func (h *RoleHandler) DeleteRole(c *gin.Context) {
 		return
 	}
 
-	if err := h.roleService.Delete(id); err != nil {
+	if err := h.roleService.Delete(c.Request.Context(), id); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to delete role")
 		return
 	}

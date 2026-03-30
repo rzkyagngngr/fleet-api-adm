@@ -19,7 +19,7 @@ func NewMenuHandler(menuService service.MenuService) *MenuHandler {
 }
 
 func (h *MenuHandler) GetAllMenus(c *gin.Context) {
-	menus, err := h.menuService.FindAll()
+	menus, err := h.menuService.FindAll(c.Request.Context())
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to get menus")
 		return
@@ -34,7 +34,7 @@ func (h *MenuHandler) CreateMenu(c *gin.Context) {
 		return
 	}
 
-	if err := h.menuService.Create(&menu); err != nil {
+	if err := h.menuService.Create(c.Request.Context(), &menu); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to create menu")
 		return
 	}
@@ -54,7 +54,7 @@ func (h *MenuHandler) UpdateMenu(c *gin.Context) {
 		return
 	}
 
-	if err := h.menuService.Update(id, &menu); err != nil {
+	if err := h.menuService.Update(c.Request.Context(), id, &menu); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to update menu")
 		return
 	}
@@ -68,7 +68,7 @@ func (h *MenuHandler) DeleteMenu(c *gin.Context) {
 		return
 	}
 
-	if err := h.menuService.Delete(id); err != nil {
+	if err := h.menuService.Delete(c.Request.Context(), id); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to delete menu")
 		return
 	}

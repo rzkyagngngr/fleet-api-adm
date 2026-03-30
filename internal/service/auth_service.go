@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"gin-boilerplate/internal/model/entity"
 	"time"
@@ -14,8 +15,8 @@ import (
 )
 
 type AuthService interface {
-	Register(req *dto.UserRegisterRequest) (*dto.AuthResponse, error)
-	Login(req *dto.LoginRequest) (*dto.AuthResponse, error)
+	Register(ctx context.Context, req *dto.UserRegisterRequest) (*dto.AuthResponse, error)
+	Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error)
 }
 
 type authService struct {
@@ -30,9 +31,9 @@ func NewAuthService(userRepo repository.UserRepository, jwtUtil *utils.JWTUtil) 
 	}
 }
 
-func (s *authService) Register(req *dto.UserRegisterRequest) (*dto.AuthResponse, error) {
+func (s *authService) Register(ctx context.Context, req *dto.UserRegisterRequest) (*dto.AuthResponse, error) {
 	// Check if email already exists
-	_, err := s.userRepo.FindByEmail(req.Email)
+	_, err := s.userRepo.FindByEmail(ctx, req.Email)
 	if err == nil {
 		return nil, errors.New("email already registered")
 	}
@@ -41,13 +42,16 @@ func (s *authService) Register(req *dto.UserRegisterRequest) (*dto.AuthResponse,
 	}
 
 	// Check if employee ID already exists
-	_, err = s.userRepo.FindByEmployeeID(req.EmployeeID)
+	_, err = s.userRepo.FindByEmployeeID(ctx, req.EmployeeID)
 	if err == nil {
 		return nil, errors.New("employee ID already registered")
 	}
 
-	// Hash password using SHA-512 (as requested)
-	hashedPassword := utils.HashSHA512(req.Password)
+	// Hash password using Bcrypt
+	hashedPassword, err := utils.HashPassword(req.Password)
+	if err != nil {
+		return nil, err
+	}
 
 	user := &entity.User{
 		EmployeeID:       req.EmployeeID,
@@ -68,7 +72,7 @@ func (s *authService) Register(req *dto.UserRegisterRequest) (*dto.AuthResponse,
 		CreationBy:       "SYSTEM", // Or from context if available
 	}
 
-	if err := s.userRepo.Create(user); err != nil {
+	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
 
@@ -111,8 +115,8 @@ func buildTreeRecursive(parentID *int64, raw []dto.MenuAccessRow) []dto.MenuAcce
 	return nodes
 }
 
-func (s *authService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
-	user, err := s.userRepo.FindByEmployeeID(req.EmployeeID)
+func (s *authService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error) {
+	user, err := s.userRepo.FindByEmployeeID(ctx, req.EmployeeID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("invalid employee ID or password")
@@ -120,9 +124,8 @@ func (s *authService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 		return nil, err
 	}
 
-	// Compare password using SHA-512 comparison
-	inputHash := utils.HashSHA512(req.Password)
-	if user.PasswordHash != inputHash {
+	// Compare password using Bcrypt
+	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
 		return nil, errors.New("invalid employee ID or password")
 	}
 
@@ -138,7 +141,7 @@ func (s *authService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	}
 
 	// Fetch Menus from vw_access_login
-	rawMenus, err := s.userRepo.GetUserMenusByRole(user.RoleID)
+	rawMenus, err := s.userRepo.GetUserMenusByRole(ctx, user.RoleID)
 	if err != nil {
 		return nil, err
 	}

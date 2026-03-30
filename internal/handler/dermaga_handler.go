@@ -56,7 +56,7 @@ func (h *dermagaHandler) Create(c *gin.Context) {
 		UpdatedBy:   employeeID.(string),
 	}
 
-	if err := h.dermagaService.Create(dermaga); err != nil {
+	if err := h.dermagaService.Create(c.Request.Context(), dermaga); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -93,7 +93,7 @@ func (h *dermagaHandler) FindAll(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))
 
-	dermagas, total, err := h.dermagaService.FindAll(uint(*branchCode.(*int64)), 0, page, size)
+	dermagas, total, err := h.dermagaService.FindAll(c.Request.Context(), uint(*branchCode.(*int64)), 0, page, size)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -139,7 +139,7 @@ func (h *dermagaHandler) Update(c *gin.Context) {
 		UpdatedBy:   employeeID.(string),
 	}
 
-	if err := h.dermagaService.Update(uint(id), uint(*branchCode.(*int64)), 0, dermaga); err != nil {
+	if err := h.dermagaService.Update(c.Request.Context(), uint(id), uint(*branchCode.(*int64)), 0, dermaga); err != nil {
 		if err == service.ErrUnauthorized {
 			utils.ErrorResponse(c, http.StatusUnauthorized, err.Error())
 			return
@@ -174,7 +174,7 @@ func (h *dermagaHandler) Delete(c *gin.Context) {
 	// Extract values from context (populated by AuthMiddleware)
 	branchCode, _ := c.Get(middleware.BranchCodeKey)
 
-	if err := h.dermagaService.Delete(uint(id), uint(*branchCode.(*int64)), 0); err != nil {
+	if err := h.dermagaService.Delete(c.Request.Context(), uint(id), uint(*branchCode.(*int64)), 0); err != nil {
 		if err == service.ErrUnauthorized {
 			utils.ErrorResponse(c, http.StatusUnauthorized, err.Error())
 			return
@@ -207,7 +207,7 @@ func (h *dermagaHandler) FindByID(c *gin.Context) {
 	}
 
 	// Correctly implement based on the new service signature if needed
-	dermaga, err := h.dermagaService.FindByID(uint(id))
+	dermaga, err := h.dermagaService.FindByID(c.Request.Context(), uint(id))
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

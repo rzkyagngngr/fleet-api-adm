@@ -1,0 +1,49 @@
+﻿go : # gin-boilerplate/interna
+l/repository
+At line:1 char:1
++ go build ./... 2>&1 | 
+Out-File -FilePath 
+build_errors.txt -Encoding u 
+...
++ ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (# gin-boi  
+  lerplate/internal/reposit   
+ ory:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+internal\repository\dermaga_re
+pository.go:10:13: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:11:14: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:12:13: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:13:13: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:14:15: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:25:40: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:29:41: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:46:40: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:54:40: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:62:42: undefined: 
+context
+internal\repository\dermaga_re
+pository.go:62:42: too many 
+errors

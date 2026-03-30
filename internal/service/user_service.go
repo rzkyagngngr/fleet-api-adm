@@ -1,12 +1,13 @@
 package service
 
 import (
+	"context"
 	"gin-boilerplate/internal/model/dto"
 	"gin-boilerplate/internal/repository"
 )
 
 type UserService interface {
-	GetProfile(userID uint64) (*dto.UserResponse, error)
+	GetProfile(ctx context.Context, userID uint64) (*dto.UserResponse, error)
 }
 
 type userService struct {
@@ -17,8 +18,8 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 	return &userService{userRepo: userRepo}
 }
 
-func (s *userService) GetProfile(userID uint64) (*dto.UserResponse, error) {
-	user, err := s.userRepo.FindByID(userID)
+func (s *userService) GetProfile(ctx context.Context, userID uint64) (*dto.UserResponse, error) {
+	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

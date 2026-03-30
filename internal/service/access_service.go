@@ -1,15 +1,16 @@
 package service
 
 import (
+	"context"
 	"gin-boilerplate/internal/model/entity"
 	"gin-boilerplate/internal/repository"
 )
 
 type AccessService interface {
-	GetRoleAccess(roleID uint64) ([]entity.Access, error)
-	UpdateRoleAccess(roleID uint64, accessList []entity.Access) error
-	InitializeRoleAccess(roleID uint64) error
-	InitializeMenuAccessForAllRoles(menu *entity.Menu) error
+	GetRoleAccess(ctx context.Context, roleID uint64) ([]entity.Access, error)
+	UpdateRoleAccess(ctx context.Context, roleID uint64, accessList []entity.Access) error
+	InitializeRoleAccess(ctx context.Context, roleID uint64) error
+	InitializeMenuAccessForAllRoles(ctx context.Context, menu *entity.Menu) error
 }
 
 type accessService struct {
@@ -24,22 +25,20 @@ func NewAccessService(accessRepo repository.AccessRepository, menuRepo repositor
 	}
 }
 
-func (s *accessService) GetRoleAccess(roleID uint64) ([]entity.Access, error) {
-	return s.accessRepo.FindByRoleID(roleID)
+func (s *accessService) GetRoleAccess(ctx context.Context, roleID uint64) ([]entity.Access, error) {
+	return s.accessRepo.FindByRoleID(ctx, roleID)
 }
 
-func (s *accessService) UpdateRoleAccess(roleID uint64, accessList []entity.Access) error {
-	// Simple implementation: delete existing and bulk create
-	// Or individually update. For bulk, deleting and re-inserting is often cleaner for matrix data.
-	err := s.accessRepo.DeleteByRoleID(roleID)
+func (s *accessService) UpdateRoleAccess(ctx context.Context, roleID uint64, accessList []entity.Access) error {
+	err := s.accessRepo.DeleteByRoleID(ctx, roleID)
 	if err != nil {
 		return err
 	}
-	return s.accessRepo.BulkCreate(accessList)
+	return s.accessRepo.BulkCreate(ctx, accessList)
 }
 
-func (s *accessService) InitializeRoleAccess(roleID uint64) error {
-	menus, err := s.menuRepo.FindAll()
+func (s *accessService) InitializeRoleAccess(ctx context.Context, roleID uint64) error {
+	menus, err := s.menuRepo.FindAll(ctx)
 	if err != nil {
 		return err
 	}
@@ -75,13 +74,13 @@ func (s *accessService) InitializeRoleAccess(roleID uint64) error {
 	}
 
 	if len(accessList) > 0 {
-		return s.accessRepo.BulkCreate(accessList)
+		return s.accessRepo.BulkCreate(ctx, accessList)
 	}
 	return nil
 }
 
-func (s *accessService) InitializeMenuAccessForAllRoles(menu *entity.Menu) error {
-	roles, err := s.accessRepo.FindAllRoles() // I need to add this to repo
+func (s *accessService) InitializeMenuAccessForAllRoles(ctx context.Context, menu *entity.Menu) error {
+	roles, err := s.accessRepo.FindAllRoles(ctx)
 	if err != nil {
 		return err
 	}
@@ -117,7 +116,7 @@ func (s *accessService) InitializeMenuAccessForAllRoles(menu *entity.Menu) error
 	}
 
 	if len(accessList) > 0 {
-		return s.accessRepo.BulkCreate(accessList)
+		return s.accessRepo.BulkCreate(ctx, accessList)
 	}
 	return nil
 }

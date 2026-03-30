@@ -16,7 +16,26 @@ const FullNameKey = "full_name"
 const BranchCodeKey = "branch_code"
 
 func AuthMiddleware(jwtUtil *utils.JWTUtil) gin.HandlerFunc {
+	// Public paths that do not require JWT authentication
+	publicPaths := map[string]bool{
+		"/api/v1/auth/login":    true,
+		"/api/v1/auth/register": true,
+		"/health":               true,
+	}
+
 	return func(c *gin.Context) {
+		// Skip authentication for public paths
+		if publicPaths[c.Request.URL.Path] {
+			c.Next()
+			return
+		}
+
+		// Skip authentication for swagger or other public top-level paths
+		if strings.HasPrefix(c.Request.URL.Path, "/swagger/") {
+			c.Next()
+			return
+		}
+
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			utils.ErrorResponse(c, http.StatusUnauthorized, "authorization header is required")
@@ -45,4 +64,22 @@ func AuthMiddleware(jwtUtil *utils.JWTUtil) gin.HandlerFunc {
 		c.Set(BranchCodeKey, claims.BranchCode)
 		c.Next()
 	}
+}
+
+// GetUserID retrieves the user ID from the Gin context
+func GetUserID(c *gin.Context) uint64 {
+	val, exists := c.Get(UserIDKey)
+	if !exists {
+		return 0
+	}
+	return val.(uint64)
+}
+
+// GetUserEmail retrieves the user email from the Gin context
+func GetUserEmail(c *gin.Context) string {
+	val, exists := c.Get(UserEmailKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
 }

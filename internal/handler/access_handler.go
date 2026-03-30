@@ -25,7 +25,7 @@ func (h *AccessHandler) GetRoleAccess(c *gin.Context) {
 		return
 	}
 
-	accessList, err := h.accessService.GetRoleAccess(roleID)
+	accessList, err := h.accessService.GetRoleAccess(c.Request.Context(), roleID)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to get role access")
 		return
@@ -46,7 +46,7 @@ func (h *AccessHandler) UpdateRoleAccess(c *gin.Context) {
 		return
 	}
 
-	if err := h.accessService.UpdateRoleAccess(roleID, accessList); err != nil {
+	if err := h.accessService.UpdateRoleAccess(c.Request.Context(), roleID, accessList); err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, "failed to update role access")
 		return
 	}
