@@ -1,0 +1,1056 @@
+basePath: /api/v1
+definitions:
+  access.Access:
+    properties:
+      access_id:
+        type: integer
+      application_id:
+        type: integer
+      can_delete:
+        type: integer
+      can_insert:
+        type: integer
+      can_update:
+        type: integer
+      creation_by:
+        type: integer
+      creation_date:
+        type: string
+      last_update_by:
+        type: integer
+      last_update_date:
+        type: string
+      menu_icon:
+        type: string
+      menu_id:
+        type: integer
+      menu_order:
+        type: integer
+      menu_text:
+        type: string
+      menu_url:
+        type: string
+      parent_menu_id:
+        type: integer
+      roles_id:
+        type: integer
+      status:
+        type: integer
+    type: object
+  auth.ChangeTerminalRequest:
+    properties:
+      branch_code:
+        type: integer
+      terminal_code:
+        type: integer
+    required:
+    - branch_code
+    - terminal_code
+    type: object
+  auth.LoginRequest:
+    properties:
+      employee_id:
+        type: string
+      password:
+        type: string
+    required:
+    - employee_id
+    - password
+    type: object
+  auth.UserRegisterRequest:
+    properties:
+      branch_code:
+        type: integer
+      branch_name:
+        type: string
+      company_code:
+        type: string
+      email:
+        type: string
+      employee_id:
+        type: string
+      full_name:
+        type: string
+      job_title:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      personnel_area:
+        type: string
+      personnel_sub_area:
+        type: string
+      phone_number:
+        type: string
+      sub_unit_name:
+        type: string
+      terminal_code:
+        type: integer
+    required:
+    - email
+    - employee_id
+    - full_name
+    - password
+    type: object
+  dermaga.DermagaRequest:
+    properties:
+      kd_dermaga:
+        type: string
+      keterangan:
+        type: string
+      nm_dermaga:
+        type: string
+      posisi_akhir:
+        type: integer
+      posisi_awal:
+        type: integer
+      status:
+        type: string
+    type: object
+  helper.DownloadQuery:
+    properties:
+      is_download:
+        type: boolean
+      range_end:
+        type: integer
+      range_start:
+        type: integer
+      type:
+        type: string
+    type: object
+  helper.MetaResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      meta: {}
+      success:
+        type: boolean
+    type: object
+  helper.PaginatedResponse:
+    properties:
+      data: {}
+      limit:
+        type: integer
+      message:
+        type: string
+      page:
+        type: integer
+      success:
+        type: boolean
+      total:
+        type: integer
+    type: object
+  helper.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  helper.SortQuery:
+    properties:
+      by:
+        type: string
+      order:
+        type: string
+    type: object
+  menu.Menu:
+    properties:
+      application_id:
+        type: integer
+      creation_by:
+        type: string
+      creation_date:
+        type: string
+      id:
+        type: integer
+      last_updated_by:
+        type: string
+      last_updated_date:
+        type: string
+      menu_code:
+        type: string
+      menu_desc:
+        type: string
+      menu_header_id:
+        type: integer
+      menu_icon:
+        type: string
+      menu_level:
+        type: integer
+      menu_order:
+        type: integer
+      menu_status:
+        type: integer
+      menu_text:
+        type: string
+      menu_url:
+        type: string
+      parent_menu_id:
+        type: integer
+    type: object
+  menu.SearchMenusRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  reference.PosmReference:
+    properties:
+      branch_code:
+        type: integer
+      creation_by:
+        type: string
+      creation_date:
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/reference.PosmReferenceD'
+        type: array
+      id:
+        type: integer
+      id_ref_file:
+        type: string
+      id_table:
+        type: string
+      kd_aktif:
+        type: string
+      keterangan:
+        type: string
+      last_updated_by:
+        type: string
+      last_updated_date:
+        type: string
+      level_akses:
+        type: string
+      program_name:
+        type: string
+      ref1:
+        type: string
+      terminal_code:
+        type: integer
+      val1:
+        type: integer
+    type: object
+  reference.PosmReferenceD:
+    properties:
+      branch_code:
+        type: integer
+      creation_by:
+        type: string
+      creation_date:
+        type: string
+      id:
+        type: integer
+      id_ref_file:
+        type: string
+      id_ref_key:
+        type: string
+      id_table:
+        type: string
+      kd_aktif:
+        type: string
+      ket_ref_data:
+        type: string
+      last_updated_by:
+        type: string
+      last_updated_date:
+        type: string
+      level_akses:
+        type: string
+      program_name:
+        type: string
+      rc:
+        type: integer
+      ref1:
+        type: string
+      ref2:
+        type: string
+      ref3:
+        type: string
+      ref4:
+        type: string
+      ref5:
+        type: string
+      terminal_code:
+        type: integer
+      val1:
+        type: integer
+      val2:
+        type: integer
+      val3:
+        type: integer
+      val4:
+        type: integer
+      val5:
+        type: integer
+    type: object
+  role.Role:
+    properties:
+      application_id:
+        type: integer
+      application_nama:
+        type: string
+      creation_by:
+        type: integer
+      creation_date:
+        type: string
+      default_menu_url:
+        type: string
+      hak_akses_id:
+        type: integer
+      hak_akses_nama:
+        type: string
+      hak_akses_super:
+        type: boolean
+      last_update_by:
+        type: integer
+      last_update_date:
+        type: string
+      status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: API for Omniport administration backend.
+  title: Omniport API
+  version: "1.0"
+paths:
+  /auth/change-terminal:
+    post:
+      consumes:
+      - application/json
+      description: Change branch and terminal for current authenticated user
+      parameters:
+      - description: Change terminal payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/auth.ChangeTerminalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Change terminal
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return token with menus
+      parameters:
+      - description: Login payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Login user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      parameters:
+      - description: Register payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/auth.UserRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Register user
+      tags:
+      - auth
+  /dermaga:
+    get:
+      description: Retrieve paginated dermaga list
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all dermaga
+      tags:
+      - dermaga
+    post:
+      consumes:
+      - application/json
+      description: Create a new dermaga record
+      parameters:
+      - description: Dermaga payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dermaga.DermagaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create dermaga
+      tags:
+      - dermaga
+  /dermaga/{id}:
+    delete:
+      description: Delete dermaga by id
+      parameters:
+      - description: Dermaga ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete dermaga
+      tags:
+      - dermaga
+    get:
+      description: Retrieve dermaga detail by id
+      parameters:
+      - description: Dermaga ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dermaga by id
+      tags:
+      - dermaga
+    put:
+      consumes:
+      - application/json
+      description: Update dermaga by id
+      parameters:
+      - description: Dermaga ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dermaga payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dermaga.DermagaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update dermaga
+      tags:
+      - dermaga
+  /master/menus:
+    get:
+      description: Retrieve all menu records
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all menus
+      tags:
+      - master-menus
+    post:
+      consumes:
+      - application/json
+      description: Create a new menu record
+      parameters:
+      - description: Menu payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/menu.Menu'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create menu
+      tags:
+      - master-menus
+  /master/menus/{id}:
+    delete:
+      description: Delete menu by id
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete menu
+      tags:
+      - master-menus
+    put:
+      consumes:
+      - application/json
+      description: Update an existing menu by id
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Menu payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/menu.Menu'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update menu
+      tags:
+      - master-menus
+  /master/menus/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve menus with server-side pagination, filtering, sorting,
+        and download range support
+      parameters:
+      - description: Menu search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/menu.SearchMenusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search menus
+      tags:
+      - master-menus
+  /master/references:
+    get:
+      description: Retrieve all reference headers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all references
+      tags:
+      - master-references
+    post:
+      consumes:
+      - application/json
+      description: Create or update reference header with details
+      parameters:
+      - description: Reference payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/reference.PosmReference'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Save reference
+      tags:
+      - master-references
+  /master/references/{id}:
+    delete:
+      description: Delete reference by id
+      parameters:
+      - description: Reference ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete reference
+      tags:
+      - master-references
+    get:
+      description: Retrieve reference header and details by id
+      parameters:
+      - description: Reference ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get reference detail
+      tags:
+      - master-references
+  /master/roles:
+    get:
+      description: Retrieve all roles
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all roles
+      tags:
+      - master-roles
+    post:
+      consumes:
+      - application/json
+      description: Create a new role
+      parameters:
+      - description: Role payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/role.Role'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create role
+      tags:
+      - master-roles
+  /master/roles/{id}:
+    delete:
+      description: Delete role by id
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete role
+      tags:
+      - master-roles
+    put:
+      consumes:
+      - application/json
+      description: Update role by id
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Role payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/role.Role'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update role
+      tags:
+      - master-roles
+  /master/roles/{id}/access:
+    get:
+      description: Retrieve access matrix for a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get role access
+      tags:
+      - master-role-access
+    post:
+      consumes:
+      - application/json
+      description: Update access matrix for a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Role access payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/access.Access'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update role access
+      tags:
+      - master-role-access
+  /users/profile:
+    get:
+      description: Retrieve profile for authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get profile
+      tags:
+      - users
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

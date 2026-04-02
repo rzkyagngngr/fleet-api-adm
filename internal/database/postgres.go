@@ -1,9 +1,10 @@
 package database
 
 import (
-	"log"
+	"fmt"
 
-	"gin-boilerplate/internal/config"
+	"omniport-api/internal/config"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -11,16 +12,13 @@ import (
 
 func NewPostgresDB(cfg *config.Config) (*gorm.DB, error) {
 	gormConfig := &gorm.Config{}
-
 	if cfg.App.Env == "development" {
 		gormConfig.Logger = logger.Default.LogMode(logger.Info)
 	}
 
-	db, err := gorm.Open(postgres.Open(cfg.Database.DSN()), gormConfig)
-	if err != nil {
-		return nil, err
+	if cfg.Database.Adm.User == "" {
+		return nil, fmt.Errorf("DB_ADM_USER is required")
 	}
 
-	log.Println("✅ Database connected successfully")
-	return db, nil
+	return gorm.Open(postgres.Open(cfg.Database.DSN(cfg.Database.Adm)), gormConfig)
 }

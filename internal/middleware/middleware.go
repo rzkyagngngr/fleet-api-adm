@@ -18,7 +18,11 @@ func Logger() gin.HandlerFunc {
 		latency := time.Since(start)
 		statusCode := c.Writer.Status()
 
+		// Get trace_id from context (set by TraceMiddleware)
+		traceID, _ := c.Get(TraceIDKey)
+
 		slog.Info("Request Log",
+			slog.String("trace_id", traceID.(string)),
 			slog.String("method", c.Request.Method),
 			slog.String("path", path),
 			slog.String("query", query),
@@ -34,7 +38,8 @@ func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Trace-Id")
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "X-Trace-Id")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
 
 		if c.Request.Method == "OPTIONS" {

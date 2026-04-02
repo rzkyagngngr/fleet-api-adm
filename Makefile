@@ -1,26 +1,45 @@
-.PHONY: run build tidy dev
+MODULE_NAME = omniport-api
+BIN_DIR     = bin
 
-# Run the application
-run:
-	go run cmd/main.go
+.PHONY: dev tidy vet swagger pia build-monolith build-adm build-plan build-rls build-bill build-mrep build-all docker-monolith docker-adm
 
-# Build binary
-build:
-	go build -o bin/app cmd/main.go
+dev:
+	go run ./cmd/monolith
 
-# Tidy modules
+build-monolith:
+	go build -o $(BIN_DIR)/omniport-monolith ./cmd/monolith
+
+build-adm:
+	go build -o $(BIN_DIR)/omniport-adm ./cmd/adm-service
+
+build-plan:
+	go build -o $(BIN_DIR)/omniport-plan ./cmd/plan-service
+
+build-rls:
+	go build -o $(BIN_DIR)/omniport-rls ./cmd/rls-service
+
+build-bill:
+	go build -o $(BIN_DIR)/omniport-bill ./cmd/bill-service
+
+build-mrep:
+	go build -o $(BIN_DIR)/omniport-mrep ./cmd/mrep-service
+
+build-all: build-monolith build-adm build-plan build-rls build-bill build-mrep
+
+docker-monolith:
+	docker build --build-arg ENTRY=monolith -t omniport:monolith .
+
+docker-adm:
+	docker build --build-arg ENTRY=adm-service -t omniport:adm .
+
 tidy:
 	go mod tidy
 
-# Run with hot reload (requires: go install github.com/air-verse/air@latest)
-dev:
-	air
+vet:
+	go vet ./...
 
-# Run tests
-test:
-	go test ./... -v
+swagger:
+	go run ./cmd/docs/swagger
 
-# Run tests with coverage
-test-coverage:
-	go test ./... -coverprofile=coverage.out
-	go tool cover -html=coverage.out
+pia:
+	go run ./cmd/docs/pia

@@ -1,9 +1,15 @@
 package router
 
 import (
-	"gin-boilerplate/internal/handler"
-	"gin-boilerplate/internal/middleware"
-	"gin-boilerplate/pkg/utils"
+	"omniport-api/internal/helper"
+	"omniport-api/internal/middleware"
+	"omniport-api/internal/modules/administration/access"
+	"omniport-api/internal/modules/administration/auth"
+	"omniport-api/internal/modules/administration/dermaga"
+	"omniport-api/internal/modules/administration/menu"
+	"omniport-api/internal/modules/administration/reference"
+	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/user"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -11,54 +17,53 @@ import (
 )
 
 type RouterConfig struct {
-	Engine         *gin.Engine
-	JWTUtil        *utils.JWTUtil
-	AuthHandler    *handler.AuthHandler
-	UserHandler    *handler.UserHandler
-	MenuHandler    *handler.MenuHandler
-	RoleHandler    *handler.RoleHandler
-	AccessHandler  *handler.AccessHandler
-	DermagaHandler handler.DermagaHandler
+	Engine           *gin.Engine
+	JWTUtil          *helper.JWTUtil
+	AuthHandler      *auth.AuthHandler
+	UserHandler      *user.UserHandler
+	MenuHandler      *menu.MenuHandler
+	RoleHandler      *role.RoleHandler
+	AccessHandler    *access.AccessHandler
+	DermagaHandler   dermaga.DermagaHandler
+	ReferenceHandler reference.ReferenceHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
 	r := cfg.Engine
 
-	// Health check
+	r.Use(middleware.TraceMiddleware())
+	r.Use(middleware.Logger())
+	r.Use(middleware.CORS())
+
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status":  "ok",
-			"service": "gin-boilerplate",
+			"service": "omniport-api",
 		})
 	})
 
-	// Swagger documentation
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// API v1 routes
 	v1 := r.Group("/api/v1")
 	v1.Use(middleware.AuthMiddleware(cfg.JWTUtil))
 	{
-		// Auth routes (Public - handled by middleware skip logic)
 		v1.POST("/auth/register", cfg.AuthHandler.Register)
 		v1.POST("/auth/login", cfg.AuthHandler.Login)
+		v1.POST("/auth/change-terminal", cfg.AuthHandler.ChangeTerminal)
 
-		// User routes
 		v1.GET("/users/profile", cfg.UserHandler.GetProfile)
 
-		// Master routes
 		master := v1.Group("/master")
 		{
-			// Menu routes
 			menus := master.Group("/menus")
 			{
 				menus.GET("", cfg.MenuHandler.GetAllMenus)
+				menus.POST("/search", cfg.MenuHandler.SearchMenus)
 				menus.POST("", cfg.MenuHandler.CreateMenu)
 				menus.PUT("/:id", cfg.MenuHandler.UpdateMenu)
 				menus.DELETE("/:id", cfg.MenuHandler.DeleteMenu)
 			}
 
-			// Role routes
 			roles := master.Group("/roles")
 			{
 				roles.GET("", cfg.RoleHandler.GetAllRoles)
@@ -68,9 +73,16 @@ func SetupRouter(cfg *RouterConfig) {
 				roles.GET("/:id/access", cfg.AccessHandler.GetRoleAccess)
 				roles.POST("/:id/access", cfg.AccessHandler.UpdateRoleAccess)
 			}
+
+			references := master.Group("/references")
+			{
+				references.GET("", cfg.ReferenceHandler.GetAllReferences)
+				references.GET("/:id", cfg.ReferenceHandler.GetReferenceDetail)
+				references.POST("", cfg.ReferenceHandler.SaveReference)
+				references.DELETE("/:id", cfg.ReferenceHandler.DeleteReference)
+			}
 		}
 
-		// Dermaga routes
 		dermagas := v1.Group("/dermaga")
 		{
 			dermagas.POST("", cfg.DermagaHandler.Create)

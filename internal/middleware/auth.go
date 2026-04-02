@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"gin-boilerplate/pkg/utils"
+	"omniport-api/internal/helper"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +14,9 @@ const UserEmailKey = "user_email"
 const EmployeeIDKey = "employee_id"
 const FullNameKey = "full_name"
 const BranchCodeKey = "branch_code"
+const TerminalCodeKey = "terminal_code"
 
-func AuthMiddleware(jwtUtil *utils.JWTUtil) gin.HandlerFunc {
+func AuthMiddleware(jwtUtil *helper.JWTUtil) gin.HandlerFunc {
 	// Public paths that do not require JWT authentication
 	publicPaths := map[string]bool{
 		"/api/v1/auth/login":    true,
@@ -38,21 +39,21 @@ func AuthMiddleware(jwtUtil *utils.JWTUtil) gin.HandlerFunc {
 
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			utils.ErrorResponse(c, http.StatusUnauthorized, "authorization header is required")
+			helper.ErrorResponse(c, http.StatusUnauthorized, "authorization header is required")
 			c.Abort()
 			return
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
-			utils.ErrorResponse(c, http.StatusUnauthorized, "invalid authorization format, use: Bearer <token>")
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid authorization format, use: Bearer <token>")
 			c.Abort()
 			return
 		}
 
 		claims, err := jwtUtil.ValidateToken(parts[1])
 		if err != nil {
-			utils.ErrorResponse(c, http.StatusUnauthorized, "invalid or expired token")
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid or expired token")
 			c.Abort()
 			return
 		}
@@ -62,6 +63,7 @@ func AuthMiddleware(jwtUtil *utils.JWTUtil) gin.HandlerFunc {
 		c.Set(EmployeeIDKey, claims.EmployeeID)
 		c.Set(FullNameKey, claims.FullName)
 		c.Set(BranchCodeKey, claims.BranchCode)
+		c.Set(TerminalCodeKey, claims.TerminalCode)
 		c.Next()
 	}
 }
