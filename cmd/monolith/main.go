@@ -19,6 +19,7 @@ import (
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/menu"
+	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/user"
@@ -82,6 +83,7 @@ func main() {
 	roleService := role.NewRoleService(roleRepo)
 	dermagaService := dermaga.NewDermagaService(dermagaRepo)
 	referenceService := reference.NewReferenceService(referenceRepo)
+	portService := pelabuhan.NewPortService(dbRegistry.ADM)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -90,6 +92,7 @@ func main() {
 	accessHandler := access.NewAccessHandler(accessService)
 	dermagaHandler := dermaga.NewDermagaHandler(dermagaService)
 	referenceHandler := reference.NewReferenceHandler(referenceService)
+	portHandler := pelabuhan.NewPortHandler(portService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -105,6 +108,7 @@ func main() {
 		RoleHandler:      roleHandler,
 		AccessHandler:    accessHandler,
 		DermagaHandler:   dermagaHandler,
+		PortHandler:      portHandler,
 		ReferenceHandler: referenceHandler,
 	})
 
