@@ -7,6 +7,7 @@ import (
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/menu"
+	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/user"
@@ -25,6 +26,7 @@ type RouterConfig struct {
 	RoleHandler      *role.RoleHandler
 	AccessHandler    *access.AccessHandler
 	DermagaHandler   dermaga.DermagaHandler
+	PortHandler      *pelabuhan.PortHandler
 	ReferenceHandler reference.ReferenceHandler
 }
 
@@ -80,6 +82,14 @@ func SetupRouter(cfg *RouterConfig) {
 				references.GET("/:id", cfg.ReferenceHandler.GetReferenceDetail)
 				references.POST("", cfg.ReferenceHandler.SaveReference)
 				references.DELETE("/:id", cfg.ReferenceHandler.DeleteReference)
+			}
+
+			pelabuhan := master.Group("/pelabuhan")
+			{
+				pelabuhan.POST("/search", cfg.PortHandler.SearchPorts)
+				pelabuhan.POST("", cfg.PortHandler.CreatePort)
+				pelabuhan.PUT("/:id", cfg.PortHandler.UpdatePort)
+				pelabuhan.DELETE("/:id", cfg.PortHandler.DeletePort)
 			}
 		}
 
