@@ -34,9 +34,7 @@ type parameter struct {
 	In       string `json:"in"`
 	Required bool   `json:"required"`
 	Type     string `json:"type"`
-	Schema   struct {
-		Ref string `json:"$ref"`
-	} `json:"schema"`
+	Schema   *schemaDef `json:"schema"`
 	Description string `json:"description"`
 }
 
@@ -46,12 +44,17 @@ type response struct {
 
 type schemaDef struct {
 	Type       string                 `json:"type"`
+	Ref        string                 `json:"$ref"`
+	Items      *propertyDef           `json:"items"`
 	Properties map[string]propertyDef `json:"properties"`
 }
 
 type propertyDef struct {
-	Type string `json:"type"`
-	Ref  string `json:"$ref"`
+	Type   string                 `json:"type"`
+	Ref    string                 `json:"$ref"`
+	Items  *propertyDef           `json:"items"`
+	Format string                 `json:"format"`
+	Props  map[string]propertyDef `json:"properties"`
 }
 
 type endpointEntry struct {
@@ -436,15 +439,35 @@ func buildRequestExample(ep endpointEntry, spec *swaggerSpec) string {
 	if len(bodyParams) == 0 {
 		return "{}"
 	}
-	ref := bodyParams[0].Schema.Ref
-	if ref == "" {
+
+	schema := bodyParams[0].Schema
+	if schema == nil {
 		return "{}"
 	}
 
-	schemaName := refName(ref)
-	schema, ok := spec.Definitions[schemaName]
-	if !ok || len(schema.Properties) == 0 {
-		return "{\n  \"payload\": \"" + schemaName + "\"\n}"
+	return renderSchema(schema, spec, 0)
+}
+
+func renderSchema(schema *schemaDef, spec *swaggerSpec, depth int) string {
+	if depth > 5 {
+		return "{ \"...\" }"
+	}
+
+	if schema.Ref != "" {
+		name := refName(schema.Ref)
+		if def, ok := spec.Definitions[name]; ok {
+			return renderSchema(&def, spec, depth+1)
+		}
+		return "{ \"payload\": \"" + name + "\" }"
+	}
+
+	if strings.ToLower(schema.Type) == "array" && schema.Items != nil {
+		itemStr := renderProperty(*schema.Items, spec, depth+1)
+		return "[\n  " + strings.ReplaceAll(itemStr, "\n", "\n  ") + "\n]"
+	}
+
+	if len(schema.Properties) == 0 {
+		return "{}"
 	}
 
 	keys := make([]string, 0, len(schema.Properties))
@@ -457,7 +480,7 @@ func buildRequestExample(ep endpointEntry, spec *swaggerSpec) string {
 	lines = append(lines, "{")
 	for i, k := range keys {
 		p := schema.Properties[k]
-		v := sampleValue(p.Type)
+		v := renderProperty(p, spec, depth+1)
 		suffix := ","
 		if i == len(keys)-1 {
 			suffix = ""
@@ -466,6 +489,28 @@ func buildRequestExample(ep endpointEntry, spec *swaggerSpec) string {
 	}
 	lines = append(lines, "}")
 	return strings.Join(lines, "\n")
+}
+
+func renderProperty(p propertyDef, spec *swaggerSpec, depth int) string {
+	if depth > 8 {
+		return "\"...\""
+	}
+	if p.Ref != "" {
+		name := refName(p.Ref)
+		if def, ok := spec.Definitions[name]; ok {
+			return renderSchema(&def, spec, depth+1)
+		}
+		return "\"value\""
+	}
+	if strings.ToLower(p.Type) == "array" && p.Items != nil {
+		itemStr := renderProperty(*p.Items, spec, depth+1)
+		return "[\n  " + strings.ReplaceAll(itemStr, "\n", "\n  ") + "\n]"
+	}
+	if strings.ToLower(p.Type) == "object" && len(p.Props) > 0 {
+		mockSchema := &schemaDef{Properties: p.Props}
+		return renderSchema(mockSchema, spec, depth+1)
+	}
+	return sampleValue(p.Type)
 }
 
 func sampleValue(typ string) string {
