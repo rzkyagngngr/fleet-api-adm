@@ -17,6 +17,7 @@ import (
 	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
+	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
@@ -83,6 +84,7 @@ func main() {
 	roleService := role.NewRoleService(roleRepo)
 	dermagaService := dermaga.NewDermagaService(dermagaRepo)
 	referenceService := reference.NewReferenceService(referenceRepo)
+	customerService := customer.NewCustomerService(dbRegistry.ADM)
 	portService := pelabuhan.NewPortService(dbRegistry.ADM)
 
 	authHandler := auth.NewAuthHandler(authService)
@@ -92,6 +94,7 @@ func main() {
 	accessHandler := access.NewAccessHandler(accessService)
 	dermagaHandler := dermaga.NewDermagaHandler(dermagaService)
 	referenceHandler := reference.NewReferenceHandler(referenceService)
+	customerHandler := customer.NewCustomerHandler(customerService)
 	portHandler := pelabuhan.NewPortHandler(portService)
 
 	r := gin.New()
@@ -108,6 +111,7 @@ func main() {
 		RoleHandler:      roleHandler,
 		AccessHandler:    accessHandler,
 		DermagaHandler:   dermagaHandler,
+		CustomerHandler:  customerHandler,
 		PortHandler:      portHandler,
 		ReferenceHandler: referenceHandler,
 	})
