@@ -22,61 +22,93 @@ type menuService struct{ db *gorm.DB }
 func NewMenuService(db *gorm.DB) MenuService { return &menuService{db: db} }
 
 func (s *menuService) Create(ctx context.Context, m *Menu) error {
-	const query = `
-		INSERT INTO adm.posm_menus (
-			menu_code,
-			menu_text,
-			menu_desc,
-			menu_url,
-			menu_level,
-			menu_order,
-			parent_menu_id,
-			menu_icon,
-			application_id,
-			menu_header_id,
-			menu_status,
-			creation_by,
-			creation_date,
-			last_updated_by,
-			last_updated_date
-		) VALUES (
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?,
-			?
-		)
-		RETURNING id
-	`
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		const insertMenuQuery = `
+			INSERT INTO adm.posm_menus (
+				menu_code,
+				menu_text,
+				menu_desc,
+				menu_url,
+				menu_level,
+				menu_order,
+				parent_menu_id,
+				menu_icon,
+				application_id,
+				menu_header_id,
+				menu_status,
+				creation_by,
+				creation_date,
+				last_updated_by,
+				last_updated_date
+			) VALUES (
+				?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+			)
+			RETURNING id
+		`
 
-	return s.db.WithContext(ctx).Raw(
-		query,
-		m.MenuCode,
-		m.MenuText,
-		m.MenuDesc,
-		m.MenuURL,
-		m.MenuLevel,
-		m.MenuOrder,
-		m.ParentMenuID,
-		m.MenuIcon,
-		m.ApplicationID,
-		m.MenuHeaderID,
-		m.MenuStatus,
-		m.CreationBy,
-		m.CreationDate,
-		m.LastUpdatedBy,
-		m.LastUpdatedDate,
-	).Scan(&m.ID).Error
+		if err := tx.Raw(
+			insertMenuQuery,
+			m.MenuCode,
+			m.MenuText,
+			m.MenuDesc,
+			m.MenuURL,
+			m.MenuLevel,
+			m.MenuOrder,
+			m.ParentMenuID,
+			m.MenuIcon,
+			m.ApplicationID,
+			m.MenuHeaderID,
+			m.MenuStatus,
+			m.CreationBy,
+			m.CreationDate,
+			m.LastUpdatedBy,
+			m.LastUpdatedDate,
+		).Scan(&m.ID).Error; err != nil {
+			return err
+		}
+
+		// Automate access record creation for all roles
+		var roles []uint64
+		if err := tx.Raw("SELECT hak_akses_id FROM adm.posm_roles").Scan(&roles).Error; err != nil {
+			return err
+		}
+
+		for _, roleID := range roles {
+			const insertAccessQuery = `
+				INSERT INTO adm.posm_access (
+					roles_id,
+					menu_id,
+					menu_text,
+					menu_url,
+					status,
+					application_id,
+					parent_menu_id,
+					can_insert,
+					can_update,
+					can_delete,
+					menu_order,
+					menu_icon
+				) VALUES (
+					?, ?, ?, ?, 0, ?, ?, 0, 0, 0, ?, ?
+				)
+			`
+			if err := tx.Exec(
+				insertAccessQuery,
+				roleID,
+				m.ID,
+				m.MenuText,
+				m.MenuURL,
+				m.ApplicationID,
+				m.ParentMenuID,
+				m.MenuOrder,
+				m.MenuIcon,
+			).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 func (s *menuService) FindAll(ctx context.Context) ([]Menu, error) {
@@ -201,63 +233,98 @@ func (s *menuService) FindByID(ctx context.Context, id uint64) (*Menu, error) {
 }
 
 func (s *menuService) Update(ctx context.Context, id uint64, m *Menu) error {
-	const query = `
-		UPDATE adm.posm_menus
-		SET
-			menu_code = ?,
-			menu_text = ?,
-			menu_desc = ?,
-			menu_url = ?,
-			menu_level = ?,
-			menu_order = ?,
-			parent_menu_id = ?,
-			menu_icon = ?,
-			application_id = ?,
-			menu_header_id = ?,
-			menu_status = ?,
-			creation_by = ?,
-			creation_date = ?,
-			last_updated_by = ?,
-			last_updated_date = ?
-		WHERE id = ?
-	`
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		const query = `
+			UPDATE adm.posm_menus
+			SET
+				menu_code = ?,
+				menu_text = ?,
+				menu_desc = ?,
+				menu_url = ?,
+				menu_level = ?,
+				menu_order = ?,
+				parent_menu_id = ?,
+				menu_icon = ?,
+				application_id = ?,
+				menu_header_id = ?,
+				menu_status = ?,
+				creation_by = ?,
+				creation_date = ?,
+				last_updated_by = ?,
+				last_updated_date = ?
+			WHERE id = ?
+		`
 
-	result := s.db.WithContext(ctx).Exec(
-		query,
-		m.MenuCode,
-		m.MenuText,
-		m.MenuDesc,
-		m.MenuURL,
-		m.MenuLevel,
-		m.MenuOrder,
-		m.ParentMenuID,
-		m.MenuIcon,
-		m.ApplicationID,
-		m.MenuHeaderID,
-		m.MenuStatus,
-		m.CreationBy,
-		m.CreationDate,
-		m.LastUpdatedBy,
-		m.LastUpdatedDate,
-		id,
-	)
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+		result := tx.Exec(
+			query,
+			m.MenuCode,
+			m.MenuText,
+			m.MenuDesc,
+			m.MenuURL,
+			m.MenuLevel,
+			m.MenuOrder,
+			m.ParentMenuID,
+			m.MenuIcon,
+			m.ApplicationID,
+			m.MenuHeaderID,
+			m.MenuStatus,
+			m.CreationBy,
+			m.CreationDate,
+			m.LastUpdatedBy,
+			m.LastUpdatedDate,
+			id,
+		)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+
+		// Sync missing access records for all roles
+		syncAccessQuery := `
+			INSERT INTO adm.posm_access (
+				roles_id, menu_id, menu_text, menu_url, status, 
+				application_id, parent_menu_id, can_insert, can_update, can_delete, 
+				menu_order, menu_icon
+			)
+			SELECT 
+				r.hak_akses_id, ?, ?, ?, 0, 
+				?, ?, 0, 0, 0, ?, ?
+			FROM adm.posm_roles r
+			WHERE NOT EXISTS (
+				SELECT 1 FROM adm.posm_access a 
+				WHERE a.menu_id = ? AND a.roles_id = r.hak_akses_id
+			)
+		`
+		if err := tx.Exec(
+			syncAccessQuery,
+			id, m.MenuText, m.MenuURL,
+			m.ApplicationID, m.ParentMenuID, m.MenuOrder, m.MenuIcon,
+			id,
+		).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (s *menuService) Delete(ctx context.Context, id uint64) error {
-	const query = `DELETE FROM adm.posm_menus WHERE id = ?`
-	result := s.db.WithContext(ctx).Exec(query, id)
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Clean up associated access records first
+		if err := tx.Exec("DELETE FROM adm.posm_access WHERE menu_id = ?", id).Error; err != nil {
+			return err
+		}
+
+		const query = `DELETE FROM adm.posm_menus WHERE id = ?`
+		result := tx.Exec(query, id)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return nil
+	})
 }
