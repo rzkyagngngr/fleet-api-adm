@@ -12,6 +12,7 @@ import (
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/user"
+	"omniport-api/internal/modules/administration/vessel"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -30,6 +31,7 @@ type RouterConfig struct {
 	CustomerHandler  *customer.CustomerHandler
 	PortHandler      *pelabuhan.PortHandler
 	ReferenceHandler reference.ReferenceHandler
+	VesselHandler     *vessel.VesselHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -111,6 +113,15 @@ func SetupRouter(cfg *RouterConfig) {
 				customer.POST("", cfg.CustomerHandler.CreateCustomer)
 				customer.PUT("/:id", cfg.CustomerHandler.UpdateCustomer)
 				customer.DELETE("/:id", cfg.CustomerHandler.DeleteCustomer)
+			}
+
+			vessel := master.Group("/vessel")
+			{
+				vessel.POST("/search", cfg.VesselHandler.Search)
+				vessel.POST("", cfg.VesselHandler.Create)
+				vessel.GET("/:id", cfg.VesselHandler.GetByID)
+				vessel.PUT("/:id", cfg.VesselHandler.Update)
+				vessel.DELETE("/:id", cfg.VesselHandler.Delete)
 			}
 		}
 
