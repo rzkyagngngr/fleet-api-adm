@@ -22,4 +22,4 @@ type Access struct {
 	LastUpdateDate *time.Time `gorm:"column:last_update_date" json:"last_update_date"`
 }
 
-func (Access) TableName() string { return "posm_access" }
+func (Access) TableName() string { return "adm.posm_access" }
