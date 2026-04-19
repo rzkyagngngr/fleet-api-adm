@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"omniport-api/internal/helper"
 
 	"gorm.io/gorm"
 )
@@ -11,7 +12,11 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByID(ctx context.Context, id uint64) (*User, error)
 	FindByEmployeeID(ctx context.Context, employeeID string) (*User, error)
-	GetUserMenusByRole(ctx context.Context, roleID *int) ([]MenuAccessRow, error)
+	GetUserMenusByRole(ctx context.Context, roleID *int64) ([]MenuAccessRow, error)
+	FindAll(ctx context.Context, limit int, offset int) ([]User, int64, error)
+	Update(ctx context.Context, id uint64, user *User) error
+	Delete(ctx context.Context, id uint64) error
+	Search(ctx context.Context, param helper.PaginationQuery) ([]User, helper.PaginationMeta, error)
 }
 
 type userRepository struct{ db *gorm.DB }
@@ -45,7 +50,7 @@ func (r *userRepository) FindByEmployeeID(ctx context.Context, employeeID string
 	}
 	return &u, nil
 }
-func (r *userRepository) GetUserMenusByRole(ctx context.Context, roleID *int) ([]MenuAccessRow, error) {
+func (r *userRepository) GetUserMenusByRole(ctx context.Context, roleID *int64) ([]MenuAccessRow, error) {
 	var menus []MenuAccessRow
 	if roleID == nil {
 		return menus, nil
@@ -55,4 +60,65 @@ func (r *userRepository) GetUserMenusByRole(ctx context.Context, roleID *int) ([
 		return nil, err
 	}
 	return menus, nil
+}
+
+func (r *userRepository) FindAll(ctx context.Context, limit int, offset int) ([]User, int64, error) {
+	var rows []User
+	var total int64
+	q := r.db.WithContext(ctx).Model(&User{})
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := q.Limit(limit).Offset(offset).Order("id DESC").Find(&rows).Error; err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
+}
+
+func (r *userRepository) Update(ctx context.Context, id uint64, u *User) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Updates(u).Error
+}
+
+func (r *userRepository) Delete(ctx context.Context, id uint64) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&User{}).Error
+}
+
+func (r *userRepository) Search(ctx context.Context, param helper.PaginationQuery) ([]User, helper.PaginationMeta, error) {
+	config := helper.NativePaginationConfig{
+		TableName: "adm.posm_users",
+		SelectColumns: []string{
+			"id", "access_id", "role_id", "application_id", "user_id", "employee_id",
+			"full_name", "job_title", "email", "phone_number", "sub_unit_name",
+			"status", "branch_code", "branch_name", "terminal_code", "terminal_name",
+			"profit_center", "access_status", "company_code", "superuser",
+			"creation_date", "last_login_at",
+		},
+		SearchColumns: []string{
+			"employee_id", "full_name", "email", "job_title", "phone_number",
+		},
+		FilterableColumns: map[string]string{
+			"employee_id":   "employee_id",
+			"full_name":     "full_name",
+			"status":        "status",
+			"role_id":       "role_id",
+			"branch_code":   "branch_code",
+			"terminal_code": "terminal_code",
+			"company_code":  "company_code",
+			"superuser":     "superuser",
+		},
+		SortableColumns: map[string]string{
+			"id":            "id",
+			"employee_id":   "employee_id",
+			"full_name":     "full_name",
+			"creation_date": "creation_date",
+		},
+		DefaultSortBy:    "id",
+		DefaultSortOrder: "DESC",
+		MaxLimit:         100,
+		MaxDownloadLimit: 1000,
+	}
+
+	var rows []User
+	meta, err := helper.GetDynamicPaginatedNativeData(r.db.WithContext(ctx), config, param, &rows)
+	return rows, meta, err
 }

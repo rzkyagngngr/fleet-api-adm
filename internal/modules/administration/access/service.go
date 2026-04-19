@@ -4,6 +4,7 @@ import "context"
 
 type AccessService interface {
 	GetRoleAccess(ctx context.Context, roleID uint64) ([]Access, error)
+	GetAllMenuByRole(ctx context.Context, roleID uint64) ([]Access, error)
 	UpdateRoleAccess(ctx context.Context, roleID uint64, accessList []Access) error
 }
 
@@ -14,6 +15,9 @@ func NewAccessService(accessRepo AccessRepository) AccessService {
 }
 func (s *accessService) GetRoleAccess(ctx context.Context, roleID uint64) ([]Access, error) {
 	return s.accessRepo.FindByRoleID(ctx, roleID)
+}
+func (s *accessService) GetAllMenuByRole(ctx context.Context, roleID uint64) ([]Access, error) {
+	return s.accessRepo.FindAllMenuByRole(ctx, roleID)
 }
 func (s *accessService) UpdateRoleAccess(ctx context.Context, roleID uint64, accessList []Access) error {
 	if err := s.accessRepo.DeleteByRoleID(ctx, roleID); err != nil {

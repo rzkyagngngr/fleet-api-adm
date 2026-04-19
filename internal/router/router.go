@@ -64,6 +64,16 @@ func SetupRouter(cfg *RouterConfig) {
 				menus.DELETE("/:id", cfg.MenuHandler.DeleteMenu)
 			}
 
+			users := master.Group("/users")
+			{
+				users.GET("", cfg.UserHandler.FindAll)
+				users.POST("/search", cfg.UserHandler.Search)
+				users.GET("/:id", cfg.UserHandler.FindByID)
+				users.POST("", cfg.UserHandler.Create)
+				users.PUT("/:id", cfg.UserHandler.Update)
+				users.DELETE("/:id", cfg.UserHandler.Delete)
+			}
+
 			roles := master.Group("/roles")
 			{
 				roles.GET("", cfg.RoleHandler.GetAllRoles)
@@ -71,6 +81,7 @@ func SetupRouter(cfg *RouterConfig) {
 				roles.PUT("/:id", cfg.RoleHandler.UpdateRole)
 				roles.DELETE("/:id", cfg.RoleHandler.DeleteRole)
 				roles.GET("/:id/access", cfg.AccessHandler.GetRoleAccess)
+				roles.GET("/:id/all-menu-access", cfg.AccessHandler.GetAllMenuByRole)
 				roles.POST("/:id/access", cfg.AccessHandler.UpdateRoleAccess)
 			}
 

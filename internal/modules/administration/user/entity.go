@@ -4,10 +4,10 @@ import "time"
 
 type User struct {
 	ID                     uint64     `gorm:"primaryKey;autoIncrement" json:"id"`
-	AccessID               *int       `gorm:"column:access_id" json:"access_id"`
-	RoleID                 *int       `gorm:"column:role_id" json:"role_id"`
+	AccessID               *int64     `gorm:"column:access_id" json:"access_id"`
+	RoleID                 *int64     `gorm:"column:role_id" json:"role_id"`
 	ApplicationID          *int64     `gorm:"column:application_id" json:"application_id"`
-	UserID                 *int       `gorm:"column:user_id" json:"user_id"`
+	UserID                 *int64     `gorm:"column:user_id" json:"user_id"`
 	EmployeeID             string     `gorm:"column:employee_id" json:"employee_id"`
 	FullName               string     `gorm:"column:full_name" json:"full_name"`
 	JobTitle               string     `gorm:"column:job_title" json:"job_title"`
@@ -23,7 +23,7 @@ type User struct {
 	TerminalCode           *int64     `gorm:"column:terminal_code" json:"terminal_code"`
 	ProfitCenter           string     `gorm:"column:profit_center" json:"profit_center"`
 	ApplicationURL         string     `gorm:"column:application_url" json:"application_url"`
-	AccessStatus           *int       `gorm:"column:access_status" json:"access_status"`
+	AccessStatus           *int64     `gorm:"column:access_status" json:"access_status"`
 	CompanyCode            string     `gorm:"column:company_code" json:"company_code"`
 	AccessUpdatedAt        *time.Time `gorm:"column:access_updated_at" json:"access_updated_at"`
 	LastLoginAt            *time.Time `gorm:"column:last_login_at" json:"last_login_at"`
@@ -34,6 +34,7 @@ type User struct {
 	CreationBy             string     `gorm:"column:creation_by" json:"creation_by"`
 	LastUpdatedDate        *time.Time `gorm:"column:last_updated_date" json:"last_updated_date"`
 	LastUpdatedBy          string     `gorm:"column:last_updated_by" json:"last_updated_by"`
+	TerminalName           string     `gorm:"column:terminal_name" json:"terminal_name"`
 }
 
 func (User) TableName() string { return "posm_users" }
@@ -51,6 +52,8 @@ func ToResponse(u *User) UserResponse {
 		BranchCode:   u.BranchCode,
 		BranchName:   u.BranchName,
 		TerminalCode: u.TerminalCode,
+		TerminalName: u.TerminalName,
+		RoleID:       u.RoleID,
 		Superuser:    u.Superuser,
 		CreationDate: u.CreationDate,
 		LastLoginAt:  u.LastLoginAt,
