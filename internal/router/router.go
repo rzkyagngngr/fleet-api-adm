@@ -7,11 +7,14 @@ import (
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
+	"omniport-api/internal/modules/administration/dock"
+	"omniport-api/internal/modules/administration/equipment"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/user"
+	"omniport-api/internal/modules/administration/warehouse"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -28,8 +31,11 @@ type RouterConfig struct {
 	AccessHandler    *access.AccessHandler
 	DermagaHandler   dermaga.DermagaHandler
 	CustomerHandler  *customer.CustomerHandler
+	DockHandler      *dock.DockHandler
+	EquipmentHandler *equipment.EquipmentHandler
 	PortHandler      *pelabuhan.PortHandler
 	ReferenceHandler reference.ReferenceHandler
+	WarehouseHandler *warehouse.WarehouseHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -94,12 +100,40 @@ func SetupRouter(cfg *RouterConfig) {
 				pelabuhan.DELETE("/:id", cfg.PortHandler.DeletePort)
 			}
 
+			equipment := master.Group("/equipment")
+			{
+				equipment.POST("/group-options/search", cfg.EquipmentHandler.ListEquipmentGroupOptions)
+				equipment.POST("/customer-options/search", cfg.EquipmentHandler.ListCustomerOptions)
+				equipment.POST("/search", cfg.EquipmentHandler.SearchEquipments)
+				equipment.POST("", cfg.EquipmentHandler.CreateEquipment)
+				equipment.PUT("/:id", cfg.EquipmentHandler.UpdateEquipment)
+				equipment.DELETE("/:id", cfg.EquipmentHandler.DeleteEquipment)
+			}
+
+			dock := master.Group("/dock")
+			{
+				dock.POST("/search", cfg.DockHandler.SearchDock)
+				dock.GET("/:id", cfg.DockHandler.GetDockDetail)
+				dock.POST("", cfg.DockHandler.CreateDock)
+				dock.PUT("/:id", cfg.DockHandler.UpdateDock)
+				dock.DELETE("/:id", cfg.DockHandler.DeleteDock)
+			}
+
 			customer := master.Group("/customer")
 			{
 				customer.POST("/search", cfg.CustomerHandler.SearchCustomers)
 				customer.POST("", cfg.CustomerHandler.CreateCustomer)
 				customer.PUT("/:id", cfg.CustomerHandler.UpdateCustomer)
 				customer.DELETE("/:id", cfg.CustomerHandler.DeleteCustomer)
+			}
+
+			warehouse := master.Group("/warehouse")
+			{
+				warehouse.POST("/search", cfg.WarehouseHandler.SearchWarehouse)
+				warehouse.GET("/:id", cfg.WarehouseHandler.GetWarehouseDetail)
+				warehouse.POST("", cfg.WarehouseHandler.CreateWarehouse)
+				warehouse.PUT("/:id", cfg.WarehouseHandler.UpdateWarehouse)
+				warehouse.DELETE("/:id", cfg.WarehouseHandler.DeleteWarehouse)
 			}
 		}
 
