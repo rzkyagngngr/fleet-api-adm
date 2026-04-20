@@ -42,7 +42,8 @@ func (r *accessRepository) FindAllMenuByRole(ctx context.Context, roleID uint64)
 		Joins("LEFT JOIN adm.posm_access a ON m.id = a.menu_id AND a.roles_id = ?", roleID).
 		Where("m.menu_status = ?", 1).
 		Order("COALESCE(m.parent_menu_id, 0), m.menu_order").
-		Find(&list).Error
+		Scan(&list).Error
+
 	return list, err
 }
 func (r *accessRepository) DeleteByRoleID(ctx context.Context, roleID uint64) error {
