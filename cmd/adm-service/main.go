@@ -21,6 +21,7 @@ import (
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/user"
+	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -52,6 +53,7 @@ func main() {
 	accessRepo := access.NewAccessRepository(db)
 	dermagaRepo := dermaga.NewDermagaRepository(db)
 	referenceRepo := reference.NewReferenceRepository(db)
+	vesselRepo := vessel.NewVesselRepository(db)
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, jwtUtil)
@@ -60,6 +62,7 @@ func main() {
 	roleService := role.NewRoleService(roleRepo)
 	dermagaService := dermaga.NewDermagaService(dermagaRepo)
 	referenceService := reference.NewReferenceService(referenceRepo)
+	vesselService := vessel.NewVesselService(vesselRepo)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -68,6 +71,7 @@ func main() {
 	accessHandler := access.NewAccessHandler(accessService)
 	dermagaHandler := dermaga.NewDermagaHandler(dermagaService)
 	referenceHandler := reference.NewReferenceHandler(referenceService)
+	vesselHandler := vessel.NewVesselHandler(vesselService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -84,6 +88,7 @@ func main() {
 		AccessHandler:    accessHandler,
 		DermagaHandler:   dermagaHandler,
 		ReferenceHandler: referenceHandler,
+		VesselHandler:    vesselHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)

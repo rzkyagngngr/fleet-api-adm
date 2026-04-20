@@ -40,6 +40,20 @@ func (h *AccessHandler) GetRoleAccess(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "role access retrieved successfully", list)
 }
 
+func (h *AccessHandler) GetAllMenuByRole(c *gin.Context) {
+	roleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "invalid role id")
+		return
+	}
+	list, err := h.accessService.GetAllMenuByRole(c.Request.Context(), roleID)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to get role access")
+		return
+	}
+	helper.SuccessResponse(c, http.StatusOK, "role access retrieved successfully", list)
+}
+
 // UpdateRoleAccess godoc
 // @Summary Update role access
 // @Description Update access matrix for a role

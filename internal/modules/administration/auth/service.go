@@ -77,10 +77,16 @@ func buildTreeRecursive(parentID *int64, raw []user.MenuAccessRow) []user.MenuAc
 	var nodes []user.MenuAccessNode
 	for _, row := range raw {
 		isChild := false
-		if parentID == nil && row.ParentMenuID == nil {
-			isChild = true
-		} else if parentID != nil && row.ParentMenuID != nil && *parentID == *row.ParentMenuID {
-			isChild = true
+		if parentID == nil {
+			// Handle cases where postgres DB stores root parent_id as nil OR 0
+			if row.ParentMenuID == nil || *row.ParentMenuID == 0 {
+				isChild = true
+			}
+		} else {
+			// Find actual child instances
+			if row.ParentMenuID != nil && *row.ParentMenuID != 0 && *parentID == *row.ParentMenuID {
+				isChild = true
+			}
 		}
 		if isChild {
 			id := row.MenuID

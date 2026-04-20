@@ -14,6 +14,7 @@ import (
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/user"
+	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
 
 	"github.com/gin-gonic/gin"
@@ -36,6 +37,7 @@ type RouterConfig struct {
 	PortHandler      *pelabuhan.PortHandler
 	ReferenceHandler reference.ReferenceHandler
 	WarehouseHandler *warehouse.WarehouseHandler
+	VesselHandler    *vessel.VesselHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -74,6 +76,16 @@ func SetupRouter(cfg *RouterConfig) {
 				menus.DELETE("/:id", cfg.MenuHandler.DeleteMenu)
 			}
 
+			users := master.Group("/users")
+			{
+				users.GET("", cfg.UserHandler.FindAll)
+				users.POST("/search", cfg.UserHandler.Search)
+				users.GET("/:id", cfg.UserHandler.FindByID)
+				users.POST("", cfg.UserHandler.Create)
+				users.PUT("/:id", cfg.UserHandler.Update)
+				users.DELETE("/:id", cfg.UserHandler.Delete)
+			}
+
 			roles := master.Group("/roles")
 			{
 				roles.GET("", cfg.RoleHandler.GetAllRoles)
@@ -81,6 +93,7 @@ func SetupRouter(cfg *RouterConfig) {
 				roles.PUT("/:id", cfg.RoleHandler.UpdateRole)
 				roles.DELETE("/:id", cfg.RoleHandler.DeleteRole)
 				roles.GET("/:id/access", cfg.AccessHandler.GetRoleAccess)
+				roles.GET("/:id/all-menu-access", cfg.AccessHandler.GetAllMenuByRole)
 				roles.POST("/:id/access", cfg.AccessHandler.UpdateRoleAccess)
 			}
 
@@ -134,6 +147,15 @@ func SetupRouter(cfg *RouterConfig) {
 				warehouse.POST("", cfg.WarehouseHandler.CreateWarehouse)
 				warehouse.PUT("/:id", cfg.WarehouseHandler.UpdateWarehouse)
 				warehouse.DELETE("/:id", cfg.WarehouseHandler.DeleteWarehouse)
+			}
+
+			vessel := master.Group("/vessel")
+			{
+				vessel.POST("/search", cfg.VesselHandler.Search)
+				vessel.POST("", cfg.VesselHandler.Create)
+				vessel.GET("/:id", cfg.VesselHandler.GetByID)
+				vessel.PUT("/:id", cfg.VesselHandler.Update)
+				vessel.DELETE("/:id", cfg.VesselHandler.Delete)
 			}
 		}
 
