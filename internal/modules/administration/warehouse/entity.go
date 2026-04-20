@@ -11,7 +11,7 @@ type Warehouse struct {
 	WarehouseCode     *string           `gorm:"column:warehouse_code;size:50" json:"warehouse_code"`
 	WarehouseName     *string           `gorm:"column:warehouse_name;size:150" json:"warehouse_name"`
 	WarehouseType     *string           `gorm:"column:warehouse_type;size:100" json:"warehouse_type"`
-	WarehouseCapacity *string           `gorm:"column:warehouse_capacity;size:100" json:"warehouse_capacity"`
+	WarehouseCapacity *int              `gorm:"column:warehouse_capacity" json:"warehouse_capacity"`
 	Status            *int              `gorm:"column:status" json:"status"`
 	CreationDate      *time.Time        `gorm:"column:creation_date" json:"creation_date"`
 	CreationBy        *string           `gorm:"column:creation_by;size:100" json:"creation_by"`

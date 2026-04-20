@@ -5,6 +5,7 @@ import "omniport-api/internal/helper"
 type DockDetailReq struct {
 	BerthCode  *string `json:"berth_code" binding:"omitempty,max=50"`
 	BerthName  *string `json:"berth_name" binding:"omitempty,max=150"`
+	MaxLoa     *int    `json:"max_loa"`
 	XPosition  *int    `json:"x_position"`
 	YPosition  *int    `json:"y_position"`
 	WidthSize  *int    `json:"width_size"`

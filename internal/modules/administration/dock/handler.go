@@ -284,6 +284,7 @@ func mapDockDetails(details []DockDetailReq) []DockDetail {
 		result = append(result, DockDetail{
 			BerthCode:  detail.BerthCode,
 			BerthName:  detail.BerthName,
+			MaxLoa:     detail.MaxLoa,
 			XPosition:  detail.XPosition,
 			YPosition:  detail.YPosition,
 			WidthSize:  detail.WidthSize,

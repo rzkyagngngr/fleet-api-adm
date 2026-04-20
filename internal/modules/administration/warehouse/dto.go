@@ -19,7 +19,7 @@ type WarehouseReq struct {
 	WarehouseCode     *string              `json:"warehouse_code" binding:"omitempty,max=50"`
 	WarehouseName     *string              `json:"warehouse_name" binding:"omitempty,max=150"`
 	WarehouseType     *string              `json:"warehouse_type" binding:"omitempty,max=100"`
-	WarehouseCapacity *string              `json:"warehouse_capacity" binding:"omitempty,max=100"`
+	WarehouseCapacity *int                 `json:"warehouse_capacity"`
 	Status            *int                 `json:"status"`
 	Details           []WarehouseDetailReq `json:"details"`
 }
