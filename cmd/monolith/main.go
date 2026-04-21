@@ -19,11 +19,14 @@ import (
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
+	"omniport-api/internal/modules/administration/dock"
+	"omniport-api/internal/modules/administration/equipment"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/user"
+	"omniport-api/internal/modules/administration/warehouse"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -85,7 +88,10 @@ func main() {
 	dermagaService := dermaga.NewDermagaService(dermagaRepo)
 	referenceService := reference.NewReferenceService(referenceRepo)
 	customerService := customer.NewCustomerService(dbRegistry.ADM)
+	dockService := dock.NewDockService(dbRegistry.ADM)
+	equipmentService := equipment.NewEquipmentService(dbRegistry.ADM)
 	portService := pelabuhan.NewPortService(dbRegistry.ADM)
+	warehouseService := warehouse.NewWarehouseService(dbRegistry.ADM)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -95,7 +101,10 @@ func main() {
 	dermagaHandler := dermaga.NewDermagaHandler(dermagaService)
 	referenceHandler := reference.NewReferenceHandler(referenceService)
 	customerHandler := customer.NewCustomerHandler(customerService)
+	dockHandler := dock.NewDockHandler(dockService)
+	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
 	portHandler := pelabuhan.NewPortHandler(portService)
+	warehouseHandler := warehouse.NewWarehouseHandler(warehouseService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -112,8 +121,11 @@ func main() {
 		AccessHandler:    accessHandler,
 		DermagaHandler:   dermagaHandler,
 		CustomerHandler:  customerHandler,
+		DockHandler:      dockHandler,
+		EquipmentHandler: equipmentHandler,
 		PortHandler:      portHandler,
 		ReferenceHandler: referenceHandler,
+		WarehouseHandler: warehouseHandler,
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.App.Port)

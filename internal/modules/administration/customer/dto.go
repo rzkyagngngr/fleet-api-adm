@@ -33,8 +33,6 @@ type CustomerReq struct {
 	BankCode               *string    `json:"bank_code" binding:"omitempty,max=50"`
 	BankAccountIDR         *string    `json:"bank_account_idr" binding:"omitempty,max=50"`
 	ForeignCurrencyAccount *string    `json:"foreign_currency_account" binding:"omitempty,max=50"`
-	StartDate              *time.Time `json:"start_date"`
-	EndDate                *time.Time `json:"end_date"`
 	Status                 *int       `json:"status"`
 	InternalNotes          *string    `json:"internal_notes"`
 }
