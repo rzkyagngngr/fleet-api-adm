@@ -217,3 +217,22 @@ func (h *UserHandler) Search(c *gin.Context) {
 	helper.MetaSuccessResponse(c, http.StatusOK, "success", rows, meta)
 }
 
+// GetStats godoc
+// @Summary Get user statistics
+// @Description Get aggregated user statistics
+// @Tags users
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/users/stats [get]
+func (h *UserHandler) GetStats(c *gin.Context) {
+	res, err := h.userService.GetUserStats(c.Request.Context())
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "success", res)
+}
+

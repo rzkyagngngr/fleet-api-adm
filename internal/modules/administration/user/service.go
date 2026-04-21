@@ -16,6 +16,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, id uint64, req *UserRequest, adminEmp string) error
 	DeleteUser(ctx context.Context, id uint64) error
 	Search(ctx context.Context, query helper.PaginationQuery) ([]UserResponse, helper.PaginationMeta, error)
+	GetUserStats(ctx context.Context) (*UserStatsResponse, error)
 }
 
 type userService struct{ userRepo UserRepository }
@@ -161,5 +162,9 @@ func (s *userService) Search(ctx context.Context, query helper.PaginationQuery) 
 		res = append(res, ToResponse(&r))
 	}
 	return res, meta, nil
+}
+
+func (s *userService) GetUserStats(ctx context.Context) (*UserStatsResponse, error) {
+	return s.userRepo.GetStats(ctx)
 }
 

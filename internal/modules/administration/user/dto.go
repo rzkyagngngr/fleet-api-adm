@@ -24,6 +24,13 @@ type UserResponse struct {
 	LastLoginAt  *time.Time `json:"last_login_at"`
 }
 
+type UserStatsResponse struct {
+	TotalUsers     int64 `json:"total_users"`
+	ActiveNow      int64 `json:"active_now"`
+	AdminCount     int64 `json:"admin_count"`
+	TerminalAccess int64 `json:"terminal_access"`
+}
+
 type MenuAccessRow struct {
 	RolesID      int64   `gorm:"column:roles_id" json:"roles_id"`
 	MenuID       int64   `gorm:"column:menu_id" json:"menu_id"`

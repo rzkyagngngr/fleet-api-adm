@@ -30,6 +30,17 @@ type VesselResponse struct {
 	CreationDate          time.Time  `json:"creation_date"`
 }
 
+type VesselStatsResponse struct {
+	TotalFleet     int64 `json:"total_fleet"`
+	ActiveVessels  int64 `json:"active_vessels"`
+	Maintenance    int64 `json:"maintenance"`
+	Deactivated    int64 `json:"deactivated"`
+	CargoCount     int64 `json:"cargo_count"`
+	TankerCount    int64 `json:"tanker_count"`
+	ContainerCount int64 `json:"container_count"`
+	OtherCount     int64 `json:"other_count"`
+}
+
 type VesselRequest struct {
 	VesselCode            string `json:"vessel_code" binding:"required"`
 	VesselName            string `json:"vessel_name" binding:"required"`

@@ -163,3 +163,22 @@ func (h *VesselHandler) Delete(c *gin.Context) {
 
 	helper.SuccessResponse(c, http.StatusOK, "vessel deleted successfully", nil)
 }
+
+// GetStats godoc
+// @Summary Get vessel statistics
+// @Description Get aggregated vessel statistics
+// @Tags master-vessel
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/vessel/stats [get]
+func (h *VesselHandler) GetStats(c *gin.Context) {
+	res, err := h.service.GetVesselStats(c.Request.Context())
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "success", res)
+}

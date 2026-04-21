@@ -14,6 +14,7 @@ type VesselService interface {
 	DeleteVessel(ctx context.Context, id uint64) error
 	GetByID(ctx context.Context, id uint64) (*VesselResponse, error)
 	SearchVessels(ctx context.Context, query helper.PaginationQuery) ([]VesselResponse, helper.PaginationMeta, error)
+	GetVesselStats(ctx context.Context) (*VesselStatsResponse, error)
 }
 
 type vesselService struct {
@@ -116,4 +117,8 @@ func (s *vesselService) SearchVessels(ctx context.Context, query helper.Paginati
 		res = append(res, ToResponse(&r))
 	}
 	return res, meta, nil
+}
+
+func (s *vesselService) GetVesselStats(ctx context.Context) (*VesselStatsResponse, error) {
+	return s.repo.GetStats(ctx)
 }

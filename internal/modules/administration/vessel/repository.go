@@ -13,6 +13,7 @@ type VesselRepository interface {
 	Delete(ctx context.Context, id uint64) error
 	FindByID(ctx context.Context, id uint64) (*Vessel, error)
 	Search(ctx context.Context, param helper.PaginationQuery) ([]Vessel, helper.PaginationMeta, error)
+	GetStats(ctx context.Context) (*VesselStatsResponse, error)
 }
 
 type vesselRepository struct {
@@ -46,7 +47,7 @@ func (r *vesselRepository) FindByID(ctx context.Context, id uint64) (*Vessel, er
 
 func (r *vesselRepository) Search(ctx context.Context, param helper.PaginationQuery) ([]Vessel, helper.PaginationMeta, error) {
 	config := helper.NativePaginationConfig{
-		TableName: "adm.posm_vessel",
+		TableName: "posm_vessel",
 		SelectColumns: []string{
 			"id", "vessel_code", "vessel_name", "vessel_type", "vessel_call_sign",
 			"vessel_imo", "vessel_grt", "vessel_loa", "vessel_owner_name",
@@ -81,4 +82,36 @@ func (r *vesselRepository) Search(ctx context.Context, param helper.PaginationQu
 	var rows []Vessel
 	meta, err := helper.GetDynamicPaginatedNativeData(r.db.WithContext(ctx), config, param, &rows)
 	return rows, meta, err
+}
+
+func (r *vesselRepository) GetStats(ctx context.Context) (*VesselStatsResponse, error) {
+	var stats VesselStatsResponse
+
+	// Total Fleet
+	if err := r.db.WithContext(ctx).Model(&Vessel{}).Count(&stats.TotalFleet).Error; err != nil {
+		return nil, err
+	}
+
+	// Active Vessels
+	if err := r.db.WithContext(ctx).Model(&Vessel{}).Where("status IN ?", []string{"ACTIVE", "IN TRANSIT"}).Count(&stats.ActiveVessels).Error; err != nil {
+		return nil, err
+	}
+
+	// Maintenance
+	if err := r.db.WithContext(ctx).Model(&Vessel{}).Where("status = ? OR vessel_operation_status = ?", "MAINTENANCE", "MAINTENANCE").Count(&stats.Maintenance).Error; err != nil {
+		return nil, err
+	}
+
+	// Deactivated
+	if err := r.db.WithContext(ctx).Model(&Vessel{}).Where("status = ?", "INACTIVE").Count(&stats.Deactivated).Error; err != nil {
+		return nil, err
+	}
+
+	// Counts by Type
+	r.db.WithContext(ctx).Model(&Vessel{}).Where("vessel_type = ?", "GENERAL").Count(&stats.CargoCount)
+	r.db.WithContext(ctx).Model(&Vessel{}).Where("vessel_type = ?", "TANKER").Count(&stats.TankerCount)
+	r.db.WithContext(ctx).Model(&Vessel{}).Where("vessel_type = ?", "CONTAINER").Count(&stats.ContainerCount)
+	r.db.WithContext(ctx).Model(&Vessel{}).Where("vessel_type NOT IN ?", []string{"GENERAL", "TANKER", "CONTAINER"}).Count(&stats.OtherCount)
+
+	return &stats, nil
 }
