@@ -5,6 +5,7 @@ import (
 	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
+	"omniport-api/internal/modules/administration/cargo"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/menu"
@@ -32,6 +33,7 @@ type RouterConfig struct {
 	PortHandler      *pelabuhan.PortHandler
 	ReferenceHandler reference.ReferenceHandler
 	VesselHandler     *vessel.VesselHandler
+	CargoHandler      *cargo.CargoHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -72,6 +74,7 @@ func SetupRouter(cfg *RouterConfig) {
 
 			users := master.Group("/users")
 			{
+				users.GET("/stats", cfg.UserHandler.GetStats)
 				users.GET("", cfg.UserHandler.FindAll)
 				users.POST("/search", cfg.UserHandler.Search)
 				users.GET("/:id", cfg.UserHandler.FindByID)
@@ -115,8 +118,19 @@ func SetupRouter(cfg *RouterConfig) {
 				customer.DELETE("/:id", cfg.CustomerHandler.DeleteCustomer)
 			}
 
+			barang := master.Group("/barang")
+			{
+				barang.GET("/stats", cfg.CargoHandler.GetStats)
+				barang.POST("/search", cfg.CargoHandler.Search)
+				barang.POST("", cfg.CargoHandler.Create)
+				barang.GET("/:id", cfg.CargoHandler.GetByID)
+				barang.PUT("/:id", cfg.CargoHandler.Update)
+				barang.DELETE("/:id", cfg.CargoHandler.Delete)
+			}
+
 			vessel := master.Group("/vessel")
 			{
+				vessel.GET("/stats", cfg.VesselHandler.GetStats)
 				vessel.POST("/search", cfg.VesselHandler.Search)
 				vessel.POST("", cfg.VesselHandler.Create)
 				vessel.GET("/:id", cfg.VesselHandler.GetByID)

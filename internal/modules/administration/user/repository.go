@@ -17,6 +17,7 @@ type UserRepository interface {
 	Update(ctx context.Context, id uint64, user *User) error
 	Delete(ctx context.Context, id uint64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]User, helper.PaginationMeta, error)
+	GetStats(ctx context.Context) (*UserStatsResponse, error)
 }
 
 type userRepository struct{ db *gorm.DB }
@@ -121,4 +122,30 @@ func (r *userRepository) Search(ctx context.Context, param helper.PaginationQuer
 	var rows []User
 	meta, err := helper.GetDynamicPaginatedNativeData(r.db.WithContext(ctx), config, param, &rows)
 	return rows, meta, err
+}
+
+func (r *userRepository) GetStats(ctx context.Context) (*UserStatsResponse, error) {
+	var stats UserStatsResponse
+
+	// Total Users
+	if err := r.db.WithContext(ctx).Model(&User{}).Count(&stats.TotalUsers).Error; err != nil {
+		return nil, err
+	}
+
+	// Active Now (status = '1')
+	if err := r.db.WithContext(ctx).Model(&User{}).Where("status = ?", "1").Count(&stats.ActiveNow).Error; err != nil {
+		return nil, err
+	}
+
+	// Admin Count (superuser = true)
+	if err := r.db.WithContext(ctx).Model(&User{}).Where("superuser = ?", true).Count(&stats.AdminCount).Error; err != nil {
+		return nil, err
+	}
+
+	// Terminal Access (terminal_code IS NOT NULL)
+	if err := r.db.WithContext(ctx).Model(&User{}).Where("terminal_code IS NOT NULL").Count(&stats.TerminalAccess).Error; err != nil {
+		return nil, err
+	}
+
+	return &stats, nil
 }
