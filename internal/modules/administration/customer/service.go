@@ -67,8 +67,6 @@ func (s *customerService) Search(ctx context.Context, query helper.PaginationQue
 			"bank_code",
 			"bank_account_idr",
 			"foreign_currency_account",
-			"start_date",
-			"end_date",
 			"program_name",
 			"status",
 			"internal_notes",
@@ -168,8 +166,6 @@ func (s *customerService) Create(ctx context.Context, c *Customer) error {
 			bank_code,
 			bank_account_idr,
 			foreign_currency_account,
-			start_date,
-			end_date,
 			program_name,
 			status,
 			internal_notes,
@@ -177,7 +173,7 @@ func (s *customerService) Create(ctx context.Context, c *Customer) error {
 			creation_by,
 			last_updated_date,
 			last_updated_by
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
 	`
 
@@ -232,8 +228,6 @@ func (s *customerService) Create(ctx context.Context, c *Customer) error {
 			c.BankCode,
 			c.BankAccountIDR,
 			c.ForeignCurrencyAccount,
-			c.StartDate,
-			c.EndDate,
 			c.ProgramName,
 			c.Status,
 			c.InternalNotes,
@@ -287,8 +281,6 @@ func (s *customerService) Update(ctx context.Context, id uint64, c *Customer) er
 			bank_code = ?,
 			bank_account_idr = ?,
 			foreign_currency_account = ?,
-			start_date = ?,
-			end_date = ?,
 			program_name = ?,
 			status = ?,
 			internal_notes = ?,
@@ -340,8 +332,6 @@ func (s *customerService) Update(ctx context.Context, id uint64, c *Customer) er
 		c.BankCode,
 		c.BankAccountIDR,
 		c.ForeignCurrencyAccount,
-		c.StartDate,
-		c.EndDate,
 		c.ProgramName,
 		c.Status,
 		c.InternalNotes,
@@ -404,8 +394,6 @@ func (s *customerService) FindByID(ctx context.Context, id uint64) (*Customer, e
 			bank_code,
 			bank_account_idr,
 			foreign_currency_account,
-			start_date,
-			end_date,
 			program_name,
 			status,
 			internal_notes,
