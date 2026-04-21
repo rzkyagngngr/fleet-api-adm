@@ -37,10 +37,9 @@ type RouterConfig struct {
 	EquipmentHandler *equipment.EquipmentHandler
 	PortHandler      *pelabuhan.PortHandler
 	ReferenceHandler reference.ReferenceHandler
-	VesselHandler     *vessel.VesselHandler
-	CargoHandler      *cargo.CargoHandler
-	WarehouseHandler *warehouse.WarehouseHandler
 	VesselHandler    *vessel.VesselHandler
+	CargoHandler     *cargo.CargoHandler
+	WarehouseHandler *warehouse.WarehouseHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -152,6 +151,8 @@ func SetupRouter(cfg *RouterConfig) {
 				barang.GET("/:id", cfg.CargoHandler.GetByID)
 				barang.PUT("/:id", cfg.CargoHandler.Update)
 				barang.DELETE("/:id", cfg.CargoHandler.Delete)
+			}
+
 			warehouse := master.Group("/warehouse")
 			{
 				warehouse.POST("/search", cfg.WarehouseHandler.SearchWarehouse)
