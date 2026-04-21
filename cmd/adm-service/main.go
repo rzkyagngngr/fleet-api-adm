@@ -23,6 +23,8 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/cargo"
+	"omniport-api/internal/modules/administration/branch"
+	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -56,6 +58,8 @@ func main() {
 	referenceRepo := reference.NewReferenceRepository(db)
 	vesselRepo := vessel.NewVesselRepository(db)
 	cargoRepo := cargo.NewCargoRepository(db)
+	branchRepo := branch.NewBranchRepository(db)
+	terminalRepo := terminal.NewTerminalRepository(db)
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, jwtUtil)
@@ -66,6 +70,8 @@ func main() {
 	referenceService := reference.NewReferenceService(referenceRepo)
 	vesselService := vessel.NewVesselService(vesselRepo)
 	cargoService := cargo.NewCargoService(cargoRepo)
+	branchService := branch.NewBranchService(branchRepo)
+	terminalService := terminal.NewTerminalService(terminalRepo, branchRepo)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -76,6 +82,8 @@ func main() {
 	referenceHandler := reference.NewReferenceHandler(referenceService)
 	vesselHandler := vessel.NewVesselHandler(vesselService)
 	cargoHandler := cargo.NewCargoHandler(cargoService)
+	branchHandler := branch.NewBranchHandler(branchService, userService)
+	terminalHandler := terminal.NewTerminalHandler(terminalService, userService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -94,6 +102,8 @@ func main() {
 		ReferenceHandler: referenceHandler,
 		VesselHandler:    vesselHandler,
 		CargoHandler:     cargoHandler,
+		BranchHandler:    branchHandler,
+		TerminalHandler:  terminalHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)

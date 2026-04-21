@@ -25,6 +25,7 @@ type User struct {
 	ApplicationURL         string     `gorm:"column:application_url" json:"application_url"`
 	AccessStatus           *int64     `gorm:"column:access_status" json:"access_status"`
 	CompanyCode            string     `gorm:"column:company_code" json:"company_code"`
+	CompanyName            string     `gorm:"column:company_name" json:"company_name"`
 	AccessUpdatedAt        *time.Time `gorm:"column:access_updated_at" json:"access_updated_at"`
 	LastLoginAt            *time.Time `gorm:"column:last_login_at" json:"last_login_at"`
 	PersonnelArea          string     `gorm:"column:personnel_area" json:"personnel_area"`
@@ -41,21 +42,24 @@ func (User) TableName() string { return "posm_users" }
 
 func ToResponse(u *User) UserResponse {
 	return UserResponse{
-		ID:           u.ID,
-		EmployeeID:   u.EmployeeID,
-		FullName:     u.FullName,
-		JobTitle:     u.JobTitle,
-		Email:        u.Email,
-		PhoneNumber:  u.PhoneNumber,
-		SubUnitName:  u.SubUnitName,
-		Status:       u.Status,
-		BranchCode:   u.BranchCode,
-		BranchName:   u.BranchName,
-		TerminalCode: u.TerminalCode,
-		TerminalName: u.TerminalName,
-		RoleID:       u.RoleID,
-		Superuser:    u.Superuser,
-		CreationDate: u.CreationDate,
-		LastLoginAt:  u.LastLoginAt,
+		ID:              u.ID,
+		EmployeeID:      u.EmployeeID,
+		FullName:        u.FullName,
+		JobTitle:        u.JobTitle,
+		Email:           u.Email,
+		PhoneNumber:     u.PhoneNumber,
+		SubUnitName:     u.SubUnitName,
+		Status:          u.Status,
+		BranchCode:      u.BranchCode,
+		BranchName:      u.BranchName,
+		TerminalCode:    u.TerminalCode,
+		TerminalName:    u.TerminalName,
+		RoleID:          u.RoleID,
+		RoleDescription: u.RoleDescription,
+		CompanyCode:     u.CompanyCode,
+		CompanyName:     u.CompanyName,
+		Superuser:       u.Superuser,
+		CreationDate:    u.CreationDate,
+		LastLoginAt:     u.LastLoginAt,
 	}
 }

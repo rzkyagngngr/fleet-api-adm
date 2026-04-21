@@ -37,7 +37,12 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*User, 
 }
 func (r *userRepository) FindByID(ctx context.Context, id uint64) (*User, error) {
 	var u User
-	err := r.db.WithContext(ctx).First(&u, id).Error
+	err := r.db.WithContext(ctx).
+		Table("adm.posm_users").
+		Select("adm.posm_users.*, c.company_name").
+		Joins("LEFT JOIN adm.posm_companies c ON adm.posm_users.company_code = c.company_code").
+		Where("adm.posm_users.id = ?", id).
+		First(&u).Error
 	if err != nil {
 		return nil, err
 	}
@@ -86,32 +91,32 @@ func (r *userRepository) Delete(ctx context.Context, id uint64) error {
 
 func (r *userRepository) Search(ctx context.Context, param helper.PaginationQuery) ([]User, helper.PaginationMeta, error) {
 	config := helper.NativePaginationConfig{
-		TableName: "adm.posm_users",
+		TableName: "adm.posm_users u LEFT JOIN adm.posm_roles r ON u.role_id = r.hak_akses_id LEFT JOIN adm.posm_companies c ON u.company_code = c.company_code",
 		SelectColumns: []string{
-			"id", "access_id", "role_id", "application_id", "user_id", "employee_id",
-			"full_name", "job_title", "email", "phone_number", "sub_unit_name",
-			"status", "branch_code", "branch_name", "terminal_code", "terminal_name",
-			"profit_center", "access_status", "company_code", "superuser",
-			"creation_date", "last_login_at",
+			"u.id", "u.access_id", "u.role_id", "u.application_id", "u.user_id", "u.employee_id",
+			"u.full_name", "u.job_title", "u.email", "u.phone_number", "u.sub_unit_name",
+			"u.status", "u.branch_code", "u.branch_name", "u.terminal_code", "u.terminal_name",
+			"u.profit_center", "u.access_status", "u.company_code", "u.superuser",
+			"u.creation_date", "u.last_login_at", "r.hak_akses_nama as role_description", "c.company_name",
 		},
 		SearchColumns: []string{
-			"employee_id", "full_name", "email", "job_title", "phone_number",
+			"u.employee_id", "u.full_name", "u.email", "u.job_title", "u.phone_number",
 		},
 		FilterableColumns: map[string]string{
-			"employee_id":   "employee_id",
-			"full_name":     "full_name",
-			"status":        "status",
-			"role_id":       "role_id",
-			"branch_code":   "branch_code",
-			"terminal_code": "terminal_code",
-			"company_code":  "company_code",
-			"superuser":     "superuser",
+			"employee_id":   "u.employee_id",
+			"full_name":     "u.full_name",
+			"status":        "u.status",
+			"role_id":       "u.role_id",
+			"branch_code":   "u.branch_code",
+			"terminal_code": "u.terminal_code",
+			"company_code":  "u.company_code",
+			"superuser":     "u.superuser",
 		},
 		SortableColumns: map[string]string{
-			"id":            "id",
-			"employee_id":   "employee_id",
-			"full_name":     "full_name",
-			"creation_date": "creation_date",
+			"id":            "u.id",
+			"employee_id":   "u.employee_id",
+			"full_name":     "u.full_name",
+			"creation_date": "u.creation_date",
 		},
 		DefaultSortBy:    "id",
 		DefaultSortOrder: "DESC",

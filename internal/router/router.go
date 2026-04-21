@@ -12,6 +12,8 @@ import (
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/branch"
+	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 
@@ -34,6 +36,8 @@ type RouterConfig struct {
 	ReferenceHandler reference.ReferenceHandler
 	VesselHandler     *vessel.VesselHandler
 	CargoHandler      *cargo.CargoHandler
+	BranchHandler     *branch.BranchHandler
+	TerminalHandler   *terminal.TerminalHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -136,6 +140,24 @@ func SetupRouter(cfg *RouterConfig) {
 				vessel.GET("/:id", cfg.VesselHandler.GetByID)
 				vessel.PUT("/:id", cfg.VesselHandler.Update)
 				vessel.DELETE("/:id", cfg.VesselHandler.Delete)
+			}
+
+			branches := master.Group("/branches")
+			{
+				branches.GET("/stats", cfg.BranchHandler.GetStats)
+				branches.POST("/search", cfg.BranchHandler.Search)
+				branches.POST("", cfg.BranchHandler.Create)
+				branches.PUT("/:id", cfg.BranchHandler.Update)
+				branches.DELETE("/:id", cfg.BranchHandler.Delete)
+			}
+
+			terminals := master.Group("/terminals")
+			{
+				terminals.GET("/stats", cfg.TerminalHandler.GetStats)
+				terminals.POST("/search", cfg.TerminalHandler.Search)
+				terminals.POST("", cfg.TerminalHandler.Create)
+				terminals.PUT("/:id", cfg.TerminalHandler.Update)
+				terminals.DELETE("/:id", cfg.TerminalHandler.Delete)
 			}
 		}
 
