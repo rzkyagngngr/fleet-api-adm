@@ -32,8 +32,6 @@ type Customer struct {
 	BankCode               *string    `gorm:"column:bank_code;size:50" json:"bank_code"`
 	BankAccountIDR         *string    `gorm:"column:bank_account_idr;size:50" json:"bank_account_idr"`
 	ForeignCurrencyAccount *string    `gorm:"column:foreign_currency_account;size:50" json:"foreign_currency_account"`
-	StartDate              *time.Time `gorm:"column:start_date" json:"start_date"`
-	EndDate                *time.Time `gorm:"column:end_date" json:"end_date"`
 	ProgramName            *string    `gorm:"column:program_name;size:50" json:"program_name"`
 	Status                 *int       `gorm:"column:status" json:"status"`
 	InternalNotes          *string    `gorm:"column:internal_notes" json:"internal_notes"`
