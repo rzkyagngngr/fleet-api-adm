@@ -19,6 +19,7 @@ type UserService interface {
 	DeleteUser(ctx context.Context, id uint64) error
 	Search(ctx context.Context, query helper.PaginationQuery) ([]UserResponse, helper.PaginationMeta, error)
 	GetUserStats(ctx context.Context) (*UserStatsResponse, error)
+	GetMyLocations(ctx context.Context, userID uint64) (*UserLocationsResponse, error)
 }
 
 type userService struct{ userRepo UserRepository }
@@ -201,4 +202,16 @@ func (s *userService) Search(ctx context.Context, query helper.PaginationQuery) 
 
 func (s *userService) GetUserStats(ctx context.Context) (*UserStatsResponse, error) {
 	return s.userRepo.GetStats(ctx)
+}
+
+func (s *userService) GetMyLocations(ctx context.Context, userID uint64) (*UserLocationsResponse, error) {
+	branches, terminals, err := s.userRepo.GetUserLocations(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UserLocationsResponse{
+		Branches:  branches,
+		Terminals: terminals,
+	}, nil
 }

@@ -103,3 +103,19 @@ func (r SearchUsersRequest) ToPaginationQuery() helper.PaginationQuery {
 		Download: r.Download,
 	}
 }
+
+type UserLocationBranch struct {
+	BranchCode string `json:"branch_code"`
+	BranchName string `json:"branch_name"`
+}
+
+type UserLocationTerminal struct {
+	TerminalCode string `json:"terminal_code"`
+	TerminalName string `json:"terminal_name"`
+	BranchCode   string `json:"branch_code"`
+}
+
+type UserLocationsResponse struct {
+	Branches  []UserLocationBranch   `json:"branches"`
+	Terminals []UserLocationTerminal `json:"terminals"`
+}

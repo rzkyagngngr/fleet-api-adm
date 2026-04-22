@@ -72,6 +72,7 @@ func SetupRouter(cfg *RouterConfig) {
 		v1.POST("/auth/change-terminal", cfg.AuthHandler.ChangeTerminal)
 
 		v1.GET("/users/profile", cfg.UserHandler.GetProfile)
+		v1.GET("/users/me/locations", cfg.UserHandler.GetMyLocations)
 
 		master := v1.Group("/master")
 		{

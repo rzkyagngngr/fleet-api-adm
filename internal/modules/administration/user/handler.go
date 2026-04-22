@@ -42,6 +42,32 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "profile retrieved successfully", profile)
 }
 
+// GetMyLocations godoc
+// @Summary Get user locations
+// @Description Retrieve mapped branches and terminals for the authenticated user
+// @Tags users
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} helper.Response{data=UserLocationsResponse}
+// @Failure 401 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /users/me/locations [get]
+func (h *UserHandler) GetMyLocations(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	locations, err := h.userService.GetMyLocations(c.Request.Context(), userID)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to get user locations")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "user locations retrieved successfully", locations)
+}
+
 // FindAll godoc
 // @Summary Get all users
 // @Description Retrieve paginated user list
