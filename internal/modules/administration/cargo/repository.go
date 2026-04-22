@@ -13,7 +13,7 @@ type CargoRepository interface {
 	Update(ctx context.Context, id uint64, cargo *Cargo) error
 	Delete(ctx context.Context, id uint64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]Cargo, helper.PaginationMeta, error)
-	GetStats(ctx context.Context) (*CargoStatsResponse, error)
+	GetStats(ctx context.Context, branchCode, terminalCode int) (*CargoStatsResponse, error)
 }
 
 type cargoRepository struct{ db *gorm.DB }
@@ -59,6 +59,8 @@ func (r *cargoRepository) Search(ctx context.Context, param helper.PaginationQue
 			"cargo_group":        "cargo_group",
 			"is_active":          "is_active",
 			"is_dangerous_goods": "is_dangerous_goods",
+			"branch_code":        "branch_code",
+			"terminal_code":      "terminal_code",
 		},
 		SortableColumns: map[string]string{
 			"id":         "id",
@@ -76,21 +78,29 @@ func (r *cargoRepository) Search(ctx context.Context, param helper.PaginationQue
 	return rows, meta, err
 }
 
-func (r *cargoRepository) GetStats(ctx context.Context) (*CargoStatsResponse, error) {
+func (r *cargoRepository) GetStats(ctx context.Context, branchCode, terminalCode int) (*CargoStatsResponse, error) {
 	var stats CargoStatsResponse
 
+	query := r.db.WithContext(ctx).Model(&Cargo{})
+	if branchCode > 0 {
+		query = query.Where("branch_code = ?", branchCode)
+	}
+	if terminalCode > 0 {
+		query = query.Where("terminal_code = ?", terminalCode)
+	}
+
 	// Total Cargo Masters
-	if err := r.db.WithContext(ctx).Model(&Cargo{}).Count(&stats.TotalCargoMasters).Error; err != nil {
+	if err := query.Count(&stats.TotalCargoMasters).Error; err != nil {
 		return nil, err
 	}
 
-	// Active Commodities (is_active = '1')
-	if err := r.db.WithContext(ctx).Model(&Cargo{}).Where("is_active = ?", "1").Count(&stats.ActiveCommodities).Error; err != nil {
+	// Active Commodities (is_active = '1' or 'Y')
+	if err := query.Where("is_active IN (?, ?)", "1", "Y").Count(&stats.ActiveCommodities).Error; err != nil {
 		return nil, err
 	}
 
 	// Hazmat Registry (cargo_imdg_code IS NOT NULL AND > 0)
-	if err := r.db.WithContext(ctx).Model(&Cargo{}).Where("cargo_imdg_code > ?", 0).Count(&stats.HazmatRegistry).Error; err != nil {
+	if err := query.Where("cargo_imdg_code > ?", 0).Count(&stats.HazmatRegistry).Error; err != nil {
 		return nil, err
 	}
 

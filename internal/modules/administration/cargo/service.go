@@ -13,7 +13,7 @@ type CargoService interface {
 	UpdateCargo(ctx context.Context, id uint64, req *CargoRequest, adminEmp string) error
 	DeleteCargo(ctx context.Context, id uint64) error
 	Search(ctx context.Context, query helper.PaginationQuery) ([]CargoResponse, helper.PaginationMeta, error)
-	GetStats(ctx context.Context) (*CargoStatsResponse, error)
+	GetStats(ctx context.Context, branchCode, terminalCode int) (*CargoStatsResponse, error)
 }
 
 type cargoService struct{ repo CargoRepository }
@@ -196,6 +196,6 @@ func (s *cargoService) Search(ctx context.Context, query helper.PaginationQuery)
 	return res, meta, nil
 }
 
-func (s *cargoService) GetStats(ctx context.Context) (*CargoStatsResponse, error) {
-	return s.repo.GetStats(ctx)
+func (s *cargoService) GetStats(ctx context.Context, branchCode, terminalCode int) (*CargoStatsResponse, error) {
+	return s.repo.GetStats(ctx, branchCode, terminalCode)
 }
