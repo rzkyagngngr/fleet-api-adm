@@ -25,6 +25,7 @@ import (
 	"omniport-api/internal/modules/administration/cargo"
 	"omniport-api/internal/modules/administration/branch"
 	"omniport-api/internal/modules/administration/terminal"
+	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -60,6 +61,7 @@ func main() {
 	cargoRepo := cargo.NewCargoRepository(db)
 	branchRepo := branch.NewBranchRepository(db)
 	terminalRepo := terminal.NewTerminalRepository(db)
+	companyRepo := company.NewCompanyRepository(db)
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, jwtUtil)
@@ -72,6 +74,7 @@ func main() {
 	cargoService := cargo.NewCargoService(cargoRepo)
 	branchService := branch.NewBranchService(branchRepo)
 	terminalService := terminal.NewTerminalService(terminalRepo, branchRepo)
+	companyService := company.NewCompanyService(companyRepo)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -82,8 +85,12 @@ func main() {
 	referenceHandler := reference.NewReferenceHandler(referenceService)
 	vesselHandler := vessel.NewVesselHandler(vesselService)
 	cargoHandler := cargo.NewCargoHandler(cargoService)
-	branchHandler := branch.NewBranchHandler(branchService, userService)
-	terminalHandler := terminal.NewTerminalHandler(terminalService, userService)
+
+	// Break circular dependency using adapter
+	userAdapter := &userProviderAdapter{s: userService}
+	branchHandler := branch.NewBranchHandler(branchService, userAdapter)
+	terminalHandler := terminal.NewTerminalHandler(terminalService, userAdapter)
+	companyHandler := company.NewCompanyHandler(companyService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -104,6 +111,7 @@ func main() {
 		CargoHandler:     cargoHandler,
 		BranchHandler:    branchHandler,
 		TerminalHandler:  terminalHandler,
+		CompanyHandler:   companyHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)
@@ -159,4 +167,13 @@ func parseLogLevel(level string) slog.Level {
 	default:
 		return slog.LevelInfo
 	}
+}
+
+// userProviderAdapter helps breaking circular dependency between user and branch/terminal
+type userProviderAdapter struct {
+	s user.UserService
+}
+
+func (a *userProviderAdapter) GetProfile(ctx context.Context, userID uint64) (any, error) {
+	return a.s.GetProfile(ctx, userID)
 }

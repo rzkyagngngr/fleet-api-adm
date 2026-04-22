@@ -5,11 +5,12 @@ import (
 )
 
 type BranchRequest struct {
-	BranchCode  int64  `json:"branch_code" binding:"required"`
-	BranchName  string `json:"branch_name" binding:"required"`
-	KdPort      string `json:"kd_port"`
-	Address     string `json:"address"`
-	Status      string `json:"status"`
+	BranchCode   string `json:"branch_code" binding:"required"`
+	BranchName   string `json:"branch_name" binding:"required"`
+	KdPort       string `json:"kd_port"`
+	RegionalArea string `json:"regional_area"`
+	ProfitCenter string `json:"profit_center"`
+	Status       string `json:"status"`
 }
 
 type SearchBranchRequest struct {

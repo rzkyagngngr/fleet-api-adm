@@ -14,9 +14,13 @@ type UserResponse struct {
 	PhoneNumber     string     `json:"phone_number"`
 	SubUnitName     string     `json:"sub_unit_name"`
 	Status          string     `json:"status"`
-	BranchCode      *int64     `json:"branch_code"`
+	BranchCodes     []string   `json:"branch_codes"`
+	BranchNames     []string   `json:"branch_names"`
+	BranchCode      string     `json:"branch_code"`
 	BranchName      string     `json:"branch_name"`
-	TerminalCode    *int64     `json:"terminal_code"`
+	TerminalCodes   []string   `json:"terminal_codes"`
+	TerminalNames   []string   `json:"terminal_names"`
+	TerminalCode    string     `json:"terminal_code"`
 	TerminalName    string     `json:"terminal_name"`
 	RoleID          *int64     `json:"role_id"`
 	RoleDescription string     `json:"role_description"`
@@ -25,6 +29,10 @@ type UserResponse struct {
 	Superuser       bool       `json:"superuser"`
 	CreationDate    time.Time  `json:"creation_date"`
 	LastLoginAt     *time.Time `json:"last_login_at"`
+}
+
+func (r UserResponse) GetCompanyData() (string, string) {
+	return r.CompanyCode, r.CompanyName
 }
 
 type UserStatsResponse struct {
@@ -61,10 +69,10 @@ type UserRequest struct {
 	JobTitle         string `json:"job_title"`
 	PhoneNumber      string `json:"phone_number"`
 	SubUnitName      string `json:"sub_unit_name"`
-	BranchCode       *int64 `json:"branch_code"`
-	BranchName       string `json:"branch_name"`
-	TerminalCode     *int64 `json:"terminal_code"`
-	TerminalName     string `json:"terminal_name"`
+	BranchCodes      []string `json:"branch_codes"`
+	BranchName       string   `json:"branch_name"`
+	TerminalCodes    []string `json:"terminal_codes"`
+	TerminalName     string   `json:"terminal_name"`
 	CompanyCode      string `json:"company_code"`
 	ProfitCenter     string `json:"profit_center"`
 	PersonnelArea    string `json:"personnel_area"`

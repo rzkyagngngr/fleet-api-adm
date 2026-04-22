@@ -113,6 +113,25 @@ func (s *authService) Login(ctx context.Context, req *LoginRequest) (*AuthRespon
 		return nil, errors.New("invalid employee ID or password")
 	}
 
+	// Re-fetch via FindByID to load full M2M relations (Branches & Terminals with names)
+	uFull, err := s.userRepo.FindByID(ctx, u.ID)
+	if err != nil {
+		return nil, err
+	}
+	u = uFull
+
+	// Auto-assign first accessible branch as active if not yet set
+	if len(u.Branches) > 0 {
+		u.BranchCode = u.Branches[0].BranchCode
+		u.BranchName = u.Branches[0].BranchName
+	}
+
+	// Auto-assign first accessible terminal as active if not yet set
+	if len(u.Terminals) > 0 {
+		u.TerminalCode = u.Terminals[0].TerminalCode
+		u.TerminalName = u.Terminals[0].TerminalName
+	}
+
 	now := time.Now()
 	u.LastLoginAt = &now
 

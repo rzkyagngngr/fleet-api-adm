@@ -19,6 +19,7 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/administration/company"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -44,6 +45,7 @@ type RouterConfig struct {
 	BranchHandler    *branch.BranchHandler
 	TerminalHandler  *terminal.TerminalHandler
 	WarehouseHandler *warehouse.WarehouseHandler
+	CompanyHandler   *company.CompanyHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -183,6 +185,15 @@ func SetupRouter(cfg *RouterConfig) {
 				branches.POST("", cfg.BranchHandler.Create)
 				branches.PUT("/:id", cfg.BranchHandler.Update)
 				branches.DELETE("/:id", cfg.BranchHandler.Delete)
+			}
+
+			companies := master.Group("/companies")
+			{
+				companies.POST("/search", cfg.CompanyHandler.Search)
+				companies.POST("", cfg.CompanyHandler.Create)
+				companies.GET("/:id", cfg.CompanyHandler.GetByID)
+				companies.PUT("/:id", cfg.CompanyHandler.Update)
+				companies.DELETE("/:id", cfg.CompanyHandler.Delete)
 			}
 
 			terminals := master.Group("/terminals")

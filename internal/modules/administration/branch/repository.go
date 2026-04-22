@@ -10,11 +10,11 @@ import (
 type BranchRepository interface {
 	Create(ctx context.Context, branch *Branch) error
 	GetByID(ctx context.Context, id uint64) (*Branch, error)
-	GetByCode(ctx context.Context, code int64) (*Branch, error)
+	GetByCode(ctx context.Context, code string) (*Branch, error)
 	Update(ctx context.Context, id uint64, branch *Branch) error
 	Delete(ctx context.Context, id uint64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]Branch, helper.PaginationMeta, error)
-	GetStats(ctx context.Context) (*BranchStats, error)
+	GetStats(ctx context.Context, companyCode string) (*BranchStats, error)
 }
 
 type branchRepository struct {
@@ -35,7 +35,7 @@ func (r *branchRepository) GetByID(ctx context.Context, id uint64) (*Branch, err
 	return &b, err
 }
 
-func (r *branchRepository) GetByCode(ctx context.Context, code int64) (*Branch, error) {
+func (r *branchRepository) GetByCode(ctx context.Context, code string) (*Branch, error) {
 	var b Branch
 	err := r.db.WithContext(ctx).Where("branch_code = ?", code).First(&b).Error
 	return &b, err
@@ -54,7 +54,7 @@ func (r *branchRepository) Search(ctx context.Context, param helper.PaginationQu
 		TableName: "adm.posm_branches",
 		SelectColumns: []string{
 			"id", "branch_code", "branch_name", "company_code", "company_name",
-			"kd_port", "address", "status", "created_by", "created_date",
+			"kd_port", "regional_area", "profit_center", "status", "created_by", "created_date",
 		},
 		SearchColumns: []string{"branch_code::text", "branch_name", "company_name", "kd_port"},
 		FilterableColumns: map[string]string{
@@ -74,9 +74,18 @@ func (r *branchRepository) Search(ctx context.Context, param helper.PaginationQu
 	return rows, meta, err
 }
 
-func (r *branchRepository) GetStats(ctx context.Context) (*BranchStats, error) {
+func (r *branchRepository) GetStats(ctx context.Context, companyCode string) (*BranchStats, error) {
 	var stats BranchStats
-	r.db.WithContext(ctx).Model(&Branch{}).Count(&stats.TotalBranches)
-	r.db.WithContext(ctx).Model(&Branch{}).Where("status = ?", "1").Count(&stats.ActiveBranches)
+	db := r.db.WithContext(ctx).Model(&Branch{})
+	if companyCode != "" {
+		db = db.Where("company_code = ?", companyCode)
+	}
+	db.Count(&stats.TotalBranches)
+	
+	dbActive := r.db.WithContext(ctx).Model(&Branch{}).Where("status = ?", "1")
+	if companyCode != "" {
+		dbActive = dbActive.Where("company_code = ?", companyCode)
+	}
+	dbActive.Count(&stats.ActiveBranches)
 	return &stats, nil
 }

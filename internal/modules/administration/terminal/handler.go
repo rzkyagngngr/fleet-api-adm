@@ -1,36 +1,48 @@
 package terminal
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
-	"omniport-api/internal/modules/administration/user"
 
 	"github.com/gin-gonic/gin"
 )
 
-type TerminalHandler struct {
-	service     TerminalService
-	userService user.UserService
+type UserProvider interface {
+	GetProfile(ctx context.Context, userID uint64) (any, error)
 }
 
-func NewTerminalHandler(service TerminalService, userService user.UserService) *TerminalHandler {
+type TerminalHandler struct {
+	service      TerminalService
+	userProvider UserProvider
+}
+
+func NewTerminalHandler(service TerminalService, userProvider UserProvider) *TerminalHandler {
 	return &TerminalHandler{
-		service:     service,
-		userService: userService,
+		service:      service,
+		userProvider: userProvider,
 	}
 }
 
 func (h *TerminalHandler) getCompanyInfo(c *gin.Context) (string, string, string, error) {
 	userID := middleware.GetUserID(c)
-	profile, err := h.userService.GetProfile(c.Request.Context(), userID)
+	res, err := h.userProvider.GetProfile(c.Request.Context(), userID)
 	if err != nil {
 		return "", "", "", err
 	}
+
+	var compCode, compName string
+	if m, ok := res.(interface{ GetCompanyData() (string, string) }); ok {
+		compCode, compName = m.GetCompanyData()
+	} else {
+		return "", "", "", err
+	}
+
 	empID, _ := c.Get(middleware.EmployeeIDKey)
-	return profile.CompanyCode, profile.CompanyName, empID.(string), nil
+	return compCode, compName, empID.(string), nil
 }
 
 func (h *TerminalHandler) Search(c *gin.Context) {
@@ -100,7 +112,13 @@ func (h *TerminalHandler) Delete(c *gin.Context) {
 }
 
 func (h *TerminalHandler) GetStats(c *gin.Context) {
-	res, err := h.service.GetStats(c.Request.Context())
+	compCode, _, _, err := h.getCompanyInfo(c)
+	if err != nil {
+		// Fallback to query param for superusers or special cases
+		compCode = c.Query("company_code")
+	}
+
+	res, err := h.service.GetStats(c.Request.Context(), compCode)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

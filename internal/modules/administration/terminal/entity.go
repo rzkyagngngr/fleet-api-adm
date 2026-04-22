@@ -4,9 +4,9 @@ import "time"
 
 type Terminal struct {
 	ID                uint64     `gorm:"primaryKey;autoIncrement" json:"id"`
-	BranchCode        int64      `gorm:"column:branch_code;not null" json:"branch_code"`
+	BranchCode        string     `gorm:"column:branch_code;not null" json:"branch_code"`
 	BranchName        string     `gorm:"column:branch_name" json:"branch_name"`
-	TerminalCode      int64      `gorm:"column:terminal_code;unique;not null" json:"terminal_code"`
+	TerminalCode      string     `gorm:"column:terminal_code;unique;not null" json:"terminal_code"`
 	TerminalName      string     `gorm:"column:terminal_name" json:"terminal_name"`
 	GoLiveDate        *time.Time `gorm:"column:go_live_date" json:"go_live_date"`
 	IsGoLive          string     `gorm:"column:is_go_live;size:2" json:"is_go_live"`

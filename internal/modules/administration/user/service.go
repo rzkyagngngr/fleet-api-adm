@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"omniport-api/internal/helper"
+	"omniport-api/internal/modules/administration/branch"
+	"omniport-api/internal/modules/administration/terminal"
 )
 
 type UserService interface {
@@ -82,9 +84,6 @@ func (s *userService) CreateUser(ctx context.Context, req *UserRequest, adminEmp
 		JobTitle:         req.JobTitle,
 		PhoneNumber:      req.PhoneNumber,
 		SubUnitName:      req.SubUnitName,
-		BranchCode:       req.BranchCode,
-		BranchName:       req.BranchName,
-		TerminalCode:     req.TerminalCode,
 		CompanyCode:      req.CompanyCode,
 		ProfitCenter:     req.ProfitCenter,
 		PersonnelArea:    req.PersonnelArea,
@@ -97,6 +96,10 @@ func (s *userService) CreateUser(ctx context.Context, req *UserRequest, adminEmp
 		CreationDate:     time.Now(),
 		CreationBy:       adminEmp,
 	}
+
+	// Populate Associations with Unique Filtering
+	u.Branches = s.extractUniqueBranches(req.BranchCodes)
+	u.Terminals = s.extractUniqueTerminals(req.TerminalCodes)
 
 	return s.userRepo.Create(ctx, u)
 }
@@ -121,10 +124,14 @@ func (s *userService) UpdateUser(ctx context.Context, id uint64, req *UserReques
 	u.JobTitle = req.JobTitle
 	u.PhoneNumber = req.PhoneNumber
 	u.SubUnitName = req.SubUnitName
-	u.BranchCode = req.BranchCode
-	u.BranchName = req.BranchName
-	u.TerminalCode = req.TerminalCode
 	u.CompanyCode = req.CompanyCode
+	
+	// Explicitly clear legacy columns to prevent interference with M2M logic
+	u.BranchCode = ""
+	u.BranchName = ""
+	u.TerminalCode = ""
+	u.TerminalName = ""
+	
 	u.ProfitCenter = req.ProfitCenter
 	u.PersonnelArea = req.PersonnelArea
 	u.PersonnelSubArea = req.PersonnelSubArea
@@ -135,11 +142,39 @@ func (s *userService) UpdateUser(ctx context.Context, id uint64, req *UserReques
 		u.Superuser = *req.Superuser
 	}
 
+	// Populate Associations for Update with Unique Filtering
+	u.Branches = s.extractUniqueBranches(req.BranchCodes)
+	u.Terminals = s.extractUniqueTerminals(req.TerminalCodes)
+
 	now := time.Now()
 	u.LastUpdatedDate = &now
 	u.LastUpdatedBy = adminEmp
 
 	return s.userRepo.Update(ctx, id, u)
+}
+
+func (s *userService) extractUniqueBranches(codes []string) []branch.Branch {
+	var branches []branch.Branch
+	uniqueMap := make(map[string]bool)
+	for _, code := range codes {
+		if code != "" && !uniqueMap[code] {
+			branches = append(branches, branch.Branch{BranchCode: code})
+			uniqueMap[code] = true
+		}
+	}
+	return branches
+}
+
+func (s *userService) extractUniqueTerminals(codes []string) []terminal.Terminal {
+	var terminals []terminal.Terminal
+	uniqueMap := make(map[string]bool)
+	for _, code := range codes {
+		if code != "" && !uniqueMap[code] {
+			terminals = append(terminals, terminal.Terminal{TerminalCode: code})
+			uniqueMap[code] = true
+		}
+	}
+	return terminals
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id uint64) error {
@@ -167,4 +202,3 @@ func (s *userService) Search(ctx context.Context, query helper.PaginationQuery) 
 func (s *userService) GetUserStats(ctx context.Context) (*UserStatsResponse, error) {
 	return s.userRepo.GetStats(ctx)
 }
-

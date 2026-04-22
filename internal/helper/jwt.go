@@ -12,8 +12,8 @@ type Claims struct {
 	Email        string `json:"email"`
 	EmployeeID   string `json:"employee_id"`
 	FullName     string `json:"full_name"`
-	BranchCode   *int64 `json:"branch_code"`
-	TerminalCode *int64 `json:"terminal_code"`
+	BranchCode   string `json:"branch_code"`
+	TerminalCode string `json:"terminal_code"`
 	jwt.RegisteredClaims
 }
 
@@ -26,7 +26,7 @@ func NewJWTUtil(secret string, expiryHours int) *JWTUtil {
 	return &JWTUtil{secret: []byte(secret), expiryHours: expiryHours}
 }
 
-func (j *JWTUtil) GenerateToken(userID uint64, email string, employeeID string, fullName string, branchCode *int64, terminalCode *int64) (string, error) {
+func (j *JWTUtil) GenerateToken(userID uint64, email string, employeeID string, fullName string, branchCode string, terminalCode string) (string, error) {
 	claims := Claims{
 		UserID:       userID,
 		Email:        email,

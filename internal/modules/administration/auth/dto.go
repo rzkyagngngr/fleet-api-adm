@@ -10,9 +10,9 @@ type UserRegisterRequest struct {
 	JobTitle         string `json:"job_title"`
 	PhoneNumber      string `json:"phone_number"`
 	SubUnitName      string `json:"sub_unit_name"`
-	BranchCode       *int64 `json:"branch_code"`
+	BranchCode       string `json:"branch_code"`
 	BranchName       string `json:"branch_name"`
-	TerminalCode     *int64 `json:"terminal_code"`
+	TerminalCode     string `json:"terminal_code"`
 	CompanyCode      string `json:"company_code"`
 	PersonnelArea    string `json:"personnel_area"`
 	PersonnelSubArea string `json:"personnel_sub_area"`
@@ -24,8 +24,8 @@ type LoginRequest struct {
 }
 
 type ChangeTerminalRequest struct {
-	BranchCode   *int64 `json:"branch_code" binding:"required"`
-	TerminalCode *int64 `json:"terminal_code" binding:"required"`
+	BranchCode   string `json:"branch_code" binding:"required"`
+	TerminalCode string `json:"terminal_code" binding:"required"`
 }
 
 type AuthResponse struct {

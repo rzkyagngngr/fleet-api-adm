@@ -1,36 +1,51 @@
 package branch
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
-	"omniport-api/internal/modules/administration/user"
 
 	"github.com/gin-gonic/gin"
 )
 
-type BranchHandler struct {
-	service     BranchService
-	userService user.UserService
+type UserProvider interface {
+	GetProfile(ctx context.Context, userID uint64) (any, error)
 }
 
-func NewBranchHandler(service BranchService, userService user.UserService) *BranchHandler {
+type BranchHandler struct {
+	service      BranchService
+	userProvider UserProvider
+}
+
+func NewBranchHandler(service BranchService, userProvider UserProvider) *BranchHandler {
 	return &BranchHandler{
-		service:     service,
-		userService: userService,
+		service:      service,
+		userProvider: userProvider,
 	}
 }
 
 func (h *BranchHandler) getCompanyInfo(c *gin.Context) (string, string, string, error) {
 	userID := middleware.GetUserID(c)
-	profile, err := h.userService.GetProfile(c.Request.Context(), userID)
+	res, err := h.userProvider.GetProfile(c.Request.Context(), userID)
 	if err != nil {
 		return "", "", "", err
 	}
+
+	// Use reflection or type assertion to get fields without importing user package
+	// Since we know the underlying type will be UserResponse
+	var compCode, compName string
+	if m, ok := res.(interface{ GetCompanyData() (string, string) }); ok {
+		compCode, compName = m.GetCompanyData()
+	} else {
+		// Fallback or handle error
+		return "", "", "", err
+	}
+
 	empID, _ := c.Get(middleware.EmployeeIDKey)
-	return profile.CompanyCode, profile.CompanyName, empID.(string), nil
+	return compCode, compName, empID.(string), nil
 }
 
 func (h *BranchHandler) Search(c *gin.Context) {
@@ -100,7 +115,14 @@ func (h *BranchHandler) Delete(c *gin.Context) {
 }
 
 func (h *BranchHandler) GetStats(c *gin.Context) {
-	res, err := h.service.GetStats(c.Request.Context())
+	compCode, _, _, err := h.getCompanyInfo(c)
+	if err != nil {
+		// If fails to get company info (e.g. superuser without company), 
+		// fallback to query param or just show empty/all
+		compCode = c.Query("company_code")
+	}
+
+	res, err := h.service.GetStats(c.Request.Context(), compCode)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return

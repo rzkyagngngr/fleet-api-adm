@@ -6,8 +6,8 @@ import (
 )
 
 type TerminalRequest struct {
-	BranchCode    int64      `json:"branch_code" binding:"required"`
-	TerminalCode  int64      `json:"terminal_code" binding:"required"`
+	BranchCode    string     `json:"branch_code" binding:"required"`
+	TerminalCode  string     `json:"terminal_code" binding:"required"`
 	TerminalName  string     `json:"terminal_name" binding:"required"`
 	GoLiveDate    *time.Time `json:"go_live_date"`
 	IsGoLive      string     `json:"is_go_live"`
@@ -24,6 +24,8 @@ type TerminalRequest struct {
 	Address       string     `json:"address"`
 	CompanyType   int64      `json:"company_type"`
 	PortCode      string     `json:"port_code"`
+	CompanyCode   string     `json:"company_code"`
+	CompanyName   string     `json:"company_name"`
 }
 
 type SearchTerminalRequest struct {

@@ -15,7 +15,7 @@ type TerminalService interface {
 	Delete(ctx context.Context, id uint64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]Terminal, helper.PaginationMeta, error)
 	GetByID(ctx context.Context, id uint64) (*Terminal, error)
-	GetStats(ctx context.Context) (*TerminalStats, error)
+	GetStats(ctx context.Context, companyCode string) (*TerminalStats, error)
 }
 
 type terminalService struct {
@@ -33,6 +33,16 @@ func NewTerminalService(repo TerminalRepository, branchRepo branch.BranchReposit
 func (s *terminalService) Create(ctx context.Context, req *TerminalRequest, companyCode, companyName, userEmp string) error {
 	if _, err := s.repo.GetByCode(ctx, req.TerminalCode); err == nil {
 		return errors.New("terminal code already exists")
+	}
+
+	// Prefer company info from request if available (passed from frontend based on branch)
+	finalCompCode := companyCode
+	if req.CompanyCode != "" {
+		finalCompCode = req.CompanyCode
+	}
+	finalCompName := companyName
+	if req.CompanyName != "" {
+		finalCompName = req.CompanyName
 	}
 
 	// Smart lookup: resolve branch name
@@ -56,8 +66,8 @@ func (s *terminalService) Create(ctx context.Context, req *TerminalRequest, comp
 		VersionCode:   req.VersionCode,
 		VersionName:   req.VersionName,
 		DocumentCode:  req.DocumentCode,
-		CompanyCode:   companyCode,
-		CompanyName:   companyName,
+		CompanyCode:   finalCompCode,
+		CompanyName:   finalCompName,
 		VesselVersion: req.VesselVersion,
 		LogoURL:       req.LogoURL,
 		LogoMiniURL:   req.LogoMiniURL,
@@ -78,10 +88,20 @@ func (s *terminalService) Update(ctx context.Context, id uint64, req *TerminalRe
 		return errors.New("terminal not found")
 	}
 
-	// Update branch name if branch code changed
+	// Update branch name and company info if branch code changed
 	if t.BranchCode != req.BranchCode {
 		if b, err := s.branchRepo.GetByCode(ctx, req.BranchCode); err == nil {
 			t.BranchName = b.BranchName
+			t.CompanyCode = b.CompanyCode
+			t.CompanyName = b.CompanyName
+		}
+	} else {
+		// Even if branch didn't change, update company info if provided in request
+		if req.CompanyCode != "" {
+			t.CompanyCode = req.CompanyCode
+		}
+		if req.CompanyName != "" {
+			t.CompanyName = req.CompanyName
 		}
 	}
 
@@ -121,6 +141,6 @@ func (s *terminalService) GetByID(ctx context.Context, id uint64) (*Terminal, er
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *terminalService) GetStats(ctx context.Context) (*TerminalStats, error) {
-	return s.repo.GetStats(ctx)
+func (s *terminalService) GetStats(ctx context.Context, companyCode string) (*TerminalStats, error) {
+	return s.repo.GetStats(ctx, companyCode)
 }

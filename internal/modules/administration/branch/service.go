@@ -14,7 +14,7 @@ type BranchService interface {
 	Delete(ctx context.Context, id uint64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]Branch, helper.PaginationMeta, error)
 	GetByID(ctx context.Context, id uint64) (*Branch, error)
-	GetStats(ctx context.Context) (*BranchStats, error)
+	GetStats(ctx context.Context, companyCode string) (*BranchStats, error)
 }
 
 type branchService struct {
@@ -37,7 +37,8 @@ func (s *branchService) Create(ctx context.Context, req *BranchRequest, companyC
 		CompanyCode:     companyCode,
 		CompanyName:     companyName,
 		KdPort:          req.KdPort,
-		Address:         req.Address,
+		RegionalArea:    req.RegionalArea,
+		ProfitCenter:    req.ProfitCenter,
 		Status:          req.Status,
 		CreatedBy:       userEmp,
 		CreatedDate:     &now,
@@ -55,7 +56,8 @@ func (s *branchService) Update(ctx context.Context, id uint64, req *BranchReques
 
 	b.BranchName = req.BranchName
 	b.KdPort = req.KdPort
-	b.Address = req.Address
+	b.RegionalArea = req.RegionalArea
+	b.ProfitCenter = req.ProfitCenter
 	b.Status = req.Status
 	b.LastUpdatedBy = userEmp
 	now := time.Now()
@@ -76,6 +78,6 @@ func (s *branchService) GetByID(ctx context.Context, id uint64) (*Branch, error)
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *branchService) GetStats(ctx context.Context) (*BranchStats, error) {
-	return s.repo.GetStats(ctx)
+func (s *branchService) GetStats(ctx context.Context, companyCode string) (*BranchStats, error) {
+	return s.repo.GetStats(ctx, companyCode)
 }

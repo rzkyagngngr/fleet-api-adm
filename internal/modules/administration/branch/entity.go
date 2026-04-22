@@ -4,12 +4,13 @@ import "time"
 
 type Branch struct {
 	ID                uint64     `gorm:"primaryKey;autoIncrement" json:"id"`
-	BranchCode        int64      `gorm:"column:branch_code;unique;not null" json:"branch_code"`
+	BranchCode        string     `gorm:"column:branch_code;unique;not null" json:"branch_code"`
 	BranchName        string     `gorm:"column:branch_name;not null" json:"branch_name"`
 	CompanyCode       string     `gorm:"column:company_code" json:"company_code"`
 	CompanyName       string     `gorm:"column:company_name" json:"company_name"`
 	KdPort            string     `gorm:"column:kd_port" json:"kd_port"`
-	Address           string     `gorm:"column:address" json:"address"`
+	RegionalArea      string     `gorm:"column:regional_area" json:"regional_area"`
+	ProfitCenter      string     `gorm:"column:profit_center" json:"profit_center"`
 	Status            string     `gorm:"column:status" json:"status"`
 	CreatedBy         string     `gorm:"column:created_by" json:"created_by"`
 	CreatedDate       *time.Time `gorm:"column:created_date" json:"created_date"`
