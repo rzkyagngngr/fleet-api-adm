@@ -54,11 +54,20 @@ func (d DatabaseConfig) DSN(module ModuleDBConfig) string {
 }
 
 func Load() (*Config, error) {
-	_ = godotenv.Load()
+	cwd, _ := os.Getwd()
+	fmt.Printf("INFO: Current working directory: %s\n", cwd)
+
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("INFO: No .env file loaded from CWD, relying on system environment variables")
+	}
 
 	expiryHours, err := strconv.Atoi(getEnv("JWT_EXPIRY_HOURS", "24"))
 	if err != nil {
 		expiryHours = 24
+	}
+
+	if getEnv("DB_ADM_USER", "") == "" {
+		fmt.Println("CRITICAL: DB_ADM_USER is missing from environment")
 	}
 
 	cfg := &Config{

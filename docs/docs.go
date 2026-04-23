@@ -432,6 +432,1195 @@ const docTemplate = `{
                 }
             }
         },
+        "/master/barang/search": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "barang"
+                ],
+                "summary": "Search cargo",
+                "parameters": [
+                    {
+                        "description": "Search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cargo.SearchCargoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/branches": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-branches"
+                ],
+                "summary": "Create branch",
+                "parameters": [
+                    {
+                        "description": "Branch payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/branch.BranchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/branches/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-branches"
+                ],
+                "summary": "Search branches",
+                "parameters": [
+                    {
+                        "description": "Search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/branch.SearchBranchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/branches/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-branches"
+                ],
+                "summary": "Update branch",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Branch ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Branch payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/branch.BranchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-branches"
+                ],
+                "summary": "Delete branch",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Branch ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/company": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new company",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-company"
+                ],
+                "summary": "Create company",
+                "parameters": [
+                    {
+                        "description": "Company payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/company.CompanyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/company/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Search and filter companies",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-company"
+                ],
+                "summary": "Search companies",
+                "parameters": [
+                    {
+                        "description": "Search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/company.SearchCompaniesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/company/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get company by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-company"
+                ],
+                "summary": "Get company by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Company ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update company by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-company"
+                ],
+                "summary": "Update company",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Company ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Company payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/company.CompanyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete company by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-company"
+                ],
+                "summary": "Delete company",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Company ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/customer": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new customer record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-customers"
+                ],
+                "summary": "Create customer",
+                "parameters": [
+                    {
+                        "description": "Customer payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/customer.CustomerReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/customer/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve customers with server-side pagination, filtering, sorting, and download range support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-customers"
+                ],
+                "summary": "Search customers",
+                "parameters": [
+                    {
+                        "description": "Customer search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/customer.SearchCustomerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/customer/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing customer by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-customers"
+                ],
+                "summary": "Update customer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Customer payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/customer.CustomerReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete customer by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-customers"
+                ],
+                "summary": "Delete customer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/dock": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new dock record with details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-dock"
+                ],
+                "summary": "Create dock",
+                "parameters": [
+                    {
+                        "description": "Dock payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dock.DockReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/dock/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve dock data with server-side pagination, filtering, sorting, and download range support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-dock"
+                ],
+                "summary": "Search dock",
+                "parameters": [
+                    {
+                        "description": "Dock search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dock.SearchDockRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/dock/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve dock detail by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-dock"
+                ],
+                "summary": "Get dock detail",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dock ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing dock by id with details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-dock"
+                ],
+                "summary": "Update dock",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dock ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dock payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dock.DockReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete dock by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-dock"
+                ],
+                "summary": "Delete dock",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Dock ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/equipment": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new equipment record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-equipments"
+                ],
+                "summary": "Create equipment",
+                "parameters": [
+                    {
+                        "description": "Equipment payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/equipment.EquipmentReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/equipment/customer-options/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve lightweight active customer options for equipment owner select inputs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-equipments"
+                ],
+                "summary": "List customer options for equipment",
+                "parameters": [
+                    {
+                        "description": "Customer option payload",
+                        "name": "payload",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.CustomerOptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/equipment/group-options/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve lightweight equipment group options from reference data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-equipments"
+                ],
+                "summary": "List equipment group options",
+                "parameters": [
+                    {
+                        "description": "Equipment group option payload",
+                        "name": "payload",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.EquipmentGroupOptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/equipment/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve equipments with server-side pagination, filtering, sorting, and download range support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-equipments"
+                ],
+                "summary": "Search equipments",
+                "parameters": [
+                    {
+                        "description": "Equipment search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/equipment.SearchEquipmentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/equipment/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing equipment by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-equipments"
+                ],
+                "summary": "Update equipment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Equipment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Equipment payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/equipment.EquipmentReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete equipment by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-equipments"
+                ],
+                "summary": "Delete equipment",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Equipment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/master/menus": {
             "get": {
                 "security": [
@@ -638,6 +1827,210 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Menu ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/pelabuhan": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new port record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-ports"
+                ],
+                "summary": "Create port",
+                "parameters": [
+                    {
+                        "description": "Port payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pelabuhan.PortReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/pelabuhan/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve ports with server-side pagination, filtering, sorting, and download range support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-ports"
+                ],
+                "summary": "Search ports",
+                "parameters": [
+                    {
+                        "description": "Port search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pelabuhan.SearchPortRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/pelabuhan/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing port by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-ports"
+                ],
+                "summary": "Update port",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Port ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Port payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pelabuhan.PortReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete port by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-ports"
+                ],
+                "summary": "Delete port",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Port ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1110,6 +2503,1080 @@ const docTemplate = `{
                 }
             }
         },
+        "/master/terminals": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-terminals"
+                ],
+                "summary": "Create terminal",
+                "parameters": [
+                    {
+                        "description": "Terminal payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/terminal.TerminalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/terminals/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-terminals"
+                ],
+                "summary": "Search terminals",
+                "parameters": [
+                    {
+                        "description": "Search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/terminal.SearchTerminalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/terminals/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-terminals"
+                ],
+                "summary": "Update terminal",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Terminal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Terminal payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/terminal.TerminalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-terminals"
+                ],
+                "summary": "Delete terminal",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Terminal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated user list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get all users",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.PaginatedResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new master user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Create user",
+                "parameters": [
+                    {
+                        "description": "User payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.UserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/users/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Search and filter users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Search users",
+                "parameters": [
+                    {
+                        "description": "Search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.SearchUsersRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/users/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get aggregated user statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve user detail by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update user by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.UserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete user by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Delete user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/vessel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new vessel",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-vessel"
+                ],
+                "summary": "Create vessel",
+                "parameters": [
+                    {
+                        "description": "Vessel payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/vessel.VesselRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/vessel/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Search and filter vessels",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-vessel"
+                ],
+                "summary": "Search vessels",
+                "parameters": [
+                    {
+                        "description": "Search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/vessel.SearchVesselsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/vessel/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get aggregated vessel statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-vessel"
+                ],
+                "summary": "Get vessel statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/vessel/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get vessel by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-vessel"
+                ],
+                "summary": "Get vessel by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Vessel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update vessel by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-vessel"
+                ],
+                "summary": "Update vessel",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Vessel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vessel payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/vessel.VesselRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete vessel by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-vessel"
+                ],
+                "summary": "Delete vessel",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Vessel ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/warehouse": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new warehouse record with details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-warehouse"
+                ],
+                "summary": "Create warehouse",
+                "parameters": [
+                    {
+                        "description": "Warehouse payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/warehouse.WarehouseReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/warehouse/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve warehouse data with server-side pagination, filtering, sorting, and download range support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-warehouse"
+                ],
+                "summary": "Search warehouse",
+                "parameters": [
+                    {
+                        "description": "Warehouse search payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/warehouse.SearchWarehouseRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.MetaResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/warehouse/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve warehouse detail by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-warehouse"
+                ],
+                "summary": "Get warehouse detail",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Warehouse ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing warehouse by id with details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-warehouse"
+                ],
+                "summary": "Update warehouse",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Warehouse ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Warehouse payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/warehouse.WarehouseReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete warehouse by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-warehouse"
+                ],
+                "summary": "Delete warehouse",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Warehouse ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/locations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve mapped branches and terminals for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user locations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/helper.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/user.UserLocationsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/users/profile": {
             "get": {
                 "security": [
@@ -1213,10 +3680,10 @@ const docTemplate = `{
             ],
             "properties": {
                 "branch_code": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "terminal_code": {
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -1245,7 +3712,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "branch_code": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "branch_name": {
                     "type": "string"
@@ -1282,7 +3749,290 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "terminal_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "branch.BranchRequest": {
+            "type": "object",
+            "required": [
+                "branch_code",
+                "branch_name"
+            ],
+            "properties": {
+                "branch_code": {
+                    "type": "string"
+                },
+                "branch_name": {
+                    "type": "string"
+                },
+                "kd_port": {
+                    "type": "string"
+                },
+                "profit_center": {
+                    "type": "string"
+                },
+                "regional_area": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "branch.SearchBranchRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
                     "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "cargo.SearchCargoRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "company.CompanyRequest": {
+            "type": "object",
+            "required": [
+                "company_code",
+                "company_name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "business_type": {
+                    "type": "string"
+                },
+                "company_code": {
+                    "type": "string"
+                },
+                "company_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "npwp": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "company.SearchCompaniesRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "customer.CustomerReq": {
+            "type": "object",
+            "required": [
+                "customer_name",
+                "tax_id_number"
+            ],
+            "properties": {
+                "bank_account_idr": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "bank_code": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "branch_code": {
+                    "type": "integer"
+                },
+                "branch_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "business_entity_type": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "business_license_date": {
+                    "type": "string"
+                },
+                "business_type": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "city": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "contact_person": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "customer_address": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "customer_country": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "customer_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "customer_type": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "email_address": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "fax_number": {
+                    "type": "string",
+                    "maxLength": 30
+                },
+                "foreign_currency_account": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "internal_notes": {
+                    "type": "string"
+                },
+                "national_id_number": {
+                    "type": "string",
+                    "maxLength": 30
+                },
+                "phone_number": {
+                    "type": "string",
+                    "maxLength": 30
+                },
+                "profit_center": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "registered_taxpayer_address": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "registered_taxpayer_name": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "tax_branch_code": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "tax_id_16_digit": {
+                    "type": "string",
+                    "maxLength": 30
+                },
+                "tax_id_document_upload": {
+                    "type": "string"
+                },
+                "tax_id_number": {
+                    "type": "string",
+                    "maxLength": 30
+                },
+                "terminal_code": {
+                    "type": "integer"
+                },
+                "terminal_name": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "customer.SearchCustomerRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
                 }
             }
         },
@@ -1306,6 +4056,237 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "dock.DockDetailReq": {
+            "type": "object",
+            "properties": {
+                "berth_code": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "berth_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "height_size": {
+                    "type": "integer"
+                },
+                "max_loa": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "width_size": {
+                    "type": "integer"
+                },
+                "x_position": {
+                    "type": "integer"
+                },
+                "y_position": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dock.DockReq": {
+            "type": "object",
+            "properties": {
+                "branch_code": {
+                    "type": "integer"
+                },
+                "branch_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "code_inaportnet": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dock.DockDetailReq"
+                    }
+                },
+                "dock_capacity_ton": {
+                    "type": "number"
+                },
+                "dock_code": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "dock_length_m": {
+                    "type": "number"
+                },
+                "dock_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "dock_type": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "dock_width_m": {
+                    "type": "number"
+                },
+                "location_name_inaportnet": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "terminal_code": {
+                    "type": "integer"
+                },
+                "terminal_name": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "dock.SearchDockRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "equipment.CustomerOptionRequest": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "q": {
+                    "type": "string"
+                }
+            }
+        },
+        "equipment.EquipmentGroupOptionRequest": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "q": {
+                    "type": "string"
+                }
+            }
+        },
+        "equipment.EquipmentReq": {
+            "type": "object",
+            "properties": {
+                "branch_code": {
+                    "type": "integer"
+                },
+                "branch_name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "capacity": {
+                    "type": "integer"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "equipment_code": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "equipment_condition": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "equipment_group": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "equipment_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "equipment_type": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "max_load_capacity": {
+                    "type": "integer"
+                },
+                "minimal_load_capacity": {
+                    "type": "integer"
+                },
+                "owner_code": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "owner_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "ownership_status": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "terminal_code": {
+                    "type": "integer"
+                },
+                "terminal_name": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "equipment.SearchEquipmentRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
                 }
             }
         },
@@ -1437,6 +4418,64 @@ const docTemplate = `{
             }
         },
         "menu.SearchMenusRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "pelabuhan.PortReq": {
+            "type": "object",
+            "required": [
+                "port_code"
+            ],
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "maxLength": 3
+                },
+                "port_city": {
+                    "type": "string",
+                    "maxLength": 40
+                },
+                "port_code": {
+                    "type": "string",
+                    "maxLength": 10
+                },
+                "port_name": {
+                    "type": "string",
+                    "maxLength": 40
+                },
+                "status": {
+                    "description": "A = Active, I = Inactive",
+                    "type": "string",
+                    "enum": [
+                        "A",
+                        "I"
+                    ]
+                }
+            }
+        },
+        "pelabuhan.SearchPortRequest": {
             "type": "object",
             "properties": {
                 "download": {
@@ -1633,6 +4672,432 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "integer"
+                }
+            }
+        },
+        "terminal.SearchTerminalRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "terminal.TerminalRequest": {
+            "type": "object",
+            "required": [
+                "branch_code",
+                "terminal_code",
+                "terminal_name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "branch_code": {
+                    "type": "string"
+                },
+                "company_code": {
+                    "type": "string"
+                },
+                "company_name": {
+                    "type": "string"
+                },
+                "company_type": {
+                    "type": "integer"
+                },
+                "document_code": {
+                    "type": "string"
+                },
+                "go_live_date": {
+                    "type": "string"
+                },
+                "is_go_live": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "string"
+                },
+                "logo_mini_url": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "longitude": {
+                    "type": "string"
+                },
+                "port_code": {
+                    "type": "string"
+                },
+                "profit_center": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "terminal_code": {
+                    "type": "string"
+                },
+                "terminal_name": {
+                    "type": "string"
+                },
+                "version_code": {
+                    "type": "integer"
+                },
+                "version_name": {
+                    "type": "string"
+                },
+                "vessel_version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "user.SearchUsersRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "user.UserLocationBranch": {
+            "type": "object",
+            "properties": {
+                "branch_code": {
+                    "type": "string"
+                },
+                "branch_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.UserLocationTerminal": {
+            "type": "object",
+            "properties": {
+                "branch_code": {
+                    "type": "string"
+                },
+                "terminal_code": {
+                    "type": "string"
+                },
+                "terminal_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.UserLocationsResponse": {
+            "type": "object",
+            "properties": {
+                "branches": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/user.UserLocationBranch"
+                    }
+                },
+                "terminals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/user.UserLocationTerminal"
+                    }
+                }
+            }
+        },
+        "user.UserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "employee_id",
+                "full_name"
+            ],
+            "properties": {
+                "access_status": {
+                    "type": "integer"
+                },
+                "branch_codes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "branch_name": {
+                    "type": "string"
+                },
+                "company_code": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_id": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "job_title": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "personnel_area": {
+                    "type": "string"
+                },
+                "personnel_sub_area": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profit_center": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "sub_unit_name": {
+                    "type": "string"
+                },
+                "superuser": {
+                    "type": "boolean"
+                },
+                "terminal_codes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "terminal_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "vessel.SearchVesselsRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "vessel.VesselRequest": {
+            "type": "object",
+            "required": [
+                "vessel_code",
+                "vessel_name",
+                "vessel_type"
+            ],
+            "properties": {
+                "port_code": {
+                    "type": "integer"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "terminal_code": {
+                    "type": "integer"
+                },
+                "vessel_call_sign": {
+                    "type": "string"
+                },
+                "vessel_code": {
+                    "type": "string"
+                },
+                "vessel_country": {
+                    "type": "string"
+                },
+                "vessel_flag": {
+                    "type": "string"
+                },
+                "vessel_grt": {
+                    "type": "string"
+                },
+                "vessel_hatch_number": {
+                    "type": "integer"
+                },
+                "vessel_hatch_type": {
+                    "type": "string"
+                },
+                "vessel_imo": {
+                    "type": "string"
+                },
+                "vessel_loa": {
+                    "type": "string"
+                },
+                "vessel_name": {
+                    "type": "string"
+                },
+                "vessel_operation_status": {
+                    "type": "string"
+                },
+                "vessel_owner_name": {
+                    "type": "string"
+                },
+                "vessel_ownership_status": {
+                    "type": "string"
+                },
+                "vessel_shipping_route": {
+                    "type": "string"
+                },
+                "vessel_type": {
+                    "type": "string"
+                },
+                "vessel_year_made": {
+                    "type": "string"
+                }
+            }
+        },
+        "warehouse.SearchWarehouseRequest": {
+            "type": "object",
+            "properties": {
+                "download": {
+                    "$ref": "#/definitions/helper.DownloadQuery"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "search": {
+                    "type": "string"
+                },
+                "sort": {
+                    "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "warehouse.WarehouseDetailReq": {
+            "type": "object",
+            "properties": {
+                "h_size": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "w_size": {
+                    "type": "integer"
+                },
+                "warehouse_capacity_d_m3": {
+                    "type": "integer"
+                },
+                "warehouse_capacity_d_ton": {
+                    "type": "integer"
+                },
+                "warehouse_code_d": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "warehouse_name_d": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "werehouse_d_type": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "x_position": {
+                    "type": "integer"
+                },
+                "y_position": {
+                    "type": "integer"
+                }
+            }
+        },
+        "warehouse.WarehouseReq": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/warehouse.WarehouseDetailReq"
+                    }
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "warehouse_capacity": {
+                    "type": "integer"
+                },
+                "warehouse_code": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "warehouse_name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "warehouse_type": {
+                    "type": "string",
+                    "maxLength": 100
                 }
             }
         }
