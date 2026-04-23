@@ -187,3 +187,25 @@ func (h *BranchHandler) GetStats(c *gin.Context) {
 	}
 	helper.SuccessResponse(c, http.StatusOK, "success", res)
 }
+
+// GetByID godoc
+// @Summary Get branch by id
+// @Description Get branch detail by id
+// @Tags master-branch
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Branch ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/branches/{id} [get]
+func (h *BranchHandler) GetByID(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	res, err := h.service.GetByID(c.Request.Context(), id)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, "branch not found")
+		return
+	}
+	helper.SuccessResponse(c, http.StatusOK, "success", res)
+}

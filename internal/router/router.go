@@ -184,6 +184,7 @@ func SetupRouter(cfg *RouterConfig) {
 				branches.GET("/stats", cfg.BranchHandler.GetStats)
 				branches.POST("/search", cfg.BranchHandler.Search)
 				branches.POST("", cfg.BranchHandler.Create)
+				branches.GET("/:id", cfg.BranchHandler.GetByID)
 				branches.PUT("/:id", cfg.BranchHandler.Update)
 				branches.DELETE("/:id", cfg.BranchHandler.Delete)
 			}
@@ -202,6 +203,7 @@ func SetupRouter(cfg *RouterConfig) {
 				terminals.GET("/stats", cfg.TerminalHandler.GetStats)
 				terminals.POST("/search", cfg.TerminalHandler.Search)
 				terminals.POST("", cfg.TerminalHandler.Create)
+				terminals.GET("/:id", cfg.TerminalHandler.GetByID)
 				terminals.PUT("/:id", cfg.TerminalHandler.Update)
 				terminals.DELETE("/:id", cfg.TerminalHandler.Delete)
 			}
