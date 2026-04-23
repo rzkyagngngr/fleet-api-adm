@@ -14,7 +14,7 @@ type VesselService interface {
 	DeleteVessel(ctx context.Context, id uint64) error
 	GetByID(ctx context.Context, id uint64) (*VesselResponse, error)
 	SearchVessels(ctx context.Context, query helper.PaginationQuery) ([]VesselResponse, helper.PaginationMeta, error)
-	GetVesselStats(ctx context.Context) (*VesselStatsResponse, error)
+	GetVesselStats(ctx context.Context, branchCode, terminalCode int) (*VesselStatsResponse, error)
 }
 
 type vesselService struct {
@@ -46,6 +46,7 @@ func (s *vesselService) CreateVessel(ctx context.Context, req *VesselRequest, cr
 		Status:                req.Status,
 		Remark:                req.Remark,
 		PortCode:              req.PortCode,
+		BranchCode:            req.BranchCode,
 		TerminalCode:          req.TerminalCode,
 		CreationDate:          time.Now(),
 		CreationBy:            createdBy,
@@ -79,6 +80,7 @@ func (s *vesselService) UpdateVessel(ctx context.Context, id uint64, req *Vessel
 	v.Status = req.Status
 	v.Remark = req.Remark
 	v.PortCode = req.PortCode
+	v.BranchCode = req.BranchCode
 	v.TerminalCode = req.TerminalCode
 
 	now := time.Now()
@@ -119,6 +121,6 @@ func (s *vesselService) SearchVessels(ctx context.Context, query helper.Paginati
 	return res, meta, nil
 }
 
-func (s *vesselService) GetVesselStats(ctx context.Context) (*VesselStatsResponse, error) {
-	return s.repo.GetStats(ctx)
+func (s *vesselService) GetVesselStats(ctx context.Context, branchCode, terminalCode int) (*VesselStatsResponse, error) {
+	return s.repo.GetStats(ctx, branchCode, terminalCode)
 }

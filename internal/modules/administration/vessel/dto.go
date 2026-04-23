@@ -26,6 +26,7 @@ type VesselResponse struct {
 	Status                string     `json:"status"`
 	Remark                string     `json:"remark"`
 	PortCode              int64      `json:"port_code"`
+	BranchCode            int64      `json:"branch_code"`
 	TerminalCode          int64      `json:"terminal_code"`
 	CreationDate          time.Time  `json:"creation_date"`
 }
@@ -61,6 +62,7 @@ type VesselRequest struct {
 	Status                string `json:"status"`
 	Remark                string `json:"remark"`
 	PortCode              int64  `json:"port_code"`
+	BranchCode            int64  `json:"branch_code"`
 	TerminalCode          int64  `json:"terminal_code"`
 }
 
@@ -106,6 +108,7 @@ func ToResponse(v *Vessel) VesselResponse {
 		Status:                v.Status,
 		Remark:                v.Remark,
 		PortCode:              v.PortCode,
+		BranchCode:            v.BranchCode,
 		TerminalCode:          v.TerminalCode,
 		CreationDate:          v.CreationDate,
 	}

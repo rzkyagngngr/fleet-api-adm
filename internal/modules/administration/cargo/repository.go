@@ -81,26 +81,26 @@ func (r *cargoRepository) Search(ctx context.Context, param helper.PaginationQue
 func (r *cargoRepository) GetStats(ctx context.Context, branchCode, terminalCode int) (*CargoStatsResponse, error) {
 	var stats CargoStatsResponse
 
-	query := r.db.WithContext(ctx).Model(&Cargo{})
+	baseQuery := r.db.WithContext(ctx).Model(&Cargo{})
 	if branchCode > 0 {
-		query = query.Where("branch_code = ?", branchCode)
+		baseQuery = baseQuery.Where("branch_code = ?", branchCode)
 	}
 	if terminalCode > 0 {
-		query = query.Where("terminal_code = ?", terminalCode)
+		baseQuery = baseQuery.Where("terminal_code = ?", terminalCode)
 	}
 
 	// Total Cargo Masters
-	if err := query.Count(&stats.TotalCargoMasters).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Count(&stats.TotalCargoMasters).Error; err != nil {
 		return nil, err
 	}
 
 	// Active Commodities (is_active = '1' or 'Y')
-	if err := query.Where("is_active IN (?, ?)", "1", "Y").Count(&stats.ActiveCommodities).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Where("is_active IN (?, ?)", "1", "Y").Count(&stats.ActiveCommodities).Error; err != nil {
 		return nil, err
 	}
 
 	// Hazmat Registry (cargo_imdg_code IS NOT NULL AND > 0)
-	if err := query.Where("cargo_imdg_code > ?", 0).Count(&stats.HazmatRegistry).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Where("cargo_imdg_code > ?", 0).Count(&stats.HazmatRegistry).Error; err != nil {
 		return nil, err
 	}
 

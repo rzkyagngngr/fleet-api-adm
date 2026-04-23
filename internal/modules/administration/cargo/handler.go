@@ -207,20 +207,22 @@ func (h *CargoHandler) GetByID(c *gin.Context) {
 // @Tags master-barang
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} helper.Response
-// @Failure 500 {object} helper.Response
 // @Router /master/barang/stats [get]
 func (h *CargoHandler) GetStats(c *gin.Context) {
-	branchCodeVal, _ := c.Get(middleware.BranchCodeKey)
-	terminalCodeVal, _ := c.Get(middleware.TerminalCodeKey)
+	// Priority 1: Query parameters
+	branchCode, _ := strconv.Atoi(c.DefaultQuery("branch_code", "0"))
+	terminalCode, _ := strconv.Atoi(c.DefaultQuery("terminal_code", "0"))
 
-	branchCode := 0
-	terminalCode := 0
-	if branchCodeVal != nil {
-		branchCode, _ = strconv.Atoi(branchCodeVal.(string))
+	// Priority 2: Fallback to middleware context
+	if branchCode == 0 {
+		if val, ok := c.Get(middleware.BranchCodeKey); ok {
+			branchCode, _ = strconv.Atoi(val.(string))
+		}
 	}
-	if terminalCodeVal != nil {
-		terminalCode, _ = strconv.Atoi(terminalCodeVal.(string))
+	if terminalCode == 0 {
+		if val, ok := c.Get(middleware.TerminalCodeKey); ok {
+			terminalCode, _ = strconv.Atoi(val.(string))
+		}
 	}
 
 	res, err := h.service.GetStats(c.Request.Context(), branchCode, terminalCode)

@@ -22,8 +22,9 @@ type Vessel struct {
 	VesselOperationStatus string     `gorm:"column:vessel_operation_status" json:"vessel_operation_status"`
 	Status                string     `gorm:"column:status;default:ACTIVE" json:"status"`
 	Remark                string     `gorm:"column:remark" json:"remark"`
-	PortCode              int64      `gorm:"column:port_code;default:1" json:"port_code"`
-	TerminalCode          int64      `gorm:"column:terminal_code;default:1" json:"terminal_code"`
+	PortCode              int64      `gorm:"column:port_code" json:"port_code"`
+	BranchCode            int64      `gorm:"column:branch_code" json:"branch_code"`
+	TerminalCode          int64      `gorm:"column:terminal_code" json:"terminal_code"`
 	CreationDate          time.Time  `gorm:"column:creation_date;default:CURRENT_TIMESTAMP" json:"creation_date"`
 	CreationBy            string     `gorm:"column:creation_by" json:"creation_by"`
 	LastUpdatedDate       *time.Time `gorm:"column:last_updated_date" json:"last_updated_date"`

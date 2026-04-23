@@ -170,11 +170,28 @@ func (h *VesselHandler) Delete(c *gin.Context) {
 // @Tags master-vessel
 // @Produce json
 // @Security BearerAuth
+// @Param branch_code query int false "Branch Code"
+// @Param terminal_code query int false "Terminal Code"
 // @Success 200 {object} helper.Response
 // @Failure 500 {object} helper.Response
 // @Router /master/vessel/stats [get]
 func (h *VesselHandler) GetStats(c *gin.Context) {
-	res, err := h.service.GetVesselStats(c.Request.Context())
+	branchCode, _ := strconv.Atoi(c.DefaultQuery("branch_code", "0"))
+	terminalCode, _ := strconv.Atoi(c.DefaultQuery("terminal_code", "0"))
+
+	// Fallback to middleware context if query params are missing
+	if branchCode == 0 {
+		if val, ok := c.Get(middleware.BranchCodeKey); ok {
+			branchCode, _ = strconv.Atoi(val.(string))
+		}
+	}
+	if terminalCode == 0 {
+		if val, ok := c.Get(middleware.TerminalCodeKey); ok {
+			terminalCode, _ = strconv.Atoi(val.(string))
+		}
+	}
+
+	res, err := h.service.GetVesselStats(c.Request.Context(), branchCode, terminalCode)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
