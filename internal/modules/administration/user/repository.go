@@ -216,9 +216,10 @@ func (r *userRepository) GetUserLocations(ctx context.Context, userID uint64) ([
 	var terminals []UserLocationTerminal
 
 	err := r.db.WithContext(ctx).Raw(`
-		SELECT ub.branch_code, b.branch_name 
+		SELECT ub.branch_code, b.branch_name, c.company_name 
 		FROM adm.posm_user_branches ub
 		JOIN adm.posm_branches b ON ub.branch_code = b.branch_code
+		LEFT JOIN adm.posm_companies c ON b.company_code = c.company_code
 		WHERE ub.user_id = ?
 	`, userID).Scan(&branches).Error
 	if err != nil {
