@@ -175,7 +175,7 @@ func (h *BranchHandler) Delete(c *gin.Context) {
 func (h *BranchHandler) GetStats(c *gin.Context) {
 	compCode, _, _, err := h.getCompanyInfo(c)
 	if err != nil {
-		// If fails to get company info (e.g. superuser without company), 
+		// If fails to get company info (e.g. superuser without company),
 		// fallback to query param or just show empty/all
 		compCode = c.Query("company_code")
 	}

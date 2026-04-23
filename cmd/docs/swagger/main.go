@@ -14,7 +14,7 @@ func main() {
 		"swag",
 		"init",
 		"-g", "main.go",
-		"-d", "cmd/monolith,internal/modules/administration/auth,internal/modules/administration/user,internal/modules/administration/menu,internal/modules/administration/role,internal/modules/administration/access,internal/modules/administration/reference,internal/modules/administration/dermaga,internal/helper,internal/router",
+		"-d", "cmd/monolith,internal/modules,internal/helper,internal/router",
 		"--parseInternal",
 		"-o", "docs",
 	)

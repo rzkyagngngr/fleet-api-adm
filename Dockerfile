@@ -10,5 +10,6 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates tzdata
 ENV TZ=Asia/Jakarta
 COPY --from=builder /server /server
+COPY .env .env
 EXPOSE 8080
 CMD ["/server"]

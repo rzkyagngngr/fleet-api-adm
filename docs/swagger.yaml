@@ -40,9 +40,9 @@ definitions:
   auth.ChangeTerminalRequest:
     properties:
       branch_code:
-        type: integer
+        type: string
       terminal_code:
-        type: integer
+        type: string
     required:
     - branch_code
     - terminal_code
@@ -60,7 +60,7 @@ definitions:
   auth.UserRegisterRequest:
     properties:
       branch_code:
-        type: integer
+        type: string
       branch_name:
         type: string
       company_code:
@@ -85,12 +85,207 @@ definitions:
       sub_unit_name:
         type: string
       terminal_code:
-        type: integer
+        type: string
     required:
     - email
     - employee_id
     - full_name
     - password
+    type: object
+  branch.BranchRequest:
+    properties:
+      branch_code:
+        type: string
+      branch_name:
+        type: string
+      kd_port:
+        type: string
+      profit_center:
+        type: string
+      regional_area:
+        type: string
+      status:
+        type: string
+    required:
+    - branch_code
+    - branch_name
+    type: object
+  branch.SearchBranchRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  cargo.SearchCargoRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  company.CompanyRequest:
+    properties:
+      address:
+        type: string
+      business_type:
+        type: string
+      company_code:
+        type: string
+      company_name:
+        type: string
+      email:
+        type: string
+      npwp:
+        type: string
+      phone_number:
+        type: string
+      status:
+        type: string
+    required:
+    - company_code
+    - company_name
+    type: object
+  company.SearchCompaniesRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  customer.CustomerReq:
+    properties:
+      bank_account_idr:
+        maxLength: 50
+        type: string
+      bank_code:
+        maxLength: 50
+        type: string
+      branch_code:
+        type: integer
+      branch_name:
+        maxLength: 100
+        type: string
+      business_entity_type:
+        maxLength: 100
+        type: string
+      business_license_date:
+        type: string
+      business_type:
+        maxLength: 100
+        type: string
+      city:
+        maxLength: 100
+        type: string
+      contact_person:
+        maxLength: 100
+        type: string
+      customer_address:
+        maxLength: 255
+        type: string
+      customer_country:
+        maxLength: 100
+        type: string
+      customer_name:
+        maxLength: 150
+        type: string
+      customer_type:
+        maxLength: 50
+        type: string
+      email_address:
+        maxLength: 150
+        type: string
+      fax_number:
+        maxLength: 30
+        type: string
+      foreign_currency_account:
+        maxLength: 50
+        type: string
+      internal_notes:
+        type: string
+      national_id_number:
+        maxLength: 30
+        type: string
+      phone_number:
+        maxLength: 30
+        type: string
+      profit_center:
+        maxLength: 50
+        type: string
+      registered_taxpayer_address:
+        maxLength: 255
+        type: string
+      registered_taxpayer_name:
+        maxLength: 200
+        type: string
+      status:
+        type: integer
+      tax_branch_code:
+        maxLength: 50
+        type: string
+      tax_id_16_digit:
+        maxLength: 30
+        type: string
+      tax_id_document_upload:
+        type: string
+      tax_id_number:
+        maxLength: 30
+        type: string
+      terminal_code:
+        type: integer
+      terminal_name:
+        maxLength: 100
+        type: string
+    required:
+    - customer_name
+    - tax_id_number
+    type: object
+  customer.SearchCustomerRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
     type: object
   dermaga.DermagaRequest:
     properties:
@@ -106,6 +301,164 @@ definitions:
         type: integer
       status:
         type: string
+    type: object
+  dock.DockDetailReq:
+    properties:
+      berth_code:
+        maxLength: 50
+        type: string
+      berth_name:
+        maxLength: 150
+        type: string
+      height_size:
+        type: integer
+      max_loa:
+        type: integer
+      status:
+        type: integer
+      width_size:
+        type: integer
+      x_position:
+        type: integer
+      y_position:
+        type: integer
+    type: object
+  dock.DockReq:
+    properties:
+      branch_code:
+        type: integer
+      branch_name:
+        maxLength: 100
+        type: string
+      code_inaportnet:
+        maxLength: 50
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/dock.DockDetailReq'
+        type: array
+      dock_capacity_ton:
+        type: number
+      dock_code:
+        maxLength: 50
+        type: string
+      dock_length_m:
+        type: number
+      dock_name:
+        maxLength: 150
+        type: string
+      dock_type:
+        maxLength: 100
+        type: string
+      dock_width_m:
+        type: number
+      location_name_inaportnet:
+        maxLength: 150
+        type: string
+      status:
+        type: integer
+      terminal_code:
+        type: integer
+      terminal_name:
+        maxLength: 100
+        type: string
+    type: object
+  dock.SearchDockRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  equipment.CustomerOptionRequest:
+    properties:
+      limit:
+        type: integer
+      q:
+        type: string
+    type: object
+  equipment.EquipmentGroupOptionRequest:
+    properties:
+      limit:
+        type: integer
+      q:
+        type: string
+    type: object
+  equipment.EquipmentReq:
+    properties:
+      branch_code:
+        type: integer
+      branch_name:
+        maxLength: 100
+        type: string
+      capacity:
+        type: integer
+      end_date:
+        type: string
+      equipment_code:
+        maxLength: 50
+        type: string
+      equipment_condition:
+        maxLength: 100
+        type: string
+      equipment_group:
+        maxLength: 100
+        type: string
+      equipment_name:
+        maxLength: 150
+        type: string
+      equipment_type:
+        maxLength: 100
+        type: string
+      max_load_capacity:
+        type: integer
+      minimal_load_capacity:
+        type: integer
+      owner_code:
+        maxLength: 50
+        type: string
+      owner_name:
+        maxLength: 150
+        type: string
+      ownership_status:
+        maxLength: 50
+        type: string
+      start_date:
+        type: string
+      status:
+        type: integer
+      terminal_code:
+        type: integer
+      terminal_name:
+        maxLength: 100
+        type: string
+    type: object
+  equipment.SearchEquipmentRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
     type: object
   helper.DownloadQuery:
     properties:
@@ -192,6 +545,46 @@ definitions:
         type: integer
     type: object
   menu.SearchMenusRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  pelabuhan.PortReq:
+    properties:
+      country_code:
+        maxLength: 3
+        type: string
+      port_city:
+        maxLength: 40
+        type: string
+      port_code:
+        maxLength: 10
+        type: string
+      port_name:
+        maxLength: 40
+        type: string
+      status:
+        description: A = Active, I = Inactive
+        enum:
+        - A
+        - I
+        type: string
+    required:
+    - port_code
+    type: object
+  pelabuhan.SearchPortRequest:
     properties:
       download:
         $ref: '#/definitions/helper.DownloadQuery'
@@ -322,6 +715,290 @@ definitions:
         type: string
       status:
         type: integer
+    type: object
+  terminal.SearchTerminalRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  terminal.TerminalRequest:
+    properties:
+      address:
+        type: string
+      branch_code:
+        type: string
+      company_code:
+        type: string
+      company_name:
+        type: string
+      company_type:
+        type: integer
+      document_code:
+        type: string
+      go_live_date:
+        type: string
+      is_go_live:
+        type: string
+      latitude:
+        type: string
+      logo_mini_url:
+        type: string
+      logo_url:
+        type: string
+      longitude:
+        type: string
+      port_code:
+        type: string
+      profit_center:
+        type: string
+      status:
+        type: string
+      terminal_code:
+        type: string
+      terminal_name:
+        type: string
+      version_code:
+        type: integer
+      version_name:
+        type: string
+      vessel_version:
+        type: integer
+    required:
+    - branch_code
+    - terminal_code
+    - terminal_name
+    type: object
+  user.SearchUsersRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  user.UserLocationBranch:
+    properties:
+      branch_code:
+        type: string
+      branch_name:
+        type: string
+    type: object
+  user.UserLocationTerminal:
+    properties:
+      branch_code:
+        type: string
+      terminal_code:
+        type: string
+      terminal_name:
+        type: string
+    type: object
+  user.UserLocationsResponse:
+    properties:
+      branches:
+        items:
+          $ref: '#/definitions/user.UserLocationBranch'
+        type: array
+      terminals:
+        items:
+          $ref: '#/definitions/user.UserLocationTerminal'
+        type: array
+    type: object
+  user.UserRequest:
+    properties:
+      access_status:
+        type: integer
+      branch_codes:
+        items:
+          type: string
+        type: array
+      branch_name:
+        type: string
+      company_code:
+        type: string
+      email:
+        type: string
+      employee_id:
+        type: string
+      full_name:
+        type: string
+      job_title:
+        type: string
+      password:
+        type: string
+      personnel_area:
+        type: string
+      personnel_sub_area:
+        type: string
+      phone_number:
+        type: string
+      profit_center:
+        type: string
+      role_id:
+        type: integer
+      status:
+        type: string
+      sub_unit_name:
+        type: string
+      superuser:
+        type: boolean
+      terminal_codes:
+        items:
+          type: string
+        type: array
+      terminal_name:
+        type: string
+    required:
+    - email
+    - employee_id
+    - full_name
+    type: object
+  vessel.SearchVesselsRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  vessel.VesselRequest:
+    properties:
+      port_code:
+        type: integer
+      remark:
+        type: string
+      status:
+        type: string
+      terminal_code:
+        type: integer
+      vessel_call_sign:
+        type: string
+      vessel_code:
+        type: string
+      vessel_country:
+        type: string
+      vessel_flag:
+        type: string
+      vessel_grt:
+        type: string
+      vessel_hatch_number:
+        type: integer
+      vessel_hatch_type:
+        type: string
+      vessel_imo:
+        type: string
+      vessel_loa:
+        type: string
+      vessel_name:
+        type: string
+      vessel_operation_status:
+        type: string
+      vessel_owner_name:
+        type: string
+      vessel_ownership_status:
+        type: string
+      vessel_shipping_route:
+        type: string
+      vessel_type:
+        type: string
+      vessel_year_made:
+        type: string
+    required:
+    - vessel_code
+    - vessel_name
+    - vessel_type
+    type: object
+  warehouse.SearchWarehouseRequest:
+    properties:
+      download:
+        $ref: '#/definitions/helper.DownloadQuery'
+      filters:
+        additionalProperties:
+          type: string
+        type: object
+      limit:
+        type: integer
+      page:
+        type: integer
+      search:
+        type: string
+      sort:
+        $ref: '#/definitions/helper.SortQuery'
+    type: object
+  warehouse.WarehouseDetailReq:
+    properties:
+      h_size:
+        type: integer
+      status:
+        type: integer
+      w_size:
+        type: integer
+      warehouse_capacity_d_m3:
+        type: integer
+      warehouse_capacity_d_ton:
+        type: integer
+      warehouse_code_d:
+        maxLength: 50
+        type: string
+      warehouse_name_d:
+        maxLength: 150
+        type: string
+      werehouse_d_type:
+        maxLength: 50
+        type: string
+      x_position:
+        type: integer
+      y_position:
+        type: integer
+    type: object
+  warehouse.WarehouseReq:
+    properties:
+      details:
+        items:
+          $ref: '#/definitions/warehouse.WarehouseDetailReq'
+        type: array
+      status:
+        type: integer
+      warehouse_capacity:
+        type: integer
+      warehouse_code:
+        maxLength: 50
+        type: string
+      warehouse_name:
+        maxLength: 150
+        type: string
+      warehouse_type:
+        maxLength: 100
+        type: string
     type: object
 info:
   contact: {}
@@ -593,6 +1270,758 @@ paths:
       summary: Update dermaga
       tags:
       - dermaga
+  /master/barang/search:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/cargo.SearchCargoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+      summary: Search cargo
+      tags:
+      - barang
+  /master/branches:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Branch payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/branch.BranchRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create branch
+      tags:
+      - master-branches
+  /master/branches/{id}:
+    delete:
+      parameters:
+      - description: Branch ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete branch
+      tags:
+      - master-branches
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Branch ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Branch payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/branch.BranchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update branch
+      tags:
+      - master-branches
+  /master/branches/search:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/branch.SearchBranchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+      security:
+      - BearerAuth: []
+      summary: Search branches
+      tags:
+      - master-branches
+  /master/company:
+    post:
+      consumes:
+      - application/json
+      description: Create a new company
+      parameters:
+      - description: Company payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/company.CompanyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create company
+      tags:
+      - master-company
+  /master/company/{id}:
+    delete:
+      description: Delete company by id
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete company
+      tags:
+      - master-company
+    get:
+      description: Get company by id
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get company by id
+      tags:
+      - master-company
+    put:
+      consumes:
+      - application/json
+      description: Update company by id
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Company payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/company.CompanyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update company
+      tags:
+      - master-company
+  /master/company/search:
+    post:
+      consumes:
+      - application/json
+      description: Search and filter companies
+      parameters:
+      - description: Search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/company.SearchCompaniesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search companies
+      tags:
+      - master-company
+  /master/customer:
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer record
+      parameters:
+      - description: Customer payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/customer.CustomerReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create customer
+      tags:
+      - master-customers
+  /master/customer/{id}:
+    delete:
+      description: Delete customer by id
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete customer
+      tags:
+      - master-customers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer by id
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Customer payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/customer.CustomerReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update customer
+      tags:
+      - master-customers
+  /master/customer/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve customers with server-side pagination, filtering, sorting,
+        and download range support
+      parameters:
+      - description: Customer search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/customer.SearchCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search customers
+      tags:
+      - master-customers
+  /master/dock:
+    post:
+      consumes:
+      - application/json
+      description: Create a new dock record with details
+      parameters:
+      - description: Dock payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dock.DockReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create dock
+      tags:
+      - master-dock
+  /master/dock/{id}:
+    delete:
+      description: Delete dock by id
+      parameters:
+      - description: Dock ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete dock
+      tags:
+      - master-dock
+    get:
+      description: Retrieve dock detail by id
+      parameters:
+      - description: Dock ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dock detail
+      tags:
+      - master-dock
+    put:
+      consumes:
+      - application/json
+      description: Update an existing dock by id with details
+      parameters:
+      - description: Dock ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dock payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dock.DockReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update dock
+      tags:
+      - master-dock
+  /master/dock/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve dock data with server-side pagination, filtering, sorting,
+        and download range support
+      parameters:
+      - description: Dock search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dock.SearchDockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search dock
+      tags:
+      - master-dock
+  /master/equipment:
+    post:
+      consumes:
+      - application/json
+      description: Create a new equipment record
+      parameters:
+      - description: Equipment payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/equipment.EquipmentReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create equipment
+      tags:
+      - master-equipments
+  /master/equipment/{id}:
+    delete:
+      description: Delete equipment by id
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete equipment
+      tags:
+      - master-equipments
+    put:
+      consumes:
+      - application/json
+      description: Update an existing equipment by id
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Equipment payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/equipment.EquipmentReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update equipment
+      tags:
+      - master-equipments
+  /master/equipment/customer-options/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve lightweight active customer options for equipment owner
+        select inputs
+      parameters:
+      - description: Customer option payload
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/equipment.CustomerOptionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: List customer options for equipment
+      tags:
+      - master-equipments
+  /master/equipment/group-options/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve lightweight equipment group options from reference data
+      parameters:
+      - description: Equipment group option payload
+        in: body
+        name: payload
+        schema:
+          $ref: '#/definitions/equipment.EquipmentGroupOptionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: List equipment group options
+      tags:
+      - master-equipments
+  /master/equipment/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve equipments with server-side pagination, filtering, sorting,
+        and download range support
+      parameters:
+      - description: Equipment search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/equipment.SearchEquipmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search equipments
+      tags:
+      - master-equipments
   /master/menus:
     get:
       description: Retrieve all menu records
@@ -741,6 +2170,136 @@ paths:
       summary: Search menus
       tags:
       - master-menus
+  /master/pelabuhan:
+    post:
+      consumes:
+      - application/json
+      description: Create a new port record
+      parameters:
+      - description: Port payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/pelabuhan.PortReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create port
+      tags:
+      - master-ports
+  /master/pelabuhan/{id}:
+    delete:
+      description: Delete port by id
+      parameters:
+      - description: Port ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete port
+      tags:
+      - master-ports
+    put:
+      consumes:
+      - application/json
+      description: Update an existing port by id
+      parameters:
+      - description: Port ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Port payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/pelabuhan.PortReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update port
+      tags:
+      - master-ports
+  /master/pelabuhan/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve ports with server-side pagination, filtering, sorting,
+        and download range support
+      parameters:
+      - description: Port search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/pelabuhan.SearchPortRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search ports
+      tags:
+      - master-ports
   /master/references:
     get:
       description: Retrieve all reference headers
@@ -1022,6 +2581,680 @@ paths:
       summary: Update role access
       tags:
       - master-role-access
+  /master/terminals:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Terminal payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/terminal.TerminalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create terminal
+      tags:
+      - master-terminals
+  /master/terminals/{id}:
+    delete:
+      parameters:
+      - description: Terminal ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete terminal
+      tags:
+      - master-terminals
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Terminal ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Terminal payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/terminal.TerminalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update terminal
+      tags:
+      - master-terminals
+  /master/terminals/search:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/terminal.SearchTerminalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+      security:
+      - BearerAuth: []
+      summary: Search terminals
+      tags:
+      - master-terminals
+  /master/users:
+    get:
+      description: Retrieve paginated user list
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.PaginatedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new master user
+      parameters:
+      - description: User payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/user.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create user
+      tags:
+      - users
+  /master/users/{id}:
+    delete:
+      description: Delete user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - users
+    get:
+      description: Retrieve user detail by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user by id
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/user.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - users
+  /master/users/search:
+    post:
+      consumes:
+      - application/json
+      description: Search and filter users
+      parameters:
+      - description: Search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/user.SearchUsersRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search users
+      tags:
+      - users
+  /master/users/stats:
+    get:
+      description: Get aggregated user statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user statistics
+      tags:
+      - users
+  /master/vessel:
+    post:
+      consumes:
+      - application/json
+      description: Create a new vessel
+      parameters:
+      - description: Vessel payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/vessel.VesselRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create vessel
+      tags:
+      - master-vessel
+  /master/vessel/{id}:
+    delete:
+      description: Delete vessel by id
+      parameters:
+      - description: Vessel ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete vessel
+      tags:
+      - master-vessel
+    get:
+      description: Get vessel by id
+      parameters:
+      - description: Vessel ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get vessel by id
+      tags:
+      - master-vessel
+    put:
+      consumes:
+      - application/json
+      description: Update vessel by id
+      parameters:
+      - description: Vessel ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Vessel payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/vessel.VesselRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update vessel
+      tags:
+      - master-vessel
+  /master/vessel/search:
+    post:
+      consumes:
+      - application/json
+      description: Search and filter vessels
+      parameters:
+      - description: Search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/vessel.SearchVesselsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search vessels
+      tags:
+      - master-vessel
+  /master/vessel/stats:
+    get:
+      description: Get aggregated vessel statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get vessel statistics
+      tags:
+      - master-vessel
+  /master/warehouse:
+    post:
+      consumes:
+      - application/json
+      description: Create a new warehouse record with details
+      parameters:
+      - description: Warehouse payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/warehouse.WarehouseReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create warehouse
+      tags:
+      - master-warehouse
+  /master/warehouse/{id}:
+    delete:
+      description: Delete warehouse by id
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete warehouse
+      tags:
+      - master-warehouse
+    get:
+      description: Retrieve warehouse detail by id
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get warehouse detail
+      tags:
+      - master-warehouse
+    put:
+      consumes:
+      - application/json
+      description: Update an existing warehouse by id with details
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Warehouse payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/warehouse.WarehouseReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update warehouse
+      tags:
+      - master-warehouse
+  /master/warehouse/search:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve warehouse data with server-side pagination, filtering,
+        sorting, and download range support
+      parameters:
+      - description: Warehouse search payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/warehouse.SearchWarehouseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Search warehouse
+      tags:
+      - master-warehouse
+  /users/me/locations:
+    get:
+      description: Retrieve mapped branches and terminals for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helper.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.UserLocationsResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user locations
+      tags:
+      - users
   /users/profile:
     get:
       description: Retrieve profile for authenticated user
