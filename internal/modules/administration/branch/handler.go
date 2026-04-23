@@ -48,6 +48,18 @@ func (h *BranchHandler) getCompanyInfo(c *gin.Context) (string, string, string, 
 	return compCode, compName, empID.(string), nil
 }
 
+// Search godoc
+// @Summary Search branches
+// @Description Search and filter branches
+// @Tags master-branch
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body branch.SearchBranchRequest true "Search payload"
+// @Success 200 {object} helper.MetaResponse
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/branches/search [post]
 func (h *BranchHandler) Search(c *gin.Context) {
 	var input SearchBranchRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -64,6 +76,18 @@ func (h *BranchHandler) Search(c *gin.Context) {
 	helper.MetaSuccessResponse(c, http.StatusOK, "success", rows, meta)
 }
 
+// Create godoc
+// @Summary Create branch
+// @Description Create a new branch
+// @Tags master-branch
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body branch.BranchRequest true "Branch payload"
+// @Success 201 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/branches [post]
 func (h *BranchHandler) Create(c *gin.Context) {
 	var input BranchRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -84,6 +108,19 @@ func (h *BranchHandler) Create(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusCreated, "branch created successfully", nil)
 }
 
+// Update godoc
+// @Summary Update branch
+// @Description Update branch by id
+// @Tags master-branch
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Branch ID"
+// @Param payload body branch.BranchRequest true "Branch payload"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/branches/{id} [put]
 func (h *BranchHandler) Update(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	var input BranchRequest
@@ -105,6 +142,17 @@ func (h *BranchHandler) Update(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "branch updated successfully", nil)
 }
 
+// Delete godoc
+// @Summary Delete branch
+// @Description Delete branch by id
+// @Tags master-branch
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Branch ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/branches/{id} [delete]
 func (h *BranchHandler) Delete(c *gin.Context) {
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err := h.service.Delete(c.Request.Context(), id); err != nil {
@@ -114,6 +162,16 @@ func (h *BranchHandler) Delete(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "branch deleted successfully", nil)
 }
 
+// GetStats godoc
+// @Summary Get branch statistics
+// @Description Get aggregated branch statistics
+// @Tags master-branch
+// @Produce json
+// @Security BearerAuth
+// @Param company_code query string false "Filter by company code"
+// @Success 200 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/branches/stats [get]
 func (h *BranchHandler) GetStats(c *gin.Context) {
 	compCode, _, _, err := h.getCompanyInfo(c)
 	if err != nil {

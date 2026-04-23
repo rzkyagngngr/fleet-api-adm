@@ -40,6 +40,17 @@ func (h *AccessHandler) GetRoleAccess(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "role access retrieved successfully", list)
 }
 
+// GetAllMenuByRole godoc
+// @Summary Get all menu access by role
+// @Description Retrieve full menu list with access permission for a role
+// @Tags master-role-access
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Role ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/roles/{id}/all-menu-access [get]
 func (h *AccessHandler) GetAllMenuByRole(c *gin.Context) {
 	roleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

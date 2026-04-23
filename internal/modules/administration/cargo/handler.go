@@ -19,19 +19,15 @@ func NewCargoHandler(service CargoService) *CargoHandler {
 
 // Search godoc
 // @Summary Search cargo
-// @Tags barang
+// @Description Search and filter cargo masters
+// @Tags master-barang
 // @Accept json
 // @Produce json
-// @Param payload body SearchCargoRequest true "Search payload"
+// @Security BearerAuth
+// @Param payload body cargo.SearchCargoRequest true "Search payload"
 // @Success 200 {object} helper.MetaResponse
-// @Router /master/barang/search [post]
-// Search godoc
-// @Summary Search cargo
-// @Tags barang
-// @Accept json
-// @Produce json
-// @Param payload body SearchCargoRequest true "Search payload"
-// @Success 200 {object} helper.MetaResponse
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
 // @Router /master/barang/search [post]
 func (h *CargoHandler) Search(c *gin.Context) {
 	var input SearchCargoRequest
@@ -65,6 +61,17 @@ func (h *CargoHandler) Search(c *gin.Context) {
 }
 
 // Create godoc
+// @Summary Create cargo
+// @Description Create a new cargo master
+// @Tags master-barang
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body cargo.CargoRequest true "Cargo payload"
+// @Success 201 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/barang [post]
 func (h *CargoHandler) Create(c *gin.Context) {
 	var input CargoRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -94,6 +101,18 @@ func (h *CargoHandler) Create(c *gin.Context) {
 }
 
 // Update godoc
+// @Summary Update cargo
+// @Description Update cargo by id
+// @Tags master-barang
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Cargo ID"
+// @Param payload body cargo.CargoRequest true "Cargo payload"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/barang/{id} [put]
 func (h *CargoHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -130,6 +149,16 @@ func (h *CargoHandler) Update(c *gin.Context) {
 }
 
 // Delete godoc
+// @Summary Delete cargo
+// @Description Delete cargo by id
+// @Tags master-barang
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Cargo ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/barang/{id} [delete]
 func (h *CargoHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -146,6 +175,16 @@ func (h *CargoHandler) Delete(c *gin.Context) {
 }
 
 // GetByID godoc
+// @Summary Get cargo by id
+// @Description Get cargo detail by id
+// @Tags master-barang
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Cargo ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/barang/{id} [get]
 func (h *CargoHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -163,6 +202,14 @@ func (h *CargoHandler) GetByID(c *gin.Context) {
 }
 
 // GetStats godoc
+// @Summary Get cargo statistics
+// @Description Get aggregated cargo statistics for active branch/terminal
+// @Tags master-barang
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/barang/stats [get]
 func (h *CargoHandler) GetStats(c *gin.Context) {
 	branchCodeVal, _ := c.Get(middleware.BranchCodeKey)
 	terminalCodeVal, _ := c.Get(middleware.TerminalCodeKey)
