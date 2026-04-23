@@ -123,6 +123,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/refresh-token": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Refresh current authenticated user token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/register": {
             "post": {
                 "security": [
@@ -432,8 +469,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/master/barang/search": {
+        "/master/barang": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new cargo master",
                 "consumes": [
                     "application/json"
                 ],
@@ -441,7 +484,58 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "barang"
+                    "master-barang"
+                ],
+                "summary": "Create cargo",
+                "parameters": [
+                    {
+                        "description": "Cargo payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cargo.CargoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/barang/search": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Search and filter cargo masters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-barang"
                 ],
                 "summary": "Search cargo",
                 "parameters": [
@@ -461,6 +555,182 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/helper.MetaResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/barang/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get aggregated cargo statistics for active branch/terminal",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-barang"
+                ],
+                "summary": "Get cargo statistics",
+                "responses": {}
+            }
+        },
+        "/master/barang/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get cargo detail by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-barang"
+                ],
+                "summary": "Get cargo by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Cargo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update cargo by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-barang"
+                ],
+                "summary": "Update cargo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Cargo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Cargo payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cargo.CargoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete cargo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-barang"
+                ],
+                "summary": "Delete cargo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Cargo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
                     }
                 }
             }
@@ -472,6 +742,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Create a new branch",
                 "consumes": [
                     "application/json"
                 ],
@@ -479,7 +750,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "master-branches"
+                    "master-branch"
                 ],
                 "summary": "Create branch",
                 "parameters": [
@@ -499,6 +770,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/helper.Response"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
                     }
                 }
             }
@@ -510,6 +793,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Search and filter branches",
                 "consumes": [
                     "application/json"
                 ],
@@ -517,7 +801,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "master-branches"
+                    "master-branch"
                 ],
                 "summary": "Search branches",
                 "parameters": [
@@ -537,17 +821,119 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/helper.MetaResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/branches/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get aggregated branch statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-branch"
+                ],
+                "summary": "Get branch statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by company code",
+                        "name": "company_code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
                     }
                 }
             }
         },
         "/master/branches/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get branch detail by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-branch"
+                ],
+                "summary": "Get branch by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Branch ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
+                "description": "Update branch by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -555,7 +941,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "master-branches"
+                    "master-branch"
                 ],
                 "summary": "Update branch",
                 "parameters": [
@@ -582,6 +968,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/helper.Response"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
                     }
                 }
             },
@@ -591,11 +989,12 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Delete branch by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "master-branches"
+                    "master-branch"
                 ],
                 "summary": "Delete branch",
                 "parameters": [
@@ -610,6 +1009,18 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/helper.Response"
                         }
@@ -2503,6 +2914,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/master/roles/{id}/all-menu-access": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve full menu list with access permission for a role",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-role-access"
+                ],
+                "summary": "Get all menu access by role",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/master/terminals": {
             "post": {
                 "security": [
@@ -2510,6 +2967,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Create a new terminal",
                 "consumes": [
                     "application/json"
                 ],
@@ -2517,7 +2975,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "master-terminals"
+                    "master-terminal"
                 ],
                 "summary": "Create terminal",
                 "parameters": [
@@ -2537,6 +2995,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/helper.Response"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
                     }
                 }
             }
@@ -2548,6 +3018,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Search and filter terminals",
                 "consumes": [
                     "application/json"
                 ],
@@ -2555,7 +3026,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "master-terminals"
+                    "master-terminal"
                 ],
                 "summary": "Search terminals",
                 "parameters": [
@@ -2575,17 +3046,119 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/helper.MetaResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/master/terminals/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get aggregated terminal statistics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-terminal"
+                ],
+                "summary": "Get terminal statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by company code",
+                        "name": "company_code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
                     }
                 }
             }
         },
         "/master/terminals/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get terminal detail by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "master-terminal"
+                ],
+                "summary": "Get terminal by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Terminal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
+                "description": "Update terminal by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -2593,7 +3166,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "master-terminals"
+                    "master-terminal"
                 ],
                 "summary": "Update terminal",
                 "parameters": [
@@ -2620,6 +3193,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/helper.Response"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
                     }
                 }
             },
@@ -2629,11 +3214,12 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Delete terminal by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "master-terminals"
+                    "master-terminal"
                 ],
                 "summary": "Delete terminal",
                 "parameters": [
@@ -2648,6 +3234,18 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helper.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/helper.Response"
                         }
@@ -3118,6 +3716,20 @@ const docTemplate = `{
                     "master-vessel"
                 ],
                 "summary": "Get vessel statistics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Branch Code",
+                        "name": "branch_code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Terminal Code",
+                        "name": "terminal_code",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3803,6 +4415,135 @@ const docTemplate = `{
                 },
                 "sort": {
                     "$ref": "#/definitions/helper.SortQuery"
+                }
+            }
+        },
+        "cargo.CargoRequest": {
+            "type": "object",
+            "properties": {
+                "branch_code": {
+                    "type": "integer"
+                },
+                "brand": {
+                    "type": "string"
+                },
+                "cargo_characteristic": {
+                    "type": "string"
+                },
+                "cargo_code": {
+                    "type": "string"
+                },
+                "cargo_commodity": {
+                    "type": "string"
+                },
+                "cargo_commodity_group": {
+                    "type": "string"
+                },
+                "cargo_commodity_type": {
+                    "type": "string"
+                },
+                "cargo_conversion_1": {
+                    "type": "number"
+                },
+                "cargo_conversion_2": {
+                    "type": "number"
+                },
+                "cargo_conversion_3": {
+                    "type": "number"
+                },
+                "cargo_dimension_1": {
+                    "type": "number"
+                },
+                "cargo_dimension_2": {
+                    "type": "number"
+                },
+                "cargo_dimension_3": {
+                    "type": "number"
+                },
+                "cargo_document": {
+                    "type": "string"
+                },
+                "cargo_group": {
+                    "type": "string"
+                },
+                "cargo_hs_harmonized_code": {
+                    "type": "string"
+                },
+                "cargo_imdg_code": {
+                    "type": "integer"
+                },
+                "cargo_imdg_description": {
+                    "type": "string"
+                },
+                "cargo_mooring_type": {
+                    "type": "string"
+                },
+                "cargo_name": {
+                    "type": "string"
+                },
+                "cargo_notes": {
+                    "type": "string"
+                },
+                "cargo_packaging_1": {
+                    "type": "string"
+                },
+                "cargo_packaging_2": {
+                    "type": "string"
+                },
+                "cargo_packaging_3": {
+                    "type": "string"
+                },
+                "cargo_product_name": {
+                    "type": "string"
+                },
+                "cargo_sitc_code": {
+                    "type": "string"
+                },
+                "cargo_unit_1": {
+                    "type": "string"
+                },
+                "cargo_unit_2": {
+                    "type": "string"
+                },
+                "cargo_unit_3": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "hs_code": {
+                    "type": "string"
+                },
+                "hs_description": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "string"
+                },
+                "is_dangerous_goods": {
+                    "type": "integer"
+                },
+                "item_code": {
+                    "description": "Legacy Mapping for Compatibility",
+                    "type": "string"
+                },
+                "item_name": {
+                    "type": "string"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "storage_type": {
+                    "type": "string"
+                },
+                "terminal_code": {
+                    "type": "integer"
+                },
+                "uom": {
+                    "type": "string"
                 }
             }
         },
@@ -4946,6 +5687,9 @@ const docTemplate = `{
                 "vessel_type"
             ],
             "properties": {
+                "branch_code": {
+                    "type": "integer"
+                },
                 "port_code": {
                     "type": "integer"
                 },

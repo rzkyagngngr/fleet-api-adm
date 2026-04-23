@@ -127,6 +127,92 @@ definitions:
       sort:
         $ref: '#/definitions/helper.SortQuery'
     type: object
+  cargo.CargoRequest:
+    properties:
+      branch_code:
+        type: integer
+      brand:
+        type: string
+      cargo_characteristic:
+        type: string
+      cargo_code:
+        type: string
+      cargo_commodity:
+        type: string
+      cargo_commodity_group:
+        type: string
+      cargo_commodity_type:
+        type: string
+      cargo_conversion_1:
+        type: number
+      cargo_conversion_2:
+        type: number
+      cargo_conversion_3:
+        type: number
+      cargo_dimension_1:
+        type: number
+      cargo_dimension_2:
+        type: number
+      cargo_dimension_3:
+        type: number
+      cargo_document:
+        type: string
+      cargo_group:
+        type: string
+      cargo_hs_harmonized_code:
+        type: string
+      cargo_imdg_code:
+        type: integer
+      cargo_imdg_description:
+        type: string
+      cargo_mooring_type:
+        type: string
+      cargo_name:
+        type: string
+      cargo_notes:
+        type: string
+      cargo_packaging_1:
+        type: string
+      cargo_packaging_2:
+        type: string
+      cargo_packaging_3:
+        type: string
+      cargo_product_name:
+        type: string
+      cargo_sitc_code:
+        type: string
+      cargo_unit_1:
+        type: string
+      cargo_unit_2:
+        type: string
+      cargo_unit_3:
+        type: string
+      category:
+        type: string
+      hs_code:
+        type: string
+      hs_description:
+        type: string
+      is_active:
+        type: string
+      is_dangerous_goods:
+        type: integer
+      item_code:
+        description: Legacy Mapping for Compatibility
+        type: string
+      item_name:
+        type: string
+      remark:
+        type: string
+      status:
+        type: integer
+      storage_type:
+        type: string
+      terminal_code:
+        type: integer
+      uom:
+        type: string
+    type: object
   cargo.SearchCargoRequest:
     properties:
       download:
@@ -892,6 +978,8 @@ definitions:
     type: object
   vessel.VesselRequest:
     properties:
+      branch_code:
+        type: integer
       port_code:
         type: integer
       remark:
@@ -1072,6 +1160,29 @@ paths:
       security:
       - BearerAuth: []
       summary: Login user
+      tags:
+      - auth
+  /auth/refresh-token:
+    post:
+      description: Refresh current authenticated user token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Refresh token
       tags:
       - auth
   /auth/register:
@@ -1270,10 +1381,136 @@ paths:
       summary: Update dermaga
       tags:
       - dermaga
+  /master/barang:
+    post:
+      consumes:
+      - application/json
+      description: Create a new cargo master
+      parameters:
+      - description: Cargo payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/cargo.CargoRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Create cargo
+      tags:
+      - master-barang
+  /master/barang/{id}:
+    delete:
+      description: Delete cargo by id
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete cargo
+      tags:
+      - master-barang
+    get:
+      description: Get cargo detail by id
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get cargo by id
+      tags:
+      - master-barang
+    put:
+      consumes:
+      - application/json
+      description: Update cargo by id
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Cargo payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/cargo.CargoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Update cargo
+      tags:
+      - master-barang
   /master/barang/search:
     post:
       consumes:
       - application/json
+      description: Search and filter cargo masters
       parameters:
       - description: Search payload
         in: body
@@ -1288,13 +1525,35 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
       summary: Search cargo
       tags:
-      - barang
+      - master-barang
+  /master/barang/stats:
+    get:
+      description: Get aggregated cargo statistics for active branch/terminal
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Get cargo statistics
+      tags:
+      - master-barang
   /master/branches:
     post:
       consumes:
       - application/json
+      description: Create a new branch
       parameters:
       - description: Branch payload
         in: body
@@ -1309,13 +1568,22 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Create branch
       tags:
-      - master-branches
+      - master-branch
   /master/branches/{id}:
     delete:
+      description: Delete branch by id
       parameters:
       - description: Branch ID
         in: path
@@ -1329,14 +1597,55 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Delete branch
       tags:
-      - master-branches
+      - master-branch
+    get:
+      description: Get branch detail by id
+      parameters:
+      - description: Branch ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get branch by id
+      tags:
+      - master-branch
     put:
       consumes:
       - application/json
+      description: Update branch by id
       parameters:
       - description: Branch ID
         in: path
@@ -1356,15 +1665,24 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Update branch
       tags:
-      - master-branches
+      - master-branch
   /master/branches/search:
     post:
       consumes:
       - application/json
+      description: Search and filter branches
       parameters:
       - description: Search payload
         in: body
@@ -1379,11 +1697,43 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Search branches
       tags:
-      - master-branches
+      - master-branch
+  /master/branches/stats:
+    get:
+      description: Get aggregated branch statistics
+      parameters:
+      - description: Filter by company code
+        in: query
+        name: company_code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get branch statistics
+      tags:
+      - master-branch
   /master/company:
     post:
       consumes:
@@ -2581,10 +2931,40 @@ paths:
       summary: Update role access
       tags:
       - master-role-access
+  /master/roles/{id}/all-menu-access:
+    get:
+      description: Retrieve full menu list with access permission for a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all menu access by role
+      tags:
+      - master-role-access
   /master/terminals:
     post:
       consumes:
       - application/json
+      description: Create a new terminal
       parameters:
       - description: Terminal payload
         in: body
@@ -2599,13 +2979,22 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Create terminal
       tags:
-      - master-terminals
+      - master-terminal
   /master/terminals/{id}:
     delete:
+      description: Delete terminal by id
       parameters:
       - description: Terminal ID
         in: path
@@ -2619,14 +3008,55 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Delete terminal
       tags:
-      - master-terminals
+      - master-terminal
+    get:
+      description: Get terminal detail by id
+      parameters:
+      - description: Terminal ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get terminal by id
+      tags:
+      - master-terminal
     put:
       consumes:
       - application/json
+      description: Update terminal by id
       parameters:
       - description: Terminal ID
         in: path
@@ -2646,15 +3076,24 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/helper.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Update terminal
       tags:
-      - master-terminals
+      - master-terminal
   /master/terminals/search:
     post:
       consumes:
       - application/json
+      description: Search and filter terminals
       parameters:
       - description: Search payload
         in: body
@@ -2669,11 +3108,43 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/helper.MetaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
       security:
       - BearerAuth: []
       summary: Search terminals
       tags:
-      - master-terminals
+      - master-terminal
+  /master/terminals/stats:
+    get:
+      description: Get aggregated terminal statistics
+      parameters:
+      - description: Filter by company code
+        in: query
+        name: company_code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helper.Response'
+      security:
+      - BearerAuth: []
+      summary: Get terminal statistics
+      tags:
+      - master-terminal
   /master/users:
     get:
       description: Retrieve paginated user list
@@ -3053,6 +3524,15 @@ paths:
   /master/vessel/stats:
     get:
       description: Get aggregated vessel statistics
+      parameters:
+      - description: Branch Code
+        in: query
+        name: branch_code
+        type: integer
+      - description: Terminal Code
+        in: query
+        name: terminal_code
+        type: integer
       produces:
       - application/json
       responses:
