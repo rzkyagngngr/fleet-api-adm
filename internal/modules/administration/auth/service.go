@@ -15,6 +15,7 @@ type AuthService interface {
 	Register(ctx context.Context, req *UserRegisterRequest) (*AuthResponse, error)
 	Login(ctx context.Context, req *LoginRequest) (*AuthResponse, error)
 	ChangeTerminal(ctx context.Context, userID uint64, req *ChangeTerminalRequest) (*AuthResponse, error)
+	RefreshToken(ctx context.Context, userID uint64) (*AuthResponse, error)
 }
 
 type authService struct {
@@ -120,14 +121,13 @@ func (s *authService) Login(ctx context.Context, req *LoginRequest) (*AuthRespon
 	}
 	u = uFull
 
-	// Auto-assign first accessible branch as active if not yet set
-	if len(u.Branches) > 0 {
+	// Only assign defaults if not already set (respecting user preference if it exists)
+	if u.BranchCode == "" && len(u.Branches) > 0 {
 		u.BranchCode = u.Branches[0].BranchCode
 		u.BranchName = u.Branches[0].BranchName
 	}
 
-	// Auto-assign first accessible terminal as active if not yet set
-	if len(u.Terminals) > 0 {
+	if u.TerminalCode == "" && len(u.Terminals) > 0 {
 		u.TerminalCode = u.Terminals[0].TerminalCode
 		u.TerminalName = u.Terminals[0].TerminalName
 	}
@@ -156,6 +156,30 @@ func (s *authService) ChangeTerminal(ctx context.Context, userID uint64, req *Ch
 
 	u.BranchCode = req.BranchCode
 	u.TerminalCode = req.TerminalCode
+
+	// Persist the change to DB so it doesn't revert on next session
+	if err := s.userRepo.Update(ctx, u.ID, u); err != nil {
+		return nil, err
+	}
+
+	token, err := s.jwtUtil.GenerateToken(u.ID, u.Email, u.EmployeeID, u.FullName, u.BranchCode, u.TerminalCode)
+	if err != nil {
+		return nil, err
+	}
+
+	rawMenus, err := s.userRepo.GetUserMenusByRole(ctx, u.RoleID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AuthResponse{Token: token, User: user.ToResponse(u), Menus: buildTreeRecursive(nil, rawMenus)}, nil
+}
+
+func (s *authService) RefreshToken(ctx context.Context, userID uint64) (*AuthResponse, error) {
+	u, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
 
 	token, err := s.jwtUtil.GenerateToken(u.ID, u.Email, u.EmployeeID, u.FullName, u.BranchCode, u.TerminalCode)
 	if err != nil {

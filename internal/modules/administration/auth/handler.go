@@ -100,3 +100,29 @@ func (h *AuthHandler) ChangeTerminal(c *gin.Context) {
 
 	helper.SuccessResponse(c, http.StatusOK, "terminal changed successfully", result)
 }
+
+// RefreshToken godoc
+// @Summary Refresh token
+// @Description Refresh current authenticated user token
+// @Tags auth
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} helper.Response
+// @Failure 401 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /auth/refresh-token [post]
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	userID, exists := c.Get(middleware.UserIDKey)
+	if !exists {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	result, err := h.authService.RefreshToken(c.Request.Context(), userID.(uint64))
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "token refreshed successfully", result)
+}
