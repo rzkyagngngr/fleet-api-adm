@@ -21,10 +21,12 @@ import (
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/tariff"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/warehouse"
 	"omniport-api/internal/router"
@@ -92,6 +94,8 @@ func main() {
 	equipmentService := equipment.NewEquipmentService(dbRegistry.ADM)
 	portService := pelabuhan.NewPortService(dbRegistry.ADM)
 	warehouseService := warehouse.NewWarehouseService(dbRegistry.ADM)
+	tariffService := tariff.NewTariffService(dbRegistry.ADM)
+	lookupService := lookup.NewLookupService(dbRegistry.ADM, equipmentService)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -105,6 +109,8 @@ func main() {
 	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
 	portHandler := pelabuhan.NewPortHandler(portService)
 	warehouseHandler := warehouse.NewWarehouseHandler(warehouseService)
+	tariffHandler := tariff.NewTariffHandler(tariffService)
+	lookupHandler := lookup.NewLookupHandler(lookupService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -123,8 +129,10 @@ func main() {
 		CustomerHandler:  customerHandler,
 		DockHandler:      dockHandler,
 		EquipmentHandler: equipmentHandler,
+		LookupHandler:    lookupHandler,
 		PortHandler:      portHandler,
 		ReferenceHandler: referenceHandler,
+		TariffHandler:    tariffHandler,
 		WarehouseHandler: warehouseHandler,
 	})
 

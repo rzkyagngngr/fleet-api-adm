@@ -7,19 +7,21 @@ import (
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/branch"
 	"omniport-api/internal/modules/administration/cargo"
+	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/tariff"
 	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
-	"omniport-api/internal/modules/administration/company"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -39,8 +41,10 @@ type RouterConfig struct {
 	CustomerHandler  *customer.CustomerHandler
 	DockHandler      *dock.DockHandler
 	EquipmentHandler *equipment.EquipmentHandler
+	LookupHandler    *lookup.LookupHandler
 	PortHandler      *pelabuhan.PortHandler
 	ReferenceHandler reference.ReferenceHandler
+	TariffHandler    *tariff.TariffHandler
 	VesselHandler    *vessel.VesselHandler
 	CargoHandler     *cargo.CargoHandler
 	BranchHandler    *branch.BranchHandler
@@ -117,6 +121,17 @@ func SetupRouter(cfg *RouterConfig) {
 				references.DELETE("/:id", cfg.ReferenceHandler.DeleteReference)
 			}
 
+			tariff := master.Group("/tariff")
+			{
+				tariff.POST("/search", cfg.TariffHandler.Search)
+				tariff.POST("/status-zero/search", cfg.TariffHandler.SearchStatusZero)
+				tariff.GET("/:id", cfg.TariffHandler.GetByID)
+				tariff.POST("", cfg.TariffHandler.Create)
+				tariff.PUT("/:id", cfg.TariffHandler.Update)
+				tariff.PUT("/:id/status", cfg.TariffHandler.UpdateStatus)
+				tariff.DELETE("/:id", cfg.TariffHandler.Delete)
+			}
+
 			pelabuhan := master.Group("/pelabuhan")
 			{
 				pelabuhan.POST("/search", cfg.PortHandler.SearchPorts)
@@ -133,6 +148,17 @@ func SetupRouter(cfg *RouterConfig) {
 				equipment.POST("", cfg.EquipmentHandler.CreateEquipment)
 				equipment.PUT("/:id", cfg.EquipmentHandler.UpdateEquipment)
 				equipment.DELETE("/:id", cfg.EquipmentHandler.DeleteEquipment)
+			}
+
+			lookup := master.Group("/lookup")
+			{
+				lookup.POST("/equipment-groups/search", cfg.LookupHandler.ListEquipmentGroupOptions)
+				lookup.POST("/customers/search", cfg.LookupHandler.ListCustomerOptions)
+				lookup.POST("/equipments/search", cfg.LookupHandler.ListEquipmentOptions)
+				lookup.POST("/cargos/search", cfg.LookupHandler.ListCargoOptions)
+				lookup.POST("/cargo-packages/search", cfg.LookupHandler.ListCargoPackageOptions)
+				lookup.POST("/cargo-units/search", cfg.LookupHandler.ListCargoUnitOptions)
+				lookup.POST("/billing-services/search", cfg.LookupHandler.ListBillingServiceOptions)
 			}
 
 			dock := master.Group("/dock")

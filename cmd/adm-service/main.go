@@ -16,16 +16,19 @@ import (
 	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
+	"omniport-api/internal/modules/administration/branch"
+	"omniport-api/internal/modules/administration/cargo"
+	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/modules/administration/dermaga"
+	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/tariff"
+	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
-	"omniport-api/internal/modules/administration/cargo"
-	"omniport-api/internal/modules/administration/branch"
-	"omniport-api/internal/modules/administration/terminal"
-	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -75,6 +78,9 @@ func main() {
 	branchService := branch.NewBranchService(branchRepo)
 	terminalService := terminal.NewTerminalService(terminalRepo, branchRepo)
 	companyService := company.NewCompanyService(companyRepo)
+	tariffService := tariff.NewTariffService(db)
+	equipmentService := equipment.NewEquipmentService(db)
+	lookupService := lookup.NewLookupService(db, equipmentService)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -91,6 +97,8 @@ func main() {
 	branchHandler := branch.NewBranchHandler(branchService, userAdapter)
 	terminalHandler := terminal.NewTerminalHandler(terminalService, userAdapter)
 	companyHandler := company.NewCompanyHandler(companyService)
+	tariffHandler := tariff.NewTariffHandler(tariffService)
+	lookupHandler := lookup.NewLookupHandler(lookupService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -106,7 +114,9 @@ func main() {
 		RoleHandler:      roleHandler,
 		AccessHandler:    accessHandler,
 		DermagaHandler:   dermagaHandler,
+		LookupHandler:    lookupHandler,
 		ReferenceHandler: referenceHandler,
+		TariffHandler:    tariffHandler,
 		VesselHandler:    vesselHandler,
 		CargoHandler:     cargoHandler,
 		BranchHandler:    branchHandler,
