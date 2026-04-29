@@ -40,7 +40,9 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 		TableName: "plan.post_vessel_schedules",
 		SelectColumns: []string{
 			"id", "branch_code", "terminal_code", "branch_name", "terminal_name",
-			"vessel_name", "vessel_code", "vessel_type", "voyage_no", "grt", "loa",
+			"vessel_name", "vessel_code", "vessel_type", "voyage_number", "voyage_type", "grt", "loa",
+			"schedule_code", "pkk_number",
+
 			"agency_name", "port_agent", "emergency_contact", "origin_port_code",
 			"origin_port_name", "destination_port_code", "destination_port_name",
 			"discharge_port_code", "discharge_port_name", "assigned_berth_name", "dock_id",
@@ -50,7 +52,8 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 		},
 		SearchColumns: []string{
 			"branch_name", "terminal_name", "vessel_name", "vessel_code", "vessel_type",
-			"voyage_no", "agency_name", "port_agent", "origin_port_code", "origin_port_name",
+			"voyage_number", "schedule_code", "pkk_number", "voyage_type", "agency_name", "port_agent", "origin_port_code", "origin_port_name",
+
 			"destination_port_code", "destination_port_name", "discharge_port_code",
 			"discharge_port_name", "assigned_berth_name", "dock_code", "dock_name",
 			"berth_code", "berth_name", "berth_position", "position_range",
@@ -61,7 +64,11 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 			"terminal_code":         "terminal_code",
 			"vessel_code":           "vessel_code",
 			"vessel_type":           "vessel_type",
-			"voyage_no":             "voyage_no",
+			"voyage_number":         "voyage_number",
+			"voyage_type":           "voyage_type",
+			"schedule_code":         "schedule_code",
+			"pkk_number":            "pkk_number",
+
 			"origin_port_code":      "origin_port_code",
 			"destination_port_code": "destination_port_code",
 			"discharge_port_code":   "discharge_port_code",
@@ -78,7 +85,8 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 			"id":            "id",
 			"vessel_name":   "vessel_name",
 			"vessel_code":   "vessel_code",
-			"voyage_no":     "voyage_no",
+			"voyage_number": "voyage_number",
+
 			"agency_name":   "agency_name",
 			"eta":           "eta",
 			"etb":           "etb",
@@ -121,7 +129,11 @@ func (s *vesselScheduleService) Update(ctx context.Context, id uint64, schedule 
 			"vessel_name":           schedule.VesselName,
 			"vessel_code":           schedule.VesselCode,
 			"vessel_type":           schedule.VesselType,
-			"voyage_no":             schedule.VoyageNo,
+			"voyage_number":         schedule.VoyageNumber,
+			"voyage_type":           schedule.VoyageType,
+			"schedule_code":         schedule.ScheduleCode,
+			"pkk_number":            schedule.PKKNumber,
+
 			"grt":                   schedule.GRT,
 			"loa":                   schedule.LOA,
 			"agency_name":           schedule.AgencyName,

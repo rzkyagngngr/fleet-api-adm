@@ -246,16 +246,29 @@ func SetupRouter(cfg *RouterConfig) {
 
 		plan := v1.Group("/plan")
 		{
+			// Vessel Schedule (Shared)
 			vesselSchedule := plan.Group("/vessel-schedule")
 			{
-				vesselSchedule.POST("/search", cfg.VesselScheduleHandler.Search)
-				vesselSchedule.GET("/:id", cfg.VesselScheduleHandler.GetByID)
+				vesselSchedule.POST("/search", cfg.PostRequestHandler.SearchVesselSchedule)
+				vesselSchedule.GET("/:id", cfg.PostRequestHandler.GetVesselScheduleByID)
+				// CRUD from specialized module if needed, but they need schema updates
 				vesselSchedule.POST("", cfg.VesselScheduleHandler.Create)
 				vesselSchedule.PUT("/:id", cfg.VesselScheduleHandler.Update)
 				vesselSchedule.DELETE("/:id", cfg.VesselScheduleHandler.Delete)
 			}
-		}
 
+			// Permohonan Jasa Barang (PJB)
+			reqBarang := plan.Group("/request/barang")
+			{
+				reqBarang.GET("/stats", cfg.PostRequestHandler.GetStats)
+				reqBarang.POST("/search", cfg.PostRequestHandler.Search)
+				reqBarang.POST("", cfg.PostRequestHandler.Create)
+				reqBarang.GET("/:id", cfg.PostRequestHandler.GetByID)
+				reqBarang.PUT("/:id", cfg.PostRequestHandler.Update)
+				reqBarang.DELETE("/:id", cfg.PostRequestHandler.Delete)
+			}
+		}
+		
 		dermagas := v1.Group("/dermaga")
 		{
 			dermagas.POST("", cfg.DermagaHandler.Create)
@@ -265,24 +278,6 @@ func SetupRouter(cfg *RouterConfig) {
 			dermagas.DELETE("/:id", cfg.DermagaHandler.Delete)
 		}
 
-		// ── Plan: Permohonan Jasa Barang ──────────────────────────────
-		planGroup := v1.Group("/plan")
-		{
-			reqBarang := planGroup.Group("/request/barang")
-			{
-				reqBarang.GET("/stats", cfg.PostRequestHandler.GetStats)
-				reqBarang.POST("/search", cfg.PostRequestHandler.Search)
-				reqBarang.POST("", cfg.PostRequestHandler.Create)
-				reqBarang.GET("/:id", cfg.PostRequestHandler.GetByID)
-				reqBarang.PUT("/:id", cfg.PostRequestHandler.Update)
-				reqBarang.DELETE("/:id", cfg.PostRequestHandler.Delete)
-			}
 
-			vesselSchedule := planGroup.Group("/vessel-schedule")
-			{
-				vesselSchedule.POST("/search", cfg.PostRequestHandler.SearchVesselSchedule)
-				vesselSchedule.GET("/:id", cfg.PostRequestHandler.GetVesselScheduleByID)
-			}
-		}
 	}
 }

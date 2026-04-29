@@ -241,7 +241,11 @@ func (h *VesselScheduleHandler) buildScheduleFromRequest(c *gin.Context, req Ves
 		VesselName:          req.VesselName,
 		VesselCode:          req.VesselCode,
 		VesselType:          req.VesselType,
-		VoyageNo:            req.VoyageNo,
+		VoyageNumber:        req.VoyageNumber,
+		VoyageType:          req.VoyageType,
+		ScheduleCode:        req.ScheduleCode,
+		PKKNumber:           req.PKKNumber,
+
 		GRT:                 req.GRT,
 		LOA:                 req.LOA,
 		AgencyName:          req.AgencyName,

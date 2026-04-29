@@ -11,7 +11,11 @@ type VesselSchedule struct {
 	VesselName          *string    `gorm:"column:vessel_name;size:100" json:"vessel_name"`
 	VesselCode          *string    `gorm:"column:vessel_code;size:50" json:"vessel_code"`
 	VesselType          *string    `gorm:"column:vessel_type;size:50" json:"vessel_type"`
-	VoyageNo            string     `gorm:"column:voyage_no;size:50;not null" json:"voyage_no"`
+	VoyageNumber        string     `gorm:"column:voyage_number;size:50;not null" json:"voyage_number"`
+	VoyageType          string     `gorm:"column:voyage_type;size:50;not null" json:"voyage_type"`
+	ScheduleCode        string     `gorm:"column:schedule_code;size:50" json:"schedule_code"`
+	PKKNumber           string     `gorm:"column:pkk_number;size:50" json:"pkk_number"`
+
 	GRT                 *int       `gorm:"column:grt" json:"grt"`
 	LOA                 *float64   `gorm:"column:loa" json:"loa"`
 	AgencyName          *string    `gorm:"column:agency_name;size:100" json:"agency_name"`
