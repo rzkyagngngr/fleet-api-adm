@@ -234,6 +234,19 @@ func (h *PostRequestHandler) GetStats(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "success", res)
 }
 
+// UpdateStatus godoc
+// @Summary      Update Permohonan Jasa Barang Status
+// @Description  Approve or Reject a cargo service request with optional remarks
+// @Tags         plan-permohonan-barang
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Request ID"
+// @Param        payload body postrequest.UpdateStatusInput true "Status update payload"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/request/barang/{id}/status [put]
 func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
