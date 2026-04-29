@@ -2,6 +2,7 @@ package vesselschedule
 
 import (
 	"context"
+	"fmt"
 	"omniport-api/internal/helper"
 	"time"
 
@@ -40,9 +41,8 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 		TableName: "plan.post_vessel_schedules",
 		SelectColumns: []string{
 			"id", "branch_code", "terminal_code", "branch_name", "terminal_name",
-			"vessel_name", "vessel_code", "vessel_type", "voyage_number", "voyage_type", "grt", "loa",
-			"schedule_code", "pkk_number",
-
+			"schedule_code", "vessel_name", "vessel_code", "vessel_type", "voyage_number",
+			"pkk_number", "voyage_type", "grt", "loa",
 			"agency_name", "port_agent", "emergency_contact", "origin_port_code",
 			"origin_port_name", "destination_port_code", "destination_port_name",
 			"discharge_port_code", "discharge_port_name", "assigned_berth_name", "dock_id",
@@ -51,9 +51,9 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 			"creation_by", "last_updated_date", "last_updated_by",
 		},
 		SearchColumns: []string{
-			"branch_name", "terminal_name", "vessel_name", "vessel_code", "vessel_type",
-			"voyage_number", "schedule_code", "pkk_number", "voyage_type", "agency_name", "port_agent", "origin_port_code", "origin_port_name",
-
+			"branch_name", "terminal_name", "schedule_code", "vessel_name", "vessel_code",
+			"vessel_type", "voyage_number", "pkk_number", "voyage_type", "agency_name",
+			"port_agent", "origin_port_code", "origin_port_name",
 			"destination_port_code", "destination_port_name", "discharge_port_code",
 			"discharge_port_name", "assigned_berth_name", "dock_code", "dock_name",
 			"berth_code", "berth_name", "berth_position", "position_range",
@@ -62,13 +62,12 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 			"id":                    "id",
 			"branch_code":           "branch_code",
 			"terminal_code":         "terminal_code",
+			"schedule_code":         "schedule_code",
 			"vessel_code":           "vessel_code",
 			"vessel_type":           "vessel_type",
 			"voyage_number":         "voyage_number",
-			"voyage_type":           "voyage_type",
-			"schedule_code":         "schedule_code",
 			"pkk_number":            "pkk_number",
-
+			"voyage_type":           "voyage_type",
 			"origin_port_code":      "origin_port_code",
 			"destination_port_code": "destination_port_code",
 			"discharge_port_code":   "discharge_port_code",
@@ -83,10 +82,12 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 		},
 		SortableColumns: map[string]string{
 			"id":            "id",
+			"schedule_code": "schedule_code",
 			"vessel_name":   "vessel_name",
 			"vessel_code":   "vessel_code",
 			"voyage_number": "voyage_number",
-
+			"pkk_number":    "pkk_number",
+			"voyage_type":   "voyage_type",
 			"agency_name":   "agency_name",
 			"eta":           "eta",
 			"etb":           "etb",
@@ -109,9 +110,23 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 
 func (s *vesselScheduleService) Create(ctx context.Context, schedule *VesselSchedule) error {
 	now := time.Now()
+	schedule.ID = 0
 	schedule.CreationDate = &now
 	schedule.LastUpdatedDate = &now
-	return s.db.WithContext(ctx).Table(schedule.TableName()).Create(schedule).Error
+
+	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("LOCK TABLE plan.post_vessel_schedules IN EXCLUSIVE MODE").Error; err != nil {
+			return err
+		}
+
+		scheduleCode, err := s.nextScheduleCode(tx, now)
+		if err != nil {
+			return err
+		}
+		schedule.ScheduleCode = &scheduleCode
+
+		return tx.Table(schedule.TableName()).Omit("id").Create(schedule).Error
+	})
 }
 
 func (s *vesselScheduleService) Update(ctx context.Context, id uint64, schedule *VesselSchedule) error {
@@ -130,10 +145,8 @@ func (s *vesselScheduleService) Update(ctx context.Context, id uint64, schedule 
 			"vessel_code":           schedule.VesselCode,
 			"vessel_type":           schedule.VesselType,
 			"voyage_number":         schedule.VoyageNumber,
-			"voyage_type":           schedule.VoyageType,
-			"schedule_code":         schedule.ScheduleCode,
 			"pkk_number":            schedule.PKKNumber,
-
+			"voyage_type":           schedule.VoyageType,
 			"grt":                   schedule.GRT,
 			"loa":                   schedule.LOA,
 			"agency_name":           schedule.AgencyName,
@@ -188,6 +201,27 @@ func (s *vesselScheduleService) FindByID(ctx context.Context, id uint64) (*Vesse
 		return nil, result.Error
 	}
 	return &row, nil
+}
+
+func (s *vesselScheduleService) nextScheduleCode(tx *gorm.DB, now time.Time) (string, error) {
+	yearSuffix := now.Format("06")
+	pattern := fmt.Sprintf("^SCH[0-9]{6}%s$", yearSuffix)
+
+	var lastSequence int
+	if err := tx.Raw(`
+		SELECT COALESCE(MAX(CAST(SUBSTRING(schedule_code FROM 4 FOR 6) AS INTEGER)), 0)
+		FROM plan.post_vessel_schedules
+		WHERE schedule_code ~ ?
+	`, pattern).Scan(&lastSequence).Error; err != nil {
+		return "", err
+	}
+
+	nextSequence := lastSequence + 1
+	if nextSequence > 999999 {
+		return "", fmt.Errorf("schedule code sequence for year %s is exhausted", yearSuffix)
+	}
+
+	return fmt.Sprintf("SCH%06d%s", nextSequence, yearSuffix), nil
 }
 
 func (s *vesselScheduleService) GetAuthLocation(ctx context.Context, userID uint64) (*VesselScheduleAuthLocation, error) {

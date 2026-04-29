@@ -10,10 +10,8 @@ type VesselScheduleRequest struct {
 	VesselCode          *string    `json:"vessel_code" binding:"omitempty,max=50"`
 	VesselType          *string    `json:"vessel_type" binding:"omitempty,max=50"`
 	VoyageNumber        string     `json:"voyage_number" binding:"required,max=50"`
+	PKKNumber           *string    `json:"pkk_number" binding:"omitempty,max=50"`
 	VoyageType          string     `json:"voyage_type" binding:"required,max=50"`
-	ScheduleCode        string     `json:"schedule_code" binding:"omitempty,max=50"`
-	PKKNumber           string     `json:"pkk_number" binding:"omitempty,max=50"`
-
 	GRT                 *int       `json:"grt"`
 	LOA                 *float64   `json:"loa"`
 	AgencyName          *string    `json:"agency_name" binding:"omitempty,max=100"`

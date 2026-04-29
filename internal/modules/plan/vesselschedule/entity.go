@@ -8,14 +8,13 @@ type VesselSchedule struct {
 	TerminalCode        *int       `gorm:"column:terminal_code" json:"terminal_code"`
 	BranchName          *string    `gorm:"column:branch_name;size:50" json:"branch_name"`
 	TerminalName        *string    `gorm:"column:terminal_name;size:50" json:"terminal_name"`
+	ScheduleCode        *string    `gorm:"column:schedule_code;size:20" json:"schedule_code"`
 	VesselName          *string    `gorm:"column:vessel_name;size:100" json:"vessel_name"`
 	VesselCode          *string    `gorm:"column:vessel_code;size:50" json:"vessel_code"`
 	VesselType          *string    `gorm:"column:vessel_type;size:50" json:"vessel_type"`
 	VoyageNumber        string     `gorm:"column:voyage_number;size:50;not null" json:"voyage_number"`
+	PKKNumber           *string    `gorm:"column:pkk_number;size:50" json:"pkk_number"`
 	VoyageType          string     `gorm:"column:voyage_type;size:50;not null" json:"voyage_type"`
-	ScheduleCode        string     `gorm:"column:schedule_code;size:50" json:"schedule_code"`
-	PKKNumber           string     `gorm:"column:pkk_number;size:50" json:"pkk_number"`
-
 	GRT                 *int       `gorm:"column:grt" json:"grt"`
 	LOA                 *float64   `gorm:"column:loa" json:"loa"`
 	AgencyName          *string    `gorm:"column:agency_name;size:100" json:"agency_name"`
