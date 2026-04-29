@@ -30,6 +30,11 @@ func NewCargoHandler(service CargoService) *CargoHandler {
 // @Failure 500 {object} helper.Response
 // @Router /master/barang/search [post]
 func (h *CargoHandler) Search(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
+		return
+	}
+
 	var input SearchCargoRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -45,10 +50,20 @@ func (h *CargoHandler) Search(c *gin.Context) {
 	}
 
 	if branchCode != nil {
-		input.Filters["branch_code"] = branchCode.(string)
+		branchCodeText, err := parseContextString(branchCode)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+			return
+		}
+		input.Filters["branch_code"] = branchCodeText
 	}
 	if terminalCode != nil {
-		input.Filters["terminal_code"] = terminalCode.(string)
+		terminalCodeText, err := parseContextString(terminalCode)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+			return
+		}
+		input.Filters["terminal_code"] = terminalCodeText
 	}
 
 	rows, meta, err := h.service.Search(c.Request.Context(), input.ToPaginationQuery())
@@ -73,6 +88,11 @@ func (h *CargoHandler) Search(c *gin.Context) {
 // @Failure 500 {object} helper.Response
 // @Router /master/barang [post]
 func (h *CargoHandler) Create(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
+		return
+	}
+
 	var input CargoRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
 		helper.ValidationErrorResponse(c, err)
@@ -84,15 +104,16 @@ func (h *CargoHandler) Create(c *gin.Context) {
 	terminalCode, _ := c.Get(middleware.TerminalCodeKey)
 
 	if branchCode != nil {
-		code, _ := strconv.Atoi(branchCode.(string))
+		code, _ := parseContextInt(branchCode)
 		input.BranchCode = code
 	}
 	if terminalCode != nil {
-		code, _ := strconv.Atoi(terminalCode.(string))
+		code, _ := parseContextInt(terminalCode)
 		input.TerminalCode = code
 	}
 
-	if err := h.service.CreateCargo(c.Request.Context(), &input, employeeID.(string)); err != nil {
+	adminEmp, _ := parseContextString(employeeID)
+	if err := h.service.CreateCargo(c.Request.Context(), &input, adminEmp); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -114,6 +135,11 @@ func (h *CargoHandler) Create(c *gin.Context) {
 // @Failure 500 {object} helper.Response
 // @Router /master/barang/{id} [put]
 func (h *CargoHandler) Update(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
+		return
+	}
+
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid cargo ID")
@@ -131,15 +157,16 @@ func (h *CargoHandler) Update(c *gin.Context) {
 	terminalCode, _ := c.Get(middleware.TerminalCodeKey)
 
 	if branchCode != nil {
-		code, _ := strconv.Atoi(branchCode.(string))
+		code, _ := parseContextInt(branchCode)
 		input.BranchCode = code
 	}
 	if terminalCode != nil {
-		code, _ := strconv.Atoi(terminalCode.(string))
+		code, _ := parseContextInt(terminalCode)
 		input.TerminalCode = code
 	}
 
-	if err := h.service.UpdateCargo(c.Request.Context(), id, &input, employeeID.(string)); err != nil {
+	adminEmp, _ := parseContextString(employeeID)
+	if err := h.service.UpdateCargo(c.Request.Context(), id, &input, adminEmp); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -160,6 +187,11 @@ func (h *CargoHandler) Update(c *gin.Context) {
 // @Failure 500 {object} helper.Response
 // @Router /master/barang/{id} [delete]
 func (h *CargoHandler) Delete(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
+		return
+	}
+
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid cargo ID")
@@ -186,6 +218,11 @@ func (h *CargoHandler) Delete(c *gin.Context) {
 // @Failure 500 {object} helper.Response
 // @Router /master/barang/{id} [get]
 func (h *CargoHandler) GetByID(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
+		return
+	}
+
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid cargo ID")
@@ -209,6 +246,11 @@ func (h *CargoHandler) GetByID(c *gin.Context) {
 // @Security BearerAuth
 // @Router /master/barang/stats [get]
 func (h *CargoHandler) GetStats(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
+		return
+	}
+
 	// Priority 1: Query parameters
 	branchCode, _ := strconv.Atoi(c.DefaultQuery("branch_code", "0"))
 	terminalCode, _ := strconv.Atoi(c.DefaultQuery("terminal_code", "0"))
@@ -216,12 +258,12 @@ func (h *CargoHandler) GetStats(c *gin.Context) {
 	// Priority 2: Fallback to middleware context
 	if branchCode == 0 {
 		if val, ok := c.Get(middleware.BranchCodeKey); ok {
-			branchCode, _ = strconv.Atoi(val.(string))
+			branchCode, _ = parseContextInt(val)
 		}
 	}
 	if terminalCode == 0 {
 		if val, ok := c.Get(middleware.TerminalCodeKey); ok {
-			terminalCode, _ = strconv.Atoi(val.(string))
+			terminalCode, _ = parseContextInt(val)
 		}
 	}
 
@@ -232,4 +274,37 @@ func (h *CargoHandler) GetStats(c *gin.Context) {
 	}
 
 	helper.SuccessResponse(c, http.StatusOK, "success", res)
+}
+
+func parseContextString(value interface{}) (string, error) {
+	switch v := value.(type) {
+	case nil:
+		return "", nil
+	case string:
+		return v, nil
+	case *string:
+		if v == nil {
+			return "", nil
+		}
+		return *v, nil
+	case int:
+		return strconv.Itoa(v), nil
+	case int64:
+		return strconv.FormatInt(v, 10), nil
+	case *int64:
+		if v == nil {
+			return "", nil
+		}
+		return strconv.FormatInt(*v, 10), nil
+	default:
+		return "", fmt.Errorf("unsupported type %T", value)
+	}
+}
+
+func parseContextInt(value interface{}) (int, error) {
+	text, err := parseContextString(value)
+	if err != nil || text == "" {
+		return 0, err
+	}
+	return strconv.Atoi(text)
 }

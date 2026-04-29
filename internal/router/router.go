@@ -249,9 +249,8 @@ func SetupRouter(cfg *RouterConfig) {
 			// Vessel Schedule (Shared)
 			vesselSchedule := plan.Group("/vessel-schedule")
 			{
-				vesselSchedule.POST("/search", cfg.PostRequestHandler.SearchVesselSchedule)
-				vesselSchedule.GET("/:id", cfg.PostRequestHandler.GetVesselScheduleByID)
-				// CRUD from specialized module if needed, but they need schema updates
+				vesselSchedule.POST("/search", cfg.VesselScheduleHandler.Search)
+				vesselSchedule.GET("/:id", cfg.VesselScheduleHandler.GetByID)
 				vesselSchedule.POST("", cfg.VesselScheduleHandler.Create)
 				vesselSchedule.PUT("/:id", cfg.VesselScheduleHandler.Update)
 				vesselSchedule.DELETE("/:id", cfg.VesselScheduleHandler.Delete)
@@ -268,7 +267,7 @@ func SetupRouter(cfg *RouterConfig) {
 				reqBarang.DELETE("/:id", cfg.PostRequestHandler.Delete)
 			}
 		}
-		
+
 		dermagas := v1.Group("/dermaga")
 		{
 			dermagas.POST("", cfg.DermagaHandler.Create)
@@ -277,7 +276,5 @@ func SetupRouter(cfg *RouterConfig) {
 			dermagas.PUT("/:id", cfg.DermagaHandler.Update)
 			dermagas.DELETE("/:id", cfg.DermagaHandler.Delete)
 		}
-
-
 	}
 }

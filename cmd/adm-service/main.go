@@ -21,15 +21,18 @@ import (
 	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
+	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
 	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
+	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/tariff"
 	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
+	"omniport-api/internal/modules/administration/warehouse"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
@@ -50,6 +53,14 @@ func main() {
 	reg, err := database.NewRegistry(cfg)
 	if err != nil {
 		slog.Error("Failed to connect to database registry", "error", err)
+		os.Exit(1)
+	}
+	if reg.ADM == nil {
+		slog.Error("Administration database connection is not configured")
+		os.Exit(1)
+	}
+	if reg.PLAN == nil {
+		slog.Error("Plan database connection is not configured")
 		os.Exit(1)
 	}
 
@@ -89,11 +100,15 @@ func main() {
 	terminalService := terminal.NewTerminalService(terminalRepo, branchRepo)
 	companyService := company.NewCompanyService(companyRepo)
 	customerService := customer.NewCustomerService(db)
+	dockService := dock.NewDockService(db)
+	portService := pelabuhan.NewPortService(db)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
 	tariffService := tariff.NewTariffService(db)
 	equipmentService := equipment.NewEquipmentService(db)
+	warehouseService := warehouse.NewWarehouseService(db)
 	lookupService := lookup.NewLookupService(db, equipmentService)
-	vesselScheduleService := vesselschedule.NewVesselScheduleService(db)
+	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db)
+
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
 	menuHandler := menu.NewMenuHandler(menuService)
@@ -104,6 +119,10 @@ func main() {
 	vesselHandler := vessel.NewVesselHandler(vesselService)
 	cargoHandler := cargo.NewCargoHandler(cargoService)
 	customerHandler := customer.NewCustomerHandler(customerService)
+	dockHandler := dock.NewDockHandler(dockService)
+	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
+	portHandler := pelabuhan.NewPortHandler(portService)
+	warehouseHandler := warehouse.NewWarehouseHandler(warehouseService)
 
 	// Break circular dependency using adapter
 	userAdapter := &userProviderAdapter{s: userService}
@@ -136,6 +155,10 @@ func main() {
 		VesselScheduleHandler: vesselScheduleHandler,
 		CargoHandler:          cargoHandler,
 		CustomerHandler:       customerHandler,
+		DockHandler:           dockHandler,
+		EquipmentHandler:      equipmentHandler,
+		PortHandler:           portHandler,
+		WarehouseHandler:      warehouseHandler,
 		BranchHandler:         branchHandler,
 		TerminalHandler:       terminalHandler,
 		CompanyHandler:        companyHandler,
