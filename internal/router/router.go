@@ -20,6 +20,7 @@ import (
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
 	"omniport-api/internal/modules/administration/company"
+	"omniport-api/internal/modules/plan/postrequest"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -46,7 +47,8 @@ type RouterConfig struct {
 	BranchHandler    *branch.BranchHandler
 	TerminalHandler  *terminal.TerminalHandler
 	WarehouseHandler *warehouse.WarehouseHandler
-	CompanyHandler   *company.CompanyHandler
+	CompanyHandler       *company.CompanyHandler
+	PostRequestHandler  *postrequest.PostRequestHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -218,6 +220,26 @@ func SetupRouter(cfg *RouterConfig) {
 			dermagas.GET("/:id", cfg.DermagaHandler.FindByID)
 			dermagas.PUT("/:id", cfg.DermagaHandler.Update)
 			dermagas.DELETE("/:id", cfg.DermagaHandler.Delete)
+		}
+
+		// ── Plan: Permohonan Jasa Barang ──────────────────────────────
+		planGroup := v1.Group("/plan")
+		{
+			reqBarang := planGroup.Group("/request/barang")
+			{
+				reqBarang.GET("/stats", cfg.PostRequestHandler.GetStats)
+				reqBarang.POST("/search", cfg.PostRequestHandler.Search)
+				reqBarang.POST("", cfg.PostRequestHandler.Create)
+				reqBarang.GET("/:id", cfg.PostRequestHandler.GetByID)
+				reqBarang.PUT("/:id", cfg.PostRequestHandler.Update)
+				reqBarang.DELETE("/:id", cfg.PostRequestHandler.Delete)
+			}
+
+			vesselSchedule := planGroup.Group("/vessel-schedule")
+			{
+				vesselSchedule.POST("/search", cfg.PostRequestHandler.SearchVesselSchedule)
+				vesselSchedule.GET("/:id", cfg.PostRequestHandler.GetVesselScheduleByID)
+			}
 		}
 	}
 }

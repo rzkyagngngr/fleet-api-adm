@@ -130,6 +130,7 @@ func (s *customerService) Search(ctx context.Context, query helper.PaginationQue
 		MaxDownloadLimit: 1000,
 	}
 
+
 	var customers []Customer
 	meta, err := helper.GetDynamicPaginatedNativeData(s.db.WithContext(ctx), config, query, &customers)
 	return customers, meta, err

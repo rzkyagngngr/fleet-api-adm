@@ -51,8 +51,13 @@ func (h *WarehouseHandler) SearchWarehouse(c *gin.Context) {
 		input.Filters = map[string]string{}
 	}
 
-	input.Filters["branch_code"] = strconv.FormatInt(*branchCodeVal.(*int64), 10)
-	input.Filters["terminal_code"] = strconv.FormatInt(*terminalCodeVal.(*int64), 10)
+	if branchCodeVal != nil {
+		input.Filters["branch_code"] = branchCodeVal.(string)
+	}
+	if terminalCodeVal != nil {
+		input.Filters["terminal_code"] = terminalCodeVal.(string)
+	}
+
 
 	warehouses, meta, err := h.service.Search(c.Request.Context(), input.ToPaginationQuery())
 	if err != nil {
@@ -129,8 +134,9 @@ func (h *WarehouseHandler) CreateWarehouse(c *gin.Context) {
 		return
 	}
 
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, _ := strconv.Atoi(branchCodeVal.(string))
+	terminalCode, _ := strconv.Atoi(terminalCodeVal.(string))
+
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
@@ -208,8 +214,9 @@ func (h *WarehouseHandler) UpdateWarehouse(c *gin.Context) {
 		return
 	}
 
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, _ := strconv.Atoi(branchCodeVal.(string))
+	terminalCode, _ := strconv.Atoi(terminalCodeVal.(string))
+
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")

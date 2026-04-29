@@ -26,6 +26,8 @@ import (
 	"omniport-api/internal/modules/administration/branch"
 	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/company"
+	"omniport-api/internal/modules/administration/customer"
+	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -39,12 +41,16 @@ func main() {
 	}
 
 	setupLogger(cfg)
-
-	db, err := database.NewPostgresDB(cfg)
+	
+	// Initialize Database Registry for Multi-Schema Support
+	reg, err := database.NewRegistry(cfg)
 	if err != nil {
-		slog.Error("Failed to connect to database", "error", err)
+		slog.Error("Failed to connect to database registry", "error", err)
 		os.Exit(1)
 	}
+
+	// For legacy support or single DB modules, we use ADM as the primary DB
+	db := reg.ADM
 
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -63,6 +69,10 @@ func main() {
 	terminalRepo := terminal.NewTerminalRepository(db)
 	companyRepo := company.NewCompanyRepository(db)
 
+	
+	// Plan Module uses PLAN connection
+	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
+
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, jwtUtil)
 	userService := user.NewUserService(userRepo)
@@ -75,6 +85,9 @@ func main() {
 	branchService := branch.NewBranchService(branchRepo)
 	terminalService := terminal.NewTerminalService(terminalRepo, branchRepo)
 	companyService := company.NewCompanyService(companyRepo)
+	customerService := customer.NewCustomerService(db) // It seems it uses db directly based on NewCustomerService
+
+	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -85,12 +98,15 @@ func main() {
 	referenceHandler := reference.NewReferenceHandler(referenceService)
 	vesselHandler := vessel.NewVesselHandler(vesselService)
 	cargoHandler := cargo.NewCargoHandler(cargoService)
+	customerHandler := customer.NewCustomerHandler(customerService)
+
 
 	// Break circular dependency using adapter
 	userAdapter := &userProviderAdapter{s: userService}
 	branchHandler := branch.NewBranchHandler(branchService, userAdapter)
 	terminalHandler := terminal.NewTerminalHandler(terminalService, userAdapter)
 	companyHandler := company.NewCompanyHandler(companyService)
+	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -109,10 +125,14 @@ func main() {
 		ReferenceHandler: referenceHandler,
 		VesselHandler:    vesselHandler,
 		CargoHandler:     cargoHandler,
+		CustomerHandler:  customerHandler,
 		BranchHandler:    branchHandler,
 		TerminalHandler:  terminalHandler,
 		CompanyHandler:   companyHandler,
+		PostRequestHandler: postRequestHandler,
 	})
+
+
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)
 }

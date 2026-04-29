@@ -53,8 +53,15 @@ func (h *CustomerHandler) SearchCustomers(c *gin.Context) {
 		input.Filters = map[string]string{}
 	}
 
-	input.Filters["branch_code"] = strconv.FormatInt(*branchCodeVal.(*int64), 10)
-	input.Filters["terminal_code"] = strconv.FormatInt(*terminalCodeVal.(*int64), 10)
+	if branchCodeVal != nil {
+		input.Filters["branch_code"] = branchCodeVal.(string)
+	}
+	if terminalCodeVal != nil {
+		input.Filters["terminal_code"] = terminalCodeVal.(string)
+	}
+
+
+
 
 	if status, ok := input.Filters["status"]; ok {
 		switch strings.ToLower(strings.TrimSpace(status)) {
@@ -114,8 +121,9 @@ func (h *CustomerHandler) CreateCustomer(c *gin.Context) {
 	}
 
 	customerName := req.CustomerName
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, _ := strconv.Atoi(branchCodeVal.(string))
+	terminalCode, _ := strconv.Atoi(terminalCodeVal.(string))
+
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
@@ -217,8 +225,9 @@ func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
 	}
 
 	customerName := req.CustomerName
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, _ := strconv.Atoi(branchCodeVal.(string))
+	terminalCode, _ := strconv.Atoi(terminalCodeVal.(string))
+
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
