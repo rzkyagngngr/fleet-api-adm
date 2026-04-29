@@ -1,54 +1,60 @@
 package router
 
 import (
+	_ "omniport-api/docs"
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/branch"
 	"omniport-api/internal/modules/administration/cargo"
+	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/tariff"
 	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
-	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/modules/plan/postrequest"
+	"omniport-api/internal/modules/plan/vesselschedule"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "omniport-api/docs"
 )
 
 type RouterConfig struct {
-	Engine           *gin.Engine
-	JWTUtil          *helper.JWTUtil
-	AuthHandler      *auth.AuthHandler
-	UserHandler      *user.UserHandler
-	MenuHandler      *menu.MenuHandler
-	RoleHandler      *role.RoleHandler
-	AccessHandler    *access.AccessHandler
-	DermagaHandler   dermaga.DermagaHandler
-	CustomerHandler  *customer.CustomerHandler
-	DockHandler      *dock.DockHandler
-	EquipmentHandler *equipment.EquipmentHandler
-	PortHandler      *pelabuhan.PortHandler
-	ReferenceHandler reference.ReferenceHandler
-	VesselHandler    *vessel.VesselHandler
-	CargoHandler     *cargo.CargoHandler
-	BranchHandler    *branch.BranchHandler
-	TerminalHandler  *terminal.TerminalHandler
-	WarehouseHandler *warehouse.WarehouseHandler
-	CompanyHandler       *company.CompanyHandler
-	PostRequestHandler  *postrequest.PostRequestHandler
+	Engine                *gin.Engine
+	JWTUtil               *helper.JWTUtil
+	AuthHandler           *auth.AuthHandler
+	UserHandler           *user.UserHandler
+	MenuHandler           *menu.MenuHandler
+	RoleHandler           *role.RoleHandler
+	AccessHandler         *access.AccessHandler
+	DermagaHandler        dermaga.DermagaHandler
+	CustomerHandler       *customer.CustomerHandler
+	DockHandler           *dock.DockHandler
+	EquipmentHandler      *equipment.EquipmentHandler
+	LookupHandler         *lookup.LookupHandler
+	PortHandler           *pelabuhan.PortHandler
+	ReferenceHandler      reference.ReferenceHandler
+	TariffHandler         *tariff.TariffHandler
+	VesselHandler         *vessel.VesselHandler
+	VesselScheduleHandler *vesselschedule.VesselScheduleHandler
+	CargoHandler          *cargo.CargoHandler
+	BranchHandler         *branch.BranchHandler
+	TerminalHandler       *terminal.TerminalHandler
+	WarehouseHandler      *warehouse.WarehouseHandler
+	CompanyHandler        *company.CompanyHandler
+	PostRequestHandler    *postrequest.PostRequestHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -119,6 +125,17 @@ func SetupRouter(cfg *RouterConfig) {
 				references.DELETE("/:id", cfg.ReferenceHandler.DeleteReference)
 			}
 
+			tariff := master.Group("/tariff")
+			{
+				tariff.POST("/search", cfg.TariffHandler.Search)
+				tariff.POST("/status-zero/search", cfg.TariffHandler.SearchStatusZero)
+				tariff.GET("/:id", cfg.TariffHandler.GetByID)
+				tariff.POST("", cfg.TariffHandler.Create)
+				tariff.PUT("/:id", cfg.TariffHandler.Update)
+				tariff.PUT("/:id/status", cfg.TariffHandler.UpdateStatus)
+				tariff.DELETE("/:id", cfg.TariffHandler.Delete)
+			}
+
 			pelabuhan := master.Group("/pelabuhan")
 			{
 				pelabuhan.POST("/search", cfg.PortHandler.SearchPorts)
@@ -135,6 +152,20 @@ func SetupRouter(cfg *RouterConfig) {
 				equipment.POST("", cfg.EquipmentHandler.CreateEquipment)
 				equipment.PUT("/:id", cfg.EquipmentHandler.UpdateEquipment)
 				equipment.DELETE("/:id", cfg.EquipmentHandler.DeleteEquipment)
+			}
+
+			lookup := master.Group("/lookup")
+			{
+				lookup.POST("/equipment-groups/search", cfg.LookupHandler.ListEquipmentGroupOptions)
+				lookup.POST("/customers/search", cfg.LookupHandler.ListCustomerOptions)
+				lookup.POST("/equipments/search", cfg.LookupHandler.ListEquipmentOptions)
+				lookup.POST("/cargos/search", cfg.LookupHandler.ListCargoOptions)
+				lookup.POST("/cargo-packages/search", cfg.LookupHandler.ListCargoPackageOptions)
+				lookup.POST("/cargo-units/search", cfg.LookupHandler.ListCargoUnitOptions)
+				lookup.POST("/billing-services/search", cfg.LookupHandler.ListBillingServiceOptions)
+				lookup.POST("/docks/search", cfg.LookupHandler.ListDockOptions)
+				lookup.POST("/vessels/search", cfg.LookupHandler.ListVesselOptions)
+				lookup.POST("/ports/search", cfg.LookupHandler.ListPortOptions)
 			}
 
 			dock := master.Group("/dock")
@@ -210,6 +241,18 @@ func SetupRouter(cfg *RouterConfig) {
 				terminals.GET("/:id", cfg.TerminalHandler.GetByID)
 				terminals.PUT("/:id", cfg.TerminalHandler.Update)
 				terminals.DELETE("/:id", cfg.TerminalHandler.Delete)
+			}
+		}
+
+		plan := v1.Group("/plan")
+		{
+			vesselSchedule := plan.Group("/vessel-schedule")
+			{
+				vesselSchedule.POST("/search", cfg.VesselScheduleHandler.Search)
+				vesselSchedule.GET("/:id", cfg.VesselScheduleHandler.GetByID)
+				vesselSchedule.POST("", cfg.VesselScheduleHandler.Create)
+				vesselSchedule.PUT("/:id", cfg.VesselScheduleHandler.Update)
+				vesselSchedule.DELETE("/:id", cfg.VesselScheduleHandler.Delete)
 			}
 		}
 

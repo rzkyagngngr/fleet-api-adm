@@ -44,6 +44,7 @@ type CustomerOption struct {
 	CustomerID   uint64 `json:"customer_id"`
 	CustomerCode string `json:"customer_code"`
 	CustomerName string `json:"customer_name"`
+	PhoneNumber  string `json:"phone_number"`
 	OwnerCode    string `json:"owner_code"`
 	OwnerName    string `json:"owner_name"`
 	Value        string `json:"value"`

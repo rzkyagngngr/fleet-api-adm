@@ -1,6 +1,7 @@
 package warehouse
 
 import (
+	"fmt"
 	"net/http"
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
@@ -51,13 +52,19 @@ func (h *WarehouseHandler) SearchWarehouse(c *gin.Context) {
 		input.Filters = map[string]string{}
 	}
 
-	if branchCodeVal != nil {
-		input.Filters["branch_code"] = branchCodeVal.(string)
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
 	}
-	if terminalCodeVal != nil {
-		input.Filters["terminal_code"] = terminalCodeVal.(string)
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
 	}
 
+	input.Filters["branch_code"] = strconv.Itoa(branchCode)
+	input.Filters["terminal_code"] = strconv.Itoa(terminalCode)
 
 	warehouses, meta, err := h.service.Search(c.Request.Context(), input.ToPaginationQuery())
 	if err != nil {
@@ -134,9 +141,16 @@ func (h *WarehouseHandler) CreateWarehouse(c *gin.Context) {
 		return
 	}
 
-	branchCode, _ := strconv.Atoi(branchCodeVal.(string))
-	terminalCode, _ := strconv.Atoi(terminalCodeVal.(string))
-
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
@@ -214,8 +228,16 @@ func (h *WarehouseHandler) UpdateWarehouse(c *gin.Context) {
 		return
 	}
 
-	branchCode, _ := strconv.Atoi(branchCodeVal.(string))
-	terminalCode, _ := strconv.Atoi(terminalCodeVal.(string))
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
 
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
@@ -295,4 +317,35 @@ func mapWarehouseDetails(details []WarehouseDetailReq) []WarehouseDetail {
 	}
 
 	return result
+}
+
+func parseContextInt(value interface{}) (int, error) {
+	switch v := value.(type) {
+	case int:
+		return v, nil
+	case int64:
+		return int(v), nil
+	case *int64:
+		if v == nil {
+			return 0, fmt.Errorf("nil int64 pointer")
+		}
+		return int(*v), nil
+	case string:
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			return 0, err
+		}
+		return i, nil
+	case *string:
+		if v == nil {
+			return 0, fmt.Errorf("nil string pointer")
+		}
+		i, err := strconv.Atoi(*v)
+		if err != nil {
+			return 0, err
+		}
+		return i, nil
+	default:
+		return 0, fmt.Errorf("unsupported type %T", value)
+	}
 }

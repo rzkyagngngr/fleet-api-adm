@@ -1,7 +1,9 @@
 package reference
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
@@ -83,10 +85,21 @@ func (h *referenceHandler) SaveReference(c *gin.Context) {
 	branchCode, _ := c.Get(middleware.BranchCodeKey)
 	terminalCode, _ := c.Get(middleware.TerminalCodeKey)
 
+	branchCodeValue, err := parseContextInt64(branchCode)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCodeValue, err := parseContextInt64(terminalCode)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
+
 	input.CreationBy = employeeID.(string)
 	input.LastUpdatedBy = employeeID.(string)
-	input.BranchCode = *branchCode.(*int64)
-	input.TerminalCode = terminalCode.(*int64)
+	input.BranchCode = branchCodeValue
+	input.TerminalCode = &terminalCodeValue
 
 	if err := h.service.SaveReference(input, input.Details); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -111,4 +124,27 @@ func (h *referenceHandler) DeleteReference(c *gin.Context) {
 		return
 	}
 	helper.SuccessResponse(c, http.StatusOK, "reference deleted successfully", nil)
+}
+
+func parseContextInt64(value interface{}) (int64, error) {
+	switch v := value.(type) {
+	case int:
+		return int64(v), nil
+	case int64:
+		return v, nil
+	case *int64:
+		if v == nil {
+			return 0, fmt.Errorf("nil int64 pointer")
+		}
+		return *v, nil
+	case string:
+		return strconv.ParseInt(v, 10, 64)
+	case *string:
+		if v == nil {
+			return 0, fmt.Errorf("nil string pointer")
+		}
+		return strconv.ParseInt(*v, 10, 64)
+	default:
+		return 0, fmt.Errorf("unsupported type %T", value)
+	}
 }

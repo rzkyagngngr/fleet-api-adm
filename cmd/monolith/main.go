@@ -21,12 +21,15 @@ import (
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/tariff"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -67,6 +70,10 @@ func main() {
 		slog.Error("Administration database connection is not configured")
 		os.Exit(1)
 	}
+	if dbRegistry.PLAN == nil {
+		slog.Error("Plan database connection is not configured")
+		os.Exit(1)
+	}
 
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -92,6 +99,9 @@ func main() {
 	equipmentService := equipment.NewEquipmentService(dbRegistry.ADM)
 	portService := pelabuhan.NewPortService(dbRegistry.ADM)
 	warehouseService := warehouse.NewWarehouseService(dbRegistry.ADM)
+	tariffService := tariff.NewTariffService(dbRegistry.ADM)
+	lookupService := lookup.NewLookupService(dbRegistry.ADM, equipmentService)
+	vesselScheduleService := vesselschedule.NewVesselScheduleService(dbRegistry.PLAN, dbRegistry.ADM)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -105,6 +115,9 @@ func main() {
 	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
 	portHandler := pelabuhan.NewPortHandler(portService)
 	warehouseHandler := warehouse.NewWarehouseHandler(warehouseService)
+	tariffHandler := tariff.NewTariffHandler(tariffService)
+	lookupHandler := lookup.NewLookupHandler(lookupService)
+	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -112,20 +125,23 @@ func main() {
 	r.Use(middleware.CORS())
 
 	router.SetupRouter(&router.RouterConfig{
-		Engine:           r,
-		JWTUtil:          jwtUtil,
-		AuthHandler:      authHandler,
-		UserHandler:      userHandler,
-		MenuHandler:      menuHandler,
-		RoleHandler:      roleHandler,
-		AccessHandler:    accessHandler,
-		DermagaHandler:   dermagaHandler,
-		CustomerHandler:  customerHandler,
-		DockHandler:      dockHandler,
-		EquipmentHandler: equipmentHandler,
-		PortHandler:      portHandler,
-		ReferenceHandler: referenceHandler,
-		WarehouseHandler: warehouseHandler,
+		Engine:                r,
+		JWTUtil:               jwtUtil,
+		AuthHandler:           authHandler,
+		UserHandler:           userHandler,
+		MenuHandler:           menuHandler,
+		RoleHandler:           roleHandler,
+		AccessHandler:         accessHandler,
+		DermagaHandler:        dermagaHandler,
+		CustomerHandler:       customerHandler,
+		DockHandler:           dockHandler,
+		EquipmentHandler:      equipmentHandler,
+		LookupHandler:         lookupHandler,
+		PortHandler:           portHandler,
+		ReferenceHandler:      referenceHandler,
+		TariffHandler:         tariffHandler,
+		VesselScheduleHandler: vesselScheduleHandler,
+		WarehouseHandler:      warehouseHandler,
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.App.Port)

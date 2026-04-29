@@ -16,18 +16,22 @@ import (
 	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
+	"omniport-api/internal/modules/administration/branch"
+	"omniport-api/internal/modules/administration/cargo"
+	"omniport-api/internal/modules/administration/company"
+	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
+	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
+	"omniport-api/internal/modules/administration/tariff"
+	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
-	"omniport-api/internal/modules/administration/cargo"
-	"omniport-api/internal/modules/administration/branch"
-	"omniport-api/internal/modules/administration/terminal"
-	"omniport-api/internal/modules/administration/company"
-	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/plan/postrequest"
+	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -41,7 +45,7 @@ func main() {
 	}
 
 	setupLogger(cfg)
-	
+
 	// Initialize Database Registry for Multi-Schema Support
 	reg, err := database.NewRegistry(cfg)
 	if err != nil {
@@ -69,7 +73,6 @@ func main() {
 	terminalRepo := terminal.NewTerminalRepository(db)
 	companyRepo := company.NewCompanyRepository(db)
 
-	
 	// Plan Module uses PLAN connection
 	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
 
@@ -85,10 +88,12 @@ func main() {
 	branchService := branch.NewBranchService(branchRepo)
 	terminalService := terminal.NewTerminalService(terminalRepo, branchRepo)
 	companyService := company.NewCompanyService(companyRepo)
-	customerService := customer.NewCustomerService(db) // It seems it uses db directly based on NewCustomerService
-
+	customerService := customer.NewCustomerService(db)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
-
+	tariffService := tariff.NewTariffService(db)
+	equipmentService := equipment.NewEquipmentService(db)
+	lookupService := lookup.NewLookupService(db, equipmentService)
+	vesselScheduleService := vesselschedule.NewVesselScheduleService(db)
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
 	menuHandler := menu.NewMenuHandler(menuService)
@@ -100,13 +105,15 @@ func main() {
 	cargoHandler := cargo.NewCargoHandler(cargoService)
 	customerHandler := customer.NewCustomerHandler(customerService)
 
-
 	// Break circular dependency using adapter
 	userAdapter := &userProviderAdapter{s: userService}
 	branchHandler := branch.NewBranchHandler(branchService, userAdapter)
 	terminalHandler := terminal.NewTerminalHandler(terminalService, userAdapter)
 	companyHandler := company.NewCompanyHandler(companyService)
 	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
+	tariffHandler := tariff.NewTariffHandler(tariffService)
+	lookupHandler := lookup.NewLookupHandler(lookupService)
+	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -114,25 +121,26 @@ func main() {
 	r.Use(middleware.CORS())
 
 	router.SetupRouter(&router.RouterConfig{
-		Engine:           r,
-		JWTUtil:          jwtUtil,
-		AuthHandler:      authHandler,
-		UserHandler:      userHandler,
-		MenuHandler:      menuHandler,
-		RoleHandler:      roleHandler,
-		AccessHandler:    accessHandler,
-		DermagaHandler:   dermagaHandler,
-		ReferenceHandler: referenceHandler,
-		VesselHandler:    vesselHandler,
-		CargoHandler:     cargoHandler,
-		CustomerHandler:  customerHandler,
-		BranchHandler:    branchHandler,
-		TerminalHandler:  terminalHandler,
-		CompanyHandler:   companyHandler,
-		PostRequestHandler: postRequestHandler,
+		Engine:                r,
+		JWTUtil:               jwtUtil,
+		AuthHandler:           authHandler,
+		UserHandler:           userHandler,
+		MenuHandler:           menuHandler,
+		RoleHandler:           roleHandler,
+		AccessHandler:         accessHandler,
+		DermagaHandler:        dermagaHandler,
+		LookupHandler:         lookupHandler,
+		ReferenceHandler:      referenceHandler,
+		TariffHandler:         tariffHandler,
+		VesselHandler:         vesselHandler,
+		VesselScheduleHandler: vesselScheduleHandler,
+		CargoHandler:          cargoHandler,
+		CustomerHandler:       customerHandler,
+		BranchHandler:         branchHandler,
+		TerminalHandler:       terminalHandler,
+		CompanyHandler:        companyHandler,
+		PostRequestHandler:    postRequestHandler,
 	})
-
-
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)
 }
