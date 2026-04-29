@@ -17,6 +17,7 @@ import (
 	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
+	"omniport-api/internal/modules/administration/cargo"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
@@ -29,6 +30,7 @@ import (
 	"omniport-api/internal/modules/administration/tariff"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
 
@@ -86,6 +88,7 @@ func main() {
 	accessRepo := access.NewAccessRepository(dbRegistry.ADM)
 	dermagaRepo := dermaga.NewDermagaRepository(dbRegistry.ADM)
 	referenceRepo := reference.NewReferenceRepository(dbRegistry.ADM)
+	cargoRepo := cargo.NewCargoRepository(dbRegistry.ADM)
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, jwtUtil)
@@ -94,6 +97,7 @@ func main() {
 	roleService := role.NewRoleService(roleRepo)
 	dermagaService := dermaga.NewDermagaService(dermagaRepo)
 	referenceService := reference.NewReferenceService(referenceRepo)
+	cargoService := cargo.NewCargoService(cargoRepo)
 	customerService := customer.NewCustomerService(dbRegistry.ADM)
 	dockService := dock.NewDockService(dbRegistry.ADM)
 	equipmentService := equipment.NewEquipmentService(dbRegistry.ADM)
@@ -101,6 +105,8 @@ func main() {
 	warehouseService := warehouse.NewWarehouseService(dbRegistry.ADM)
 	tariffService := tariff.NewTariffService(dbRegistry.ADM)
 	lookupService := lookup.NewLookupService(dbRegistry.ADM, equipmentService)
+	postRequestRepo := postrequest.NewPostRequestRepository(dbRegistry.PLAN)
+	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
 	vesselScheduleService := vesselschedule.NewVesselScheduleService(dbRegistry.PLAN, dbRegistry.ADM)
 
 	authHandler := auth.NewAuthHandler(authService)
@@ -110,6 +116,7 @@ func main() {
 	accessHandler := access.NewAccessHandler(accessService)
 	dermagaHandler := dermaga.NewDermagaHandler(dermagaService)
 	referenceHandler := reference.NewReferenceHandler(referenceService)
+	cargoHandler := cargo.NewCargoHandler(cargoService)
 	customerHandler := customer.NewCustomerHandler(customerService)
 	dockHandler := dock.NewDockHandler(dockService)
 	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
@@ -117,6 +124,7 @@ func main() {
 	warehouseHandler := warehouse.NewWarehouseHandler(warehouseService)
 	tariffHandler := tariff.NewTariffHandler(tariffService)
 	lookupHandler := lookup.NewLookupHandler(lookupService)
+	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
 
 	r := gin.New()
@@ -141,7 +149,9 @@ func main() {
 		ReferenceHandler:      referenceHandler,
 		TariffHandler:         tariffHandler,
 		VesselScheduleHandler: vesselScheduleHandler,
+		CargoHandler:          cargoHandler,
 		WarehouseHandler:      warehouseHandler,
+		PostRequestHandler:    postRequestHandler,
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.App.Port)

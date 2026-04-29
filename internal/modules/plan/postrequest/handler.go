@@ -29,6 +29,11 @@ func NewPostRequestHandler(service PostRequestService) *PostRequestHandler {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/search [post]
 func (h *PostRequestHandler) Search(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	var input SearchPostRequestInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -39,10 +44,20 @@ func (h *PostRequestHandler) Search(c *gin.Context) {
 		input.Filters = make(map[string]string)
 	}
 	if bc, ok := c.Get(middleware.BranchCodeKey); ok {
-		input.Filters["branch_code"] = bc.(string)
+		branchCode, err := parseContextString(bc)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+			return
+		}
+		input.Filters["branch_code"] = branchCode
 	}
 	if tc, ok := c.Get(middleware.TerminalCodeKey); ok {
-		input.Filters["terminal_code"] = tc.(string)
+		terminalCode, err := parseContextString(tc)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+			return
+		}
+		input.Filters["terminal_code"] = terminalCode
 	}
 
 	rows, meta, err := h.service.Search(c.Request.Context(), input.ToPaginationQuery())
@@ -66,6 +81,11 @@ func (h *PostRequestHandler) Search(c *gin.Context) {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang [post]
 func (h *PostRequestHandler) Create(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	var input CreatePostRequestInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		helper.ValidationErrorResponse(c, err)
@@ -95,6 +115,11 @@ func (h *PostRequestHandler) Create(c *gin.Context) {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id} [get]
 func (h *PostRequestHandler) GetByID(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
@@ -123,6 +148,11 @@ func (h *PostRequestHandler) GetByID(c *gin.Context) {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id} [put]
 func (h *PostRequestHandler) Update(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
@@ -156,6 +186,11 @@ func (h *PostRequestHandler) Update(c *gin.Context) {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id} [delete]
 func (h *PostRequestHandler) Delete(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
@@ -178,12 +213,17 @@ func (h *PostRequestHandler) Delete(c *gin.Context) {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/stats [get]
 func (h *PostRequestHandler) GetStats(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	branchCode, terminalCode := 0, 0
 	if bc, ok := c.Get(middleware.BranchCodeKey); ok {
-		branchCode, _ = strconv.Atoi(bc.(string))
+		branchCode, _ = parseContextInt(bc)
 	}
 	if tc, ok := c.Get(middleware.TerminalCodeKey); ok {
-		terminalCode, _ = strconv.Atoi(tc.(string))
+		terminalCode, _ = parseContextInt(tc)
 	}
 
 	res, err := h.service.GetStats(c.Request.Context(), branchCode, terminalCode)
@@ -222,10 +262,10 @@ func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
 func extractContext(c *gin.Context) (branchCode, terminalCode int, branchName, terminalName, employeeID string) {
 
 	if v, ok := c.Get(middleware.BranchCodeKey); ok {
-		branchCode, _ = strconv.Atoi(v.(string))
+		branchCode, _ = parseContextInt(v)
 	}
 	if v, ok := c.Get(middleware.TerminalCodeKey); ok {
-		terminalCode, _ = strconv.Atoi(v.(string))
+		terminalCode, _ = parseContextInt(v)
 	}
 	// branch_name and terminal_name are optional — can be passed as query params
 	branchName = c.DefaultQuery("branch_name", "")
@@ -249,6 +289,11 @@ func extractContext(c *gin.Context) (branchCode, terminalCode int, branchName, t
 // @Failure      500 {object} helper.Response
 // @Router       /plan/vessel-schedule/search [post]
 func (h *PostRequestHandler) SearchVesselSchedule(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	var input SearchPostRequestInput // Reusing SearchPostRequestInput for pagination structure
 	if err := c.ShouldBindJSON(&input); err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -259,10 +304,20 @@ func (h *PostRequestHandler) SearchVesselSchedule(c *gin.Context) {
 		input.Filters = make(map[string]string)
 	}
 	if bc, ok := c.Get(middleware.BranchCodeKey); ok {
-		input.Filters["branch_code"] = bc.(string)
+		branchCode, err := parseContextString(bc)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+			return
+		}
+		input.Filters["branch_code"] = branchCode
 	}
 	if tc, ok := c.Get(middleware.TerminalCodeKey); ok {
-		input.Filters["terminal_code"] = tc.(string)
+		terminalCode, err := parseContextString(tc)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+			return
+		}
+		input.Filters["terminal_code"] = terminalCode
 	}
 
 	rows, meta, err := h.service.SearchVesselSchedule(c.Request.Context(), input.ToPaginationQuery())
@@ -271,6 +326,37 @@ func (h *PostRequestHandler) SearchVesselSchedule(c *gin.Context) {
 		return
 	}
 	helper.MetaSuccessResponse(c, http.StatusOK, "success", rows, meta)
+}
+
+func parseContextString(value interface{}) (string, error) {
+	switch v := value.(type) {
+	case string:
+		return v, nil
+	case *string:
+		if v == nil {
+			return "", strconv.ErrSyntax
+		}
+		return *v, nil
+	case int:
+		return strconv.Itoa(v), nil
+	case int64:
+		return strconv.FormatInt(v, 10), nil
+	case *int64:
+		if v == nil {
+			return "", strconv.ErrSyntax
+		}
+		return strconv.FormatInt(*v, 10), nil
+	default:
+		return "", strconv.ErrSyntax
+	}
+}
+
+func parseContextInt(value interface{}) (int, error) {
+	text, err := parseContextString(value)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(text)
 }
 
 // GetVesselScheduleByID godoc
@@ -286,6 +372,11 @@ func (h *PostRequestHandler) SearchVesselSchedule(c *gin.Context) {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/vessel-schedule/{id} [get]
 func (h *PostRequestHandler) GetVesselScheduleByID(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
+		return
+	}
+
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid ID")
@@ -298,4 +389,3 @@ func (h *PostRequestHandler) GetVesselScheduleByID(c *gin.Context) {
 	}
 	helper.SuccessResponse(c, http.StatusOK, "success", res)
 }
-
