@@ -2,6 +2,7 @@ package customer
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
@@ -53,8 +54,19 @@ func (h *CustomerHandler) SearchCustomers(c *gin.Context) {
 		input.Filters = map[string]string{}
 	}
 
-	input.Filters["branch_code"] = strconv.FormatInt(*branchCodeVal.(*int64), 10)
-	input.Filters["terminal_code"] = strconv.FormatInt(*terminalCodeVal.(*int64), 10)
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
+
+	input.Filters["branch_code"] = strconv.Itoa(branchCode)
+	input.Filters["terminal_code"] = strconv.Itoa(terminalCode)
 
 	if status, ok := input.Filters["status"]; ok {
 		switch strings.ToLower(strings.TrimSpace(status)) {
@@ -114,8 +126,16 @@ func (h *CustomerHandler) CreateCustomer(c *gin.Context) {
 	}
 
 	customerName := req.CustomerName
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
@@ -217,8 +237,16 @@ func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
 	}
 
 	customerName := req.CustomerName
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
@@ -303,4 +331,35 @@ func (h *CustomerHandler) DeleteCustomer(c *gin.Context) {
 	}
 
 	helper.SuccessResponse(c, http.StatusOK, "customer deleted successfully", nil)
+}
+
+func parseContextInt(value interface{}) (int, error) {
+	switch v := value.(type) {
+	case int:
+		return v, nil
+	case int64:
+		return int(v), nil
+	case *int64:
+		if v == nil {
+			return 0, fmt.Errorf("nil int64 pointer")
+		}
+		return int(*v), nil
+	case string:
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			return 0, err
+		}
+		return i, nil
+	case *string:
+		if v == nil {
+			return 0, fmt.Errorf("nil string pointer")
+		}
+		i, err := strconv.Atoi(*v)
+		if err != nil {
+			return 0, err
+		}
+		return i, nil
+	default:
+		return 0, fmt.Errorf("unsupported type %T", value)
+	}
 }

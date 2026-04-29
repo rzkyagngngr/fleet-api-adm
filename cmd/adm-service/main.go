@@ -29,6 +29,7 @@ import (
 	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
+	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -81,6 +82,7 @@ func main() {
 	tariffService := tariff.NewTariffService(db)
 	equipmentService := equipment.NewEquipmentService(db)
 	lookupService := lookup.NewLookupService(db, equipmentService)
+	vesselScheduleService := vesselschedule.NewVesselScheduleService(db)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -99,6 +101,7 @@ func main() {
 	companyHandler := company.NewCompanyHandler(companyService)
 	tariffHandler := tariff.NewTariffHandler(tariffService)
 	lookupHandler := lookup.NewLookupHandler(lookupService)
+	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -106,22 +109,23 @@ func main() {
 	r.Use(middleware.CORS())
 
 	router.SetupRouter(&router.RouterConfig{
-		Engine:           r,
-		JWTUtil:          jwtUtil,
-		AuthHandler:      authHandler,
-		UserHandler:      userHandler,
-		MenuHandler:      menuHandler,
-		RoleHandler:      roleHandler,
-		AccessHandler:    accessHandler,
-		DermagaHandler:   dermagaHandler,
-		LookupHandler:    lookupHandler,
-		ReferenceHandler: referenceHandler,
-		TariffHandler:    tariffHandler,
-		VesselHandler:    vesselHandler,
-		CargoHandler:     cargoHandler,
-		BranchHandler:    branchHandler,
-		TerminalHandler:  terminalHandler,
-		CompanyHandler:   companyHandler,
+		Engine:                r,
+		JWTUtil:               jwtUtil,
+		AuthHandler:           authHandler,
+		UserHandler:           userHandler,
+		MenuHandler:           menuHandler,
+		RoleHandler:           roleHandler,
+		AccessHandler:         accessHandler,
+		DermagaHandler:        dermagaHandler,
+		LookupHandler:         lookupHandler,
+		ReferenceHandler:      referenceHandler,
+		TariffHandler:         tariffHandler,
+		VesselHandler:         vesselHandler,
+		VesselScheduleHandler: vesselScheduleHandler,
+		CargoHandler:          cargoHandler,
+		BranchHandler:         branchHandler,
+		TerminalHandler:       terminalHandler,
+		CompanyHandler:        companyHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)

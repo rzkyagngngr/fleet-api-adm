@@ -123,6 +123,7 @@ func (s *equipmentService) ListCustomerOptions(ctx context.Context, branchCode i
 			id AS customer_id,
 			COALESCE(customer_code, '') AS customer_code,
 			COALESCE(customer_name, '') AS customer_name,
+			COALESCE(phone_number, '') AS phone_number,
 			COALESCE(customer_code, '') AS owner_code,
 			COALESCE(customer_name, '') AS owner_name,
 			COALESCE(customer_code, '') AS value,
@@ -149,10 +150,11 @@ func (s *equipmentService) ListCustomerOptions(ctx context.Context, branchCode i
 		  AND (
 			UPPER(COALESCE(customer_code, '')) LIKE UPPER(?)
 			OR UPPER(COALESCE(customer_name, '')) LIKE UPPER(?)
+			OR UPPER(COALESCE(phone_number, '')) LIKE UPPER(?)
 		  )
 		`
 		keyword := "%" + search + "%"
-		args = append(args, keyword, keyword)
+		args = append(args, keyword, keyword, keyword)
 	}
 
 	query += `

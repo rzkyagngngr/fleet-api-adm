@@ -282,6 +282,134 @@ func (h *LookupHandler) ListCargoOptions(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "cargo options retrieved successfully", options)
 }
 
+// ListDockOptions godoc
+// @Summary List dock options
+// @Description Retrieve active dock header and detail options filtered by branch and terminal
+// @Tags master-lookup
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body lookup.SearchOptionRequest false "Dock option payload"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/lookup/docks/search [post]
+func (h *LookupHandler) ListDockOptions(c *gin.Context) {
+	var req SearchOptionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	branchCodeVal, exists := c.Get(middleware.BranchCodeKey)
+	if !exists || branchCodeVal == nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "branch code not found in token")
+		return
+	}
+	terminalCodeVal, exists := c.Get(middleware.TerminalCodeKey)
+	if !exists || terminalCodeVal == nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "terminal code not found in token")
+		return
+	}
+
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
+
+	options, err := h.service.ListDockOptions(c.Request.Context(), branchCode, terminalCode, req.Q, req.Limit)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to retrieve dock options")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "dock options retrieved successfully", options)
+}
+
+// ListVesselOptions godoc
+// @Summary List vessel options
+// @Description Retrieve active vessel options from posm_vessel filtered by branch and terminal
+// @Tags master-lookup
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body lookup.SearchOptionRequest false "Vessel option payload"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/lookup/vessels/search [post]
+func (h *LookupHandler) ListVesselOptions(c *gin.Context) {
+	var req SearchOptionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	branchCodeVal, exists := c.Get(middleware.BranchCodeKey)
+	if !exists || branchCodeVal == nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "branch code not found in token")
+		return
+	}
+	terminalCodeVal, exists := c.Get(middleware.TerminalCodeKey)
+	if !exists || terminalCodeVal == nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "terminal code not found in token")
+		return
+	}
+
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
+
+	options, err := h.service.ListVesselOptions(c.Request.Context(), branchCode, terminalCode, req.Q, req.Limit)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to retrieve vessel options")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "vessel options retrieved successfully", options)
+}
+
+// ListPortOptions godoc
+// @Summary List port options
+// @Description Retrieve active port options from adm.posm_port
+// @Tags master-lookup
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body lookup.SearchOptionRequest false "Port option payload"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /master/lookup/ports/search [post]
+func (h *LookupHandler) ListPortOptions(c *gin.Context) {
+	var req SearchOptionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	options, err := h.service.ListPortOptions(c.Request.Context(), req.Q, req.Limit)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to retrieve port options")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "port options retrieved successfully", options)
+}
+
 func parseContextInt(value interface{}) (int, error) {
 	switch v := value.(type) {
 	case int:

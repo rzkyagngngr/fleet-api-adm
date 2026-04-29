@@ -1,6 +1,7 @@
 package dermaga
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -46,7 +47,13 @@ func (h *dermagaHandler) Create(c *gin.Context) {
 		return
 	}
 
-	d := &Dermaga{KdCabang: uint(*branchCode.(*int64)), NmDermaga: input.NmDermaga, KdDermaga: input.KdDermaga, PosisiAwal: input.PosisiAwal, PosisiAkhir: input.PosisiAkhir, Keterangan: input.Keterangan, Status: input.Status, CreatedBy: employeeID.(string), UpdatedBy: employeeID.(string)}
+	branchCodeValue, err := parseContextUint(branchCode)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+
+	d := &Dermaga{KdCabang: branchCodeValue, NmDermaga: input.NmDermaga, KdDermaga: input.KdDermaga, PosisiAwal: input.PosisiAwal, PosisiAkhir: input.PosisiAkhir, Keterangan: input.Keterangan, Status: input.Status, CreatedBy: employeeID.(string), UpdatedBy: employeeID.(string)}
 
 	if err := h.dermagaService.Create(c.Request.Context(), d); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -71,7 +78,13 @@ func (h *dermagaHandler) FindAll(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "10"))
 
-	rows, total, err := h.dermagaService.FindAll(c.Request.Context(), uint(*branchCode.(*int64)), 0, page, size)
+	branchCodeValue, err := parseContextUint(branchCode)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+
+	rows, total, err := h.dermagaService.FindAll(c.Request.Context(), branchCodeValue, 0, page, size)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -110,9 +123,15 @@ func (h *dermagaHandler) Update(c *gin.Context) {
 	employeeID, _ := c.Get(middleware.EmployeeIDKey)
 	branchCode, _ := c.Get(middleware.BranchCodeKey)
 
-	d := &Dermaga{KdCabang: uint(*branchCode.(*int64)), NmDermaga: input.NmDermaga, KdDermaga: input.KdDermaga, PosisiAwal: input.PosisiAwal, PosisiAkhir: input.PosisiAkhir, Keterangan: input.Keterangan, Status: input.Status, UpdatedBy: employeeID.(string)}
+	branchCodeValue, err := parseContextUint(branchCode)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
 
-	if err := h.dermagaService.Update(c.Request.Context(), uint(id), uint(*branchCode.(*int64)), 0, d); err != nil {
+	d := &Dermaga{KdCabang: branchCodeValue, NmDermaga: input.NmDermaga, KdDermaga: input.KdDermaga, PosisiAwal: input.PosisiAwal, PosisiAkhir: input.PosisiAkhir, Keterangan: input.Keterangan, Status: input.Status, UpdatedBy: employeeID.(string)}
+
+	if err := h.dermagaService.Update(c.Request.Context(), uint(id), branchCodeValue, 0, d); err != nil {
 		if err == ErrUnauthorized {
 			helper.ErrorResponse(c, http.StatusUnauthorized, err.Error())
 			return
@@ -149,7 +168,13 @@ func (h *dermagaHandler) Delete(c *gin.Context) {
 	}
 	branchCode, _ := c.Get(middleware.BranchCodeKey)
 
-	if err := h.dermagaService.Delete(c.Request.Context(), uint(id), uint(*branchCode.(*int64)), 0); err != nil {
+	branchCodeValue, err := parseContextUint(branchCode)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+
+	if err := h.dermagaService.Delete(c.Request.Context(), uint(id), branchCodeValue, 0); err != nil {
 		if err == ErrUnauthorized {
 			helper.ErrorResponse(c, http.StatusUnauthorized, err.Error())
 			return
@@ -188,4 +213,44 @@ func (h *dermagaHandler) FindByID(c *gin.Context) {
 		return
 	}
 	helper.SuccessResponse(c, http.StatusOK, "dermaga retrieved successfully", d)
+}
+
+func parseContextUint(value interface{}) (uint, error) {
+	switch v := value.(type) {
+	case int:
+		if v < 0 {
+			return 0, fmt.Errorf("negative int")
+		}
+		return uint(v), nil
+	case int64:
+		if v < 0 {
+			return 0, fmt.Errorf("negative int64")
+		}
+		return uint(v), nil
+	case *int64:
+		if v == nil {
+			return 0, fmt.Errorf("nil int64 pointer")
+		}
+		if *v < 0 {
+			return 0, fmt.Errorf("negative int64")
+		}
+		return uint(*v), nil
+	case string:
+		i, err := strconv.ParseUint(v, 10, 64)
+		if err != nil {
+			return 0, err
+		}
+		return uint(i), nil
+	case *string:
+		if v == nil {
+			return 0, fmt.Errorf("nil string pointer")
+		}
+		i, err := strconv.ParseUint(*v, 10, 64)
+		if err != nil {
+			return 0, err
+		}
+		return uint(i), nil
+	default:
+		return 0, fmt.Errorf("unsupported type %T", value)
+	}
 }

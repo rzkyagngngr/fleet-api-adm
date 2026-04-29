@@ -1,6 +1,7 @@
 package dock
 
 import (
+	"fmt"
 	"net/http"
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
@@ -51,8 +52,19 @@ func (h *DockHandler) SearchDock(c *gin.Context) {
 		input.Filters = map[string]string{}
 	}
 
-	input.Filters["branch_code"] = strconv.FormatInt(*branchCodeVal.(*int64), 10)
-	input.Filters["terminal_code"] = strconv.FormatInt(*terminalCodeVal.(*int64), 10)
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
+
+	input.Filters["branch_code"] = strconv.Itoa(branchCode)
+	input.Filters["terminal_code"] = strconv.Itoa(terminalCode)
 
 	docks, meta, err := h.service.Search(c.Request.Context(), input.ToPaginationQuery())
 	if err != nil {
@@ -129,8 +141,16 @@ func (h *DockHandler) CreateDock(c *gin.Context) {
 		return
 	}
 
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
@@ -212,8 +232,16 @@ func (h *DockHandler) UpdateDock(c *gin.Context) {
 		return
 	}
 
-	branchCode := int(*branchCodeVal.(*int64))
-	terminalCode := int(*terminalCodeVal.(*int64))
+	branchCode, err := parseContextInt(branchCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+		return
+	}
+	terminalCode, err := parseContextInt(terminalCodeVal)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+		return
+	}
 	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
@@ -294,4 +322,35 @@ func mapDockDetails(details []DockDetailReq) []DockDetail {
 	}
 
 	return result
+}
+
+func parseContextInt(value interface{}) (int, error) {
+	switch v := value.(type) {
+	case int:
+		return v, nil
+	case int64:
+		return int(v), nil
+	case *int64:
+		if v == nil {
+			return 0, fmt.Errorf("nil int64 pointer")
+		}
+		return int(*v), nil
+	case string:
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			return 0, err
+		}
+		return i, nil
+	case *string:
+		if v == nil {
+			return 0, fmt.Errorf("nil string pointer")
+		}
+		i, err := strconv.Atoi(*v)
+		if err != nil {
+			return 0, err
+		}
+		return i, nil
+	default:
+		return 0, fmt.Errorf("unsupported type %T", value)
+	}
 }

@@ -22,6 +22,7 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/plan/vesselschedule"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -30,27 +31,28 @@ import (
 )
 
 type RouterConfig struct {
-	Engine           *gin.Engine
-	JWTUtil          *helper.JWTUtil
-	AuthHandler      *auth.AuthHandler
-	UserHandler      *user.UserHandler
-	MenuHandler      *menu.MenuHandler
-	RoleHandler      *role.RoleHandler
-	AccessHandler    *access.AccessHandler
-	DermagaHandler   dermaga.DermagaHandler
-	CustomerHandler  *customer.CustomerHandler
-	DockHandler      *dock.DockHandler
-	EquipmentHandler *equipment.EquipmentHandler
-	LookupHandler    *lookup.LookupHandler
-	PortHandler      *pelabuhan.PortHandler
-	ReferenceHandler reference.ReferenceHandler
-	TariffHandler    *tariff.TariffHandler
-	VesselHandler    *vessel.VesselHandler
-	CargoHandler     *cargo.CargoHandler
-	BranchHandler    *branch.BranchHandler
-	TerminalHandler  *terminal.TerminalHandler
-	WarehouseHandler *warehouse.WarehouseHandler
-	CompanyHandler   *company.CompanyHandler
+	Engine                *gin.Engine
+	JWTUtil               *helper.JWTUtil
+	AuthHandler           *auth.AuthHandler
+	UserHandler           *user.UserHandler
+	MenuHandler           *menu.MenuHandler
+	RoleHandler           *role.RoleHandler
+	AccessHandler         *access.AccessHandler
+	DermagaHandler        dermaga.DermagaHandler
+	CustomerHandler       *customer.CustomerHandler
+	DockHandler           *dock.DockHandler
+	EquipmentHandler      *equipment.EquipmentHandler
+	LookupHandler         *lookup.LookupHandler
+	PortHandler           *pelabuhan.PortHandler
+	ReferenceHandler      reference.ReferenceHandler
+	TariffHandler         *tariff.TariffHandler
+	VesselHandler         *vessel.VesselHandler
+	VesselScheduleHandler *vesselschedule.VesselScheduleHandler
+	CargoHandler          *cargo.CargoHandler
+	BranchHandler         *branch.BranchHandler
+	TerminalHandler       *terminal.TerminalHandler
+	WarehouseHandler      *warehouse.WarehouseHandler
+	CompanyHandler        *company.CompanyHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -159,6 +161,9 @@ func SetupRouter(cfg *RouterConfig) {
 				lookup.POST("/cargo-packages/search", cfg.LookupHandler.ListCargoPackageOptions)
 				lookup.POST("/cargo-units/search", cfg.LookupHandler.ListCargoUnitOptions)
 				lookup.POST("/billing-services/search", cfg.LookupHandler.ListBillingServiceOptions)
+				lookup.POST("/docks/search", cfg.LookupHandler.ListDockOptions)
+				lookup.POST("/vessels/search", cfg.LookupHandler.ListVesselOptions)
+				lookup.POST("/ports/search", cfg.LookupHandler.ListPortOptions)
 			}
 
 			dock := master.Group("/dock")
@@ -234,6 +239,18 @@ func SetupRouter(cfg *RouterConfig) {
 				terminals.GET("/:id", cfg.TerminalHandler.GetByID)
 				terminals.PUT("/:id", cfg.TerminalHandler.Update)
 				terminals.DELETE("/:id", cfg.TerminalHandler.Delete)
+			}
+		}
+
+		plan := v1.Group("/plan")
+		{
+			vesselSchedule := plan.Group("/vessel-schedule")
+			{
+				vesselSchedule.POST("/search", cfg.VesselScheduleHandler.Search)
+				vesselSchedule.GET("/:id", cfg.VesselScheduleHandler.GetByID)
+				vesselSchedule.POST("", cfg.VesselScheduleHandler.Create)
+				vesselSchedule.PUT("/:id", cfg.VesselScheduleHandler.Update)
+				vesselSchedule.DELETE("/:id", cfg.VesselScheduleHandler.Delete)
 			}
 		}
 
