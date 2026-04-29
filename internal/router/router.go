@@ -265,6 +265,7 @@ func SetupRouter(cfg *RouterConfig) {
 				reqBarang.POST("", cfg.PostRequestHandler.Create)
 				reqBarang.GET("/:id", cfg.PostRequestHandler.GetByID)
 				reqBarang.PUT("/:id", cfg.PostRequestHandler.Update)
+				reqBarang.PUT("/:id/status", cfg.PostRequestHandler.UpdateStatus)
 				reqBarang.DELETE("/:id", cfg.PostRequestHandler.Delete)
 			}
 		}

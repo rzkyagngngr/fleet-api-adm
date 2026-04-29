@@ -415,3 +415,9 @@ func (h *PostVesselSchedule) ToResponse() PostVesselScheduleResponse {
 	}
 }
 
+// UpdateStatusInput is for Approve/Reject actions
+type UpdateStatusInput struct {
+	Status  int    `json:"status"  binding:"required"`
+	Remarks string `json:"remarks"`
+}
+

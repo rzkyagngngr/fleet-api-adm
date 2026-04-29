@@ -21,6 +21,7 @@ type PostRequestRepository interface {
 	Delete(ctx context.Context, id int64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]PostRequest, helper.PaginationMeta, error)
 	GetStats(ctx context.Context, branchCode, terminalCode int) (*PostRequestStatsResponse, error)
+	UpdateStatus(ctx context.Context, id int64, status int, remarks string, updatedBy string) error
 
 	// Vessel Schedule methods
 	SearchVesselSchedule(ctx context.Context, param helper.PaginationQuery) ([]PostVesselSchedule, helper.PaginationMeta, error)
@@ -206,8 +207,22 @@ func (r *postRequestRepository) GetStats(ctx context.Context, branchCode, termin
 			return nil, fmt.Errorf("count %s: %w", q.label, err)
 		}
 	}
-
 	return &stats, nil
+}
+
+func (r *postRequestRepository) UpdateStatus(ctx context.Context, id int64, status int, remarks string, updatedBy string) error {
+	updates := map[string]interface{}{
+		"status":            status,
+		"description":       remarks,
+		"last_updated_by":   updatedBy,
+		"last_updated_date": gorm.Expr("NOW()"),
+	}
+
+	if status == 1 {
+		updates["approval_date"] = gorm.Expr("NOW()")
+	}
+
+	return r.db.WithContext(ctx).Model(&PostRequest{}).Where("id = ?", id).Updates(updates).Error
 }
 
 func (r *postRequestRepository) SearchVesselSchedule(ctx context.Context, param helper.PaginationQuery) ([]PostVesselSchedule, helper.PaginationMeta, error) {

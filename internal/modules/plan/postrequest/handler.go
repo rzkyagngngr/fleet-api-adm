@@ -194,6 +194,27 @@ func (h *PostRequestHandler) GetStats(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "success", res)
 }
 
+func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
+		return
+	}
+
+	var input UpdateStatusInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		helper.ValidationErrorResponse(c, err)
+		return
+	}
+
+	_, _, _, _, employeeID := extractContext(c)
+	if err := h.service.UpdateStatus(c.Request.Context(), id, input.Status, input.Remarks, employeeID); err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.SuccessResponse(c, http.StatusOK, "status updated successfully", nil)
+}
+
 // ─────────────────────────────────────────────────────────────
 // HELPER
 // ─────────────────────────────────────────────────────────────

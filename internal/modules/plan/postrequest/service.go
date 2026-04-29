@@ -21,6 +21,7 @@ type PostRequestService interface {
 	Delete(ctx context.Context, id int64) error
 	Search(ctx context.Context, query helper.PaginationQuery) ([]PostRequestResponse, helper.PaginationMeta, error)
 	GetStats(ctx context.Context, branchCode, terminalCode int) (*PostRequestStatsResponse, error)
+	UpdateStatus(ctx context.Context, id int64, status int, remarks string, updatedBy string) error
 
 	// Vessel Schedule methods
 	SearchVesselSchedule(ctx context.Context, query helper.PaginationQuery) ([]PostVesselScheduleResponse, helper.PaginationMeta, error)
@@ -261,6 +262,14 @@ func (s *postRequestService) Search(ctx context.Context, query helper.Pagination
 // GetStats returns aggregated counts.
 func (s *postRequestService) GetStats(ctx context.Context, branchCode, terminalCode int) (*PostRequestStatsResponse, error) {
 	return s.repo.GetStats(ctx, branchCode, terminalCode)
+}
+
+func (s *postRequestService) UpdateStatus(ctx context.Context, id int64, status int, remarks string, updatedBy string) error {
+	_, _, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return errors.New("permohonan tidak ditemukan")
+	}
+	return s.repo.UpdateStatus(ctx, id, status, remarks, updatedBy)
 }
 
 func (s *postRequestService) SearchVesselSchedule(ctx context.Context, query helper.PaginationQuery) ([]PostVesselScheduleResponse, helper.PaginationMeta, error) {
