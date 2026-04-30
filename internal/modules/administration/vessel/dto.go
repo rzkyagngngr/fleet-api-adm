@@ -25,10 +25,30 @@ type VesselResponse struct {
 	VesselOperationStatus string     `json:"vessel_operation_status"`
 	Status                string     `json:"status"`
 	Remark                string     `json:"remark"`
-	PortCode              int64      `json:"port_code"`
-	BranchCode            int64      `json:"branch_code"`
-	TerminalCode          int64      `json:"terminal_code"`
-	CreationDate          time.Time  `json:"creation_date"`
+	PortCode              int64                  `json:"port_code"`
+	BranchCode            int64                  `json:"branch_code"`
+	TerminalCode          int64                  `json:"terminal_code"`
+	CreationDate          time.Time              `json:"creation_date"`
+	HatchDetails          []VesselDetailResponse `json:"hatch_details"`
+}
+
+type VesselDetailResponse struct {
+	ID           uint64    `json:"id"`
+	HeaderID     uint64    `json:"header_id"`
+	BranchCode   int64     `json:"branch_code"`
+	TerminalCode int64     `json:"terminal_code"`
+	TerminalName string    `json:"terminal_name"`
+	VesselCode   string    `json:"vessel_code"`
+	HatchCode    string    `json:"hatch_code"`
+	HatchName    string    `json:"hatch_name"`
+	CapacityMt   int64     `json:"capacity_mt"`
+	CapacityM3   int64     `json:"capacity_m3"`
+	CapacityQty  int64     `json:"capacity_qty"`
+	Status       string    `json:"status"`
+	Description  string    `json:"description"`
+	CreationDate time.Time `json:"creation_date"`
+	CreationBy   string    `json:"creation_by"`
+	ProgramName  string    `json:"program_name"`
 }
 
 type VesselStatsResponse struct {
@@ -60,10 +80,21 @@ type VesselRequest struct {
 	VesselOwnershipStatus string `json:"vessel_ownership_status"`
 	VesselOperationStatus string `json:"vessel_operation_status"`
 	Status                string `json:"status"`
-	Remark                string `json:"remark"`
-	PortCode              int64  `json:"port_code"`
-	BranchCode            int64  `json:"branch_code"`
-	TerminalCode          int64  `json:"terminal_code"`
+	Remark                string                `json:"remark"`
+	PortCode              int64                 `json:"port_code"`
+	BranchCode            int64                 `json:"branch_code"`
+	TerminalCode          int64                 `json:"terminal_code"`
+	HatchDetails          []VesselDetailRequest `json:"hatch_details"`
+}
+
+type VesselDetailRequest struct {
+	HatchCode   string `json:"hatch_code"`
+	HatchName   string `json:"hatch_name"`
+	CapacityMt  int64  `json:"capacity_mt"`
+	CapacityM3  int64  `json:"capacity_m3"`
+	CapacityQty int64  `json:"capacity_qty"`
+	Status      string `json:"status"`
+	Description string `json:"description"`
 }
 
 type SearchVesselsRequest struct {
@@ -111,5 +142,31 @@ func ToResponse(v *Vessel) VesselResponse {
 		BranchCode:            v.BranchCode,
 		TerminalCode:          v.TerminalCode,
 		CreationDate:          v.CreationDate,
+		HatchDetails:          ToDetailResponses(v.HatchDetails),
 	}
+}
+
+func ToDetailResponses(details []VesselDetail) []VesselDetailResponse {
+	var responses []VesselDetailResponse
+	for _, d := range details {
+		responses = append(responses, VesselDetailResponse{
+			ID:           d.ID,
+			HeaderID:     d.HeaderID,
+			BranchCode:   d.BranchCode,
+			TerminalCode: d.TerminalCode,
+			TerminalName: d.TerminalName,
+			VesselCode:   d.VesselCode,
+			HatchCode:    d.HatchCode,
+			HatchName:    d.HatchName,
+			CapacityMt:   d.CapacityMt,
+			CapacityM3:   d.CapacityM3,
+			CapacityQty:  d.CapacityQty,
+			Status:       d.Status,
+			Description:  d.Description,
+			CreationDate: d.CreationDate,
+			CreationBy:   d.CreationBy,
+			ProgramName:  d.ProgramName,
+		})
+	}
+	return responses
 }

@@ -29,7 +29,17 @@ func (r *vesselRepository) Create(ctx context.Context, v *Vessel) error {
 }
 
 func (r *vesselRepository) Update(ctx context.Context, id uint64, v *Vessel) error {
-	return r.db.WithContext(ctx).Where("id = ?", id).Updates(v).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Update the main vessel
+		if err := tx.Where("id = ?", id).Updates(v).Error; err != nil {
+			return err
+		}
+		// Replace all hatch details
+		if err := tx.Model(v).Association("HatchDetails").Replace(v.HatchDetails); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (r *vesselRepository) Delete(ctx context.Context, id uint64) error {
@@ -38,7 +48,7 @@ func (r *vesselRepository) Delete(ctx context.Context, id uint64) error {
 
 func (r *vesselRepository) FindByID(ctx context.Context, id uint64) (*Vessel, error) {
 	var v Vessel
-	err := r.db.WithContext(ctx).First(&v, id).Error
+	err := r.db.WithContext(ctx).Preload("HatchDetails").First(&v, id).Error
 	if err != nil {
 		return nil, err
 	}

@@ -52,6 +52,25 @@ func (s *vesselService) CreateVessel(ctx context.Context, req *VesselRequest, cr
 		CreationBy:            createdBy,
 	}
 
+	var hatchDetails []VesselDetail
+	for _, h := range req.HatchDetails {
+		hatchDetails = append(hatchDetails, VesselDetail{
+			BranchCode:   req.BranchCode,
+			TerminalCode: req.TerminalCode,
+			VesselCode:   req.VesselCode,
+			HatchCode:    h.HatchCode,
+			HatchName:    h.HatchName,
+			CapacityMt:   h.CapacityMt,
+			CapacityM3:   h.CapacityM3,
+			CapacityQty:  h.CapacityQty,
+			Status:       h.Status,
+			Description:  h.Description,
+			CreationDate: time.Now(),
+			CreationBy:   createdBy,
+		})
+	}
+	v.HatchDetails = hatchDetails
+
 	return s.repo.Create(ctx, v)
 }
 
@@ -82,6 +101,26 @@ func (s *vesselService) UpdateVessel(ctx context.Context, id uint64, req *Vessel
 	v.PortCode = req.PortCode
 	v.BranchCode = req.BranchCode
 	v.TerminalCode = req.TerminalCode
+
+	var newHatches []VesselDetail
+	for _, h := range req.HatchDetails {
+		newHatches = append(newHatches, VesselDetail{
+			HeaderID:     v.ID,
+			BranchCode:   req.BranchCode,
+			TerminalCode: req.TerminalCode,
+			VesselCode:   req.VesselCode,
+			HatchCode:    h.HatchCode,
+			HatchName:    h.HatchName,
+			CapacityMt:   h.CapacityMt,
+			CapacityM3:   h.CapacityM3,
+			CapacityQty:  h.CapacityQty,
+			Status:       h.Status,
+			Description:  h.Description,
+			CreationDate: time.Now(),
+			CreationBy:   updatedBy,
+		})
+	}
+	v.HatchDetails = newHatches
 
 	now := time.Now()
 	v.LastUpdatedDate = &now
