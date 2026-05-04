@@ -306,8 +306,8 @@ func (s *lookupService) ListCargoOptions(ctx context.Context, q string, limit in
 	if effectiveLimit <= 0 {
 		effectiveLimit = 20
 	}
-	if effectiveLimit > 50 {
-		effectiveLimit = 50
+	if effectiveLimit > 10000 {
+		effectiveLimit = 10000
 	}
 
 	query := baseQuery
@@ -519,8 +519,8 @@ func (s *lookupService) ListPortOptions(ctx context.Context, q string, limit int
 	if effectiveLimit <= 0 {
 		effectiveLimit = 20
 	}
-	if effectiveLimit > 50 {
-		effectiveLimit = 50
+	if effectiveLimit > 10000 {
+		effectiveLimit = 10000
 	}
 
 	query := baseQuery
