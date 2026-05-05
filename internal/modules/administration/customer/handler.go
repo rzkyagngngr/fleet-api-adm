@@ -191,6 +191,33 @@ func (h *CustomerHandler) CreateCustomer(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusCreated, "customer created successfully", customer)
 }
 
+// GetCustomerDetail godoc
+// @Summary Get customer detail
+// @Description Retrieve customer detail by id
+// @Tags master-customers
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Customer ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Router /master/customer/{id} [get]
+func (h *CustomerHandler) GetCustomerDetail(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "invalid customer id")
+		return
+	}
+
+	customer, err := h.service.FindByID(c.Request.Context(), id)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, "customer not found")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "customer detail retrieved successfully", customer)
+}
+
 // UpdateCustomer godoc
 // @Summary Update customer
 // @Description Update an existing customer by id

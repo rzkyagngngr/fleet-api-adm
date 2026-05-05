@@ -183,6 +183,7 @@ func SetupRouter(cfg *RouterConfig) {
 			{
 				customer.POST("/search", cfg.CustomerHandler.SearchCustomers)
 				customer.POST("", cfg.CustomerHandler.CreateCustomer)
+				customer.GET("/:id", cfg.CustomerHandler.GetCustomerDetail)
 				customer.PUT("/:id", cfg.CustomerHandler.UpdateCustomer)
 				customer.DELETE("/:id", cfg.CustomerHandler.DeleteCustomer)
 			}
