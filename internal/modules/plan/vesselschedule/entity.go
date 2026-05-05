@@ -12,6 +12,7 @@ type VesselSchedule struct {
 	VesselName          *string    `gorm:"column:vessel_name;size:100" json:"vessel_name"`
 	VesselCode          *string    `gorm:"column:vessel_code;size:50" json:"vessel_code"`
 	VesselType          *string    `gorm:"column:vessel_type;size:50" json:"vessel_type"`
+	VesselHatchNumber   *int       `gorm:"column:vessel_hatch_number" json:"vessel_hatch_number"`
 	VoyageNumber        string     `gorm:"column:voyage_number;size:50;not null" json:"voyage_number"`
 	PKKNumber           *string    `gorm:"column:pkk_number;size:50" json:"pkk_number"`
 	VoyageType          string     `gorm:"column:voyage_type;size:50;not null" json:"voyage_type"`
@@ -32,6 +33,8 @@ type VesselSchedule struct {
 	DockName            *string    `gorm:"column:dock_name;size:100" json:"dock_name"`
 	BerthCode           *string    `gorm:"column:berth_code;size:50" json:"berth_code"`
 	BerthName           *string    `gorm:"column:berth_name;size:100" json:"berth_name"`
+	BerthLatitude       *string    `gorm:"column:berth_latitude;size:50" json:"berth_latitude"`
+	BerthLongitude      *string    `gorm:"column:berth_longitude;size:50" json:"berth_longitude"`
 	BerthPosition       *string    `gorm:"column:berth_position;size:100" json:"berth_position"`
 	PositionRange       *string    `gorm:"column:position_range;size:50" json:"position_range"`
 	ETA                 *time.Time `gorm:"column:eta" json:"eta"`

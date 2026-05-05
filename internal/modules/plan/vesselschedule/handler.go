@@ -101,6 +101,33 @@ func (h *VesselScheduleHandler) GetByID(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "vessel schedule detail retrieved successfully", row)
 }
 
+// GetByScheduleCode godoc
+// @Summary Get vessel schedule detail by schedule code
+// @Description Retrieve vessel schedule detail by schedule_code
+// @Tags plan-vessel-schedule
+// @Produce json
+// @Security BearerAuth
+// @Param schedule_code path string true "Vessel Schedule Code"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Router /plan/vessel-schedule/{schedule_code} [get]
+func (h *VesselScheduleHandler) GetByScheduleCode(c *gin.Context) {
+	scheduleCode := c.Param("schedule_code")
+	if scheduleCode == "" {
+		helper.ErrorResponse(c, http.StatusBadRequest, "schedule_code is required")
+		return
+	}
+
+	row, err := h.service.FindByScheduleCode(c.Request.Context(), scheduleCode)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, "vessel schedule not found")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "vessel schedule detail retrieved successfully", row)
+}
+
 // Create godoc
 // @Summary Create vessel schedule
 // @Description Create a new vessel schedule record
@@ -136,21 +163,21 @@ func (h *VesselScheduleHandler) Create(c *gin.Context) {
 
 // Update godoc
 // @Summary Update vessel schedule
-// @Description Update vessel schedule by id
+// @Description Update vessel schedule by schedule_code
 // @Tags plan-vessel-schedule
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Vessel Schedule ID"
+// @Param schedule_code path string true "Vessel Schedule Code"
 // @Param payload body vesselschedule.VesselScheduleRequest true "Vessel schedule payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /plan/vessel-schedule/{id} [put]
+// @Router /plan/vessel-schedule/{schedule_code} [put]
 func (h *VesselScheduleHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		helper.ErrorResponse(c, http.StatusBadRequest, "invalid vessel schedule id")
+	scheduleCode := c.Param("schedule_code")
+	if scheduleCode == "" {
+		helper.ErrorResponse(c, http.StatusBadRequest, "schedule_code is required")
 		return
 	}
 
@@ -166,7 +193,7 @@ func (h *VesselScheduleHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Update(c.Request.Context(), id, schedule); err != nil {
+	if err := h.service.Update(c.Request.Context(), scheduleCode, schedule); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to update vessel schedule")
 		return
 	}
@@ -241,6 +268,7 @@ func (h *VesselScheduleHandler) buildScheduleFromRequest(c *gin.Context, req Ves
 		VesselName:          req.VesselName,
 		VesselCode:          req.VesselCode,
 		VesselType:          req.VesselType,
+		VesselHatchNumber:   req.VesselHatchNumber,
 		VoyageNumber:        req.VoyageNumber,
 		PKKNumber:           req.PKKNumber,
 		VoyageType:          req.VoyageType,
@@ -261,6 +289,8 @@ func (h *VesselScheduleHandler) buildScheduleFromRequest(c *gin.Context, req Ves
 		DockName:            req.DockName,
 		BerthCode:           req.BerthCode,
 		BerthName:           req.BerthName,
+		BerthLatitude:       req.BerthLatitude,
+		BerthLongitude:      req.BerthLongitude,
 		BerthPosition:       req.BerthPosition,
 		PositionRange:       req.PositionRange,
 		ETA:                 req.ETA,

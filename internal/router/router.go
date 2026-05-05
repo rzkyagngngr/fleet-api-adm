@@ -23,6 +23,7 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselschedule"
 
@@ -55,6 +56,7 @@ type RouterConfig struct {
 	WarehouseHandler      *warehouse.WarehouseHandler
 	CompanyHandler        *company.CompanyHandler
 	PostRequestHandler    *postrequest.PostRequestHandler
+	OpsPlanHandler        *op.OpsPlanHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -250,9 +252,9 @@ func SetupRouter(cfg *RouterConfig) {
 			vesselSchedule := plan.Group("/vessel-schedule")
 			{
 				vesselSchedule.POST("/search", cfg.VesselScheduleHandler.Search)
-				vesselSchedule.GET("/:id", cfg.VesselScheduleHandler.GetByID)
 				vesselSchedule.POST("", cfg.VesselScheduleHandler.Create)
-				vesselSchedule.PUT("/:id", cfg.VesselScheduleHandler.Update)
+				vesselSchedule.GET("/:schedule_code", cfg.VesselScheduleHandler.GetByScheduleCode)
+				vesselSchedule.PUT("/:schedule_code", cfg.VesselScheduleHandler.Update)
 				vesselSchedule.DELETE("/:id", cfg.VesselScheduleHandler.Delete)
 			}
 
@@ -266,6 +268,18 @@ func SetupRouter(cfg *RouterConfig) {
 				reqBarang.PUT("/:id", cfg.PostRequestHandler.Update)
 				reqBarang.PUT("/:id/status", cfg.PostRequestHandler.UpdateStatus)
 				reqBarang.DELETE("/:id", cfg.PostRequestHandler.Delete)
+			}
+
+			opsPlan := plan.Group("/op")
+			{
+				opsPlan.POST("", cfg.OpsPlanHandler.Create)
+				opsPlan.POST("/update", cfg.OpsPlanHandler.Update)
+				opsPlan.POST("/readyOp", cfg.OpsPlanHandler.ReadyOpsPlan)
+				opsPlan.POST("/getDataRequest", cfg.OpsPlanHandler.GetDataRequest)
+				opsPlan.POST("/getDataOp", cfg.OpsPlanHandler.GetDataOp)
+				opsPlan.POST("/getDetailOp", cfg.OpsPlanHandler.GetDetailOp)
+				opsPlan.POST("/getDataVesselSchedule", cfg.OpsPlanHandler.GetDataVesselSchedule)
+				opsPlan.POST("/getDataVesel", cfg.OpsPlanHandler.GetDataVesel)
 			}
 		}
 

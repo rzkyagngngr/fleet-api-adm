@@ -9,6 +9,7 @@ type VesselScheduleRequest struct {
 	VesselName          *string    `json:"vessel_name" binding:"omitempty,max=100"`
 	VesselCode          *string    `json:"vessel_code" binding:"omitempty,max=50"`
 	VesselType          *string    `json:"vessel_type" binding:"omitempty,max=50"`
+	VesselHatchNumber   *int       `json:"vessel_hatch_number"`
 	VoyageNumber        string     `json:"voyage_number" binding:"required,max=50"`
 	PKKNumber           *string    `json:"pkk_number" binding:"omitempty,max=50"`
 	VoyageType          string     `json:"voyage_type" binding:"required,max=50"`
@@ -29,6 +30,8 @@ type VesselScheduleRequest struct {
 	DockName            *string    `json:"dock_name" binding:"omitempty,max=100"`
 	BerthCode           *string    `json:"berth_code" binding:"omitempty,max=50"`
 	BerthName           *string    `json:"berth_name" binding:"omitempty,max=100"`
+	BerthLatitude       *string    `json:"berth_latitude" binding:"omitempty,max=50"`
+	BerthLongitude      *string    `json:"berth_longitude" binding:"omitempty,max=50"`
 	BerthPosition       *string    `json:"berth_position" binding:"omitempty,max=100"`
 	PositionRange       *string    `json:"position_range" binding:"omitempty,max=50"`
 	ETA                 *time.Time `json:"eta"`

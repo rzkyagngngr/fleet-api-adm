@@ -33,6 +33,7 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
@@ -86,6 +87,7 @@ func main() {
 
 	// Plan Module uses PLAN connection
 	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
+	opsPlanRepo := op.NewOpsPlanRepository(reg.PLAN, reg.ADM)
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, jwtUtil)
@@ -103,6 +105,7 @@ func main() {
 	dockService := dock.NewDockService(db)
 	portService := pelabuhan.NewPortService(db)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
+	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	tariffService := tariff.NewTariffService(db)
 	equipmentService := equipment.NewEquipmentService(db)
 	warehouseService := warehouse.NewWarehouseService(db)
@@ -130,6 +133,7 @@ func main() {
 	terminalHandler := terminal.NewTerminalHandler(terminalService, userAdapter)
 	companyHandler := company.NewCompanyHandler(companyService)
 	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
+	opsPlanHandler := op.NewOpsPlanHandler(opsPlanService)
 	tariffHandler := tariff.NewTariffHandler(tariffService)
 	lookupHandler := lookup.NewLookupHandler(lookupService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
@@ -163,6 +167,7 @@ func main() {
 		TerminalHandler:       terminalHandler,
 		CompanyHandler:        companyHandler,
 		PostRequestHandler:    postRequestHandler,
+		OpsPlanHandler:        opsPlanHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)
