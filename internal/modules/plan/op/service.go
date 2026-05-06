@@ -14,7 +14,7 @@ type OpsPlanService interface {
 	SearchReady(ctx context.Context, query helper.PaginationQuery) ([]ReadyOpsPlanResponse, helper.PaginationMeta, error)
 	GetDataRequest(ctx context.Context, ppkNumber, activityCode string) ([]ReadyOpDetailResponse, error)
 	GetDataOp(ctx context.Context, branchCode, terminalCode int, input GetDataOpInput) ([]GetDataOpResponse, error)
-	GetDetailOp(ctx context.Context, branchCode, terminalCode int, planNumber string) ([]DetailOpResponse, error)
+	GetDetailOp(ctx context.Context, branchCode, terminalCode int, planCode string) ([]DetailOpResponse, error)
 	GetDataVesselSchedule(ctx context.Context, ppkNumber, vesselCode string) ([]RawJSONResponse, error)
 	GetDataVesel(ctx context.Context, vesselCode string) ([]RawJSONResponse, error)
 	Create(ctx context.Context, input *CreateLoadingUnloadingPlanInput, branchCode, terminalCode int, branchName, terminalName, createdBy string) (*LoadingUnloadingPlanResponse, error)
@@ -45,16 +45,16 @@ func (s *opsPlanService) GetDataOp(ctx context.Context, branchCode, terminalCode
 	return s.repo.GetDataOp(ctx, branchCode, terminalCode, input)
 }
 
-func (s *opsPlanService) GetDetailOp(ctx context.Context, branchCode, terminalCode int, planNumber string) ([]DetailOpResponse, error) {
+func (s *opsPlanService) GetDetailOp(ctx context.Context, branchCode, terminalCode int, planCode string) ([]DetailOpResponse, error) {
 	if branchCode == 0 || terminalCode == 0 {
 		return nil, errors.New("branch_code and terminal_code are required")
 	}
-	planNumber = strings.TrimSpace(planNumber)
-	if planNumber == "" {
-		return nil, errors.New("plan_number is required")
+	planCode = strings.TrimSpace(planCode)
+	if planCode == "" {
+		return nil, errors.New("plan_code is required")
 	}
 
-	header, details, detailsEquipment, err := s.repo.GetDetailOp(ctx, branchCode, terminalCode, planNumber)
+	header, details, detailsEquipment, err := s.repo.GetDetailOp(ctx, branchCode, terminalCode, planCode)
 	if err != nil {
 		return nil, err
 	}
@@ -183,10 +183,11 @@ func (s *opsPlanService) Update(
 	if branchCode == 0 || terminalCode == 0 {
 		return nil, errors.New("branch_code and terminal_code are required")
 	}
-	input.PlanNumber = strings.TrimSpace(input.PlanNumber)
-	if input.PlanNumber == "" {
-		return nil, errors.New("plan_number is required")
+	planCode := strings.TrimSpace(input.PlanIdentifier())
+	if planCode == "" {
+		return nil, errors.New("plan_code is required")
 	}
+	input.PlanCode = planCode
 	if updatedBy == "" {
 		updatedBy = "SYSTEM"
 	}
@@ -199,7 +200,7 @@ func (s *opsPlanService) Update(
 		details = buildLoadingUnloadingPlanDetails(input.Details, &LoadingUnloadingPlan{
 			BranchCode:   branchCode,
 			TerminalCode: terminalCode,
-			PlanNumber:   input.PlanNumber,
+			PlanNumber:   planCode,
 		}, updatedBy, now)
 	}
 	detailsEquipement := []PostEquipmentPlan(nil)
@@ -208,7 +209,7 @@ func (s *opsPlanService) Update(
 		detailsEquipement, err = buildPostEquipmentPlans(input.DetailsEquipement, &LoadingUnloadingPlan{
 			BranchCode:   branchCode,
 			TerminalCode: terminalCode,
-			PlanNumber:   input.PlanNumber,
+			PlanNumber:   planCode,
 		}, updatedBy, now)
 		if err != nil {
 			return nil, err
