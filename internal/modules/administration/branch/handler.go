@@ -115,14 +115,14 @@ func (h *BranchHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Branch ID"
+// @Param id query int true "Branch ID"
 // @Param payload body branch.BranchRequest true "Branch payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/branches/{id} [put]
+// @Router /master/branches [put]
 func (h *BranchHandler) Update(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, _ := strconv.ParseUint(c.Query("id"), 10, 64)
 	var input BranchRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
 		helper.ValidationErrorResponse(c, err)
@@ -148,13 +148,13 @@ func (h *BranchHandler) Update(c *gin.Context) {
 // @Tags master-branch
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Branch ID"
+// @Param id query int true "Branch ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/branches/{id} [delete]
+// @Router /master/branches [delete]
 func (h *BranchHandler) Delete(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, _ := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err := h.service.Delete(c.Request.Context(), id); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -194,14 +194,14 @@ func (h *BranchHandler) GetStats(c *gin.Context) {
 // @Tags master-branch
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Branch ID"
+// @Param id query int true "Branch ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/branches/{id} [get]
+// @Router /master/branches [get]
 func (h *BranchHandler) GetByID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, _ := strconv.ParseUint(c.Query("id"), 10, 64)
 	res, err := h.service.GetByID(c.Request.Context(), id)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusNotFound, "branch not found")

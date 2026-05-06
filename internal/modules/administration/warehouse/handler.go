@@ -81,13 +81,13 @@ func (h *WarehouseHandler) SearchWarehouse(c *gin.Context) {
 // @Tags master-warehouse
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Warehouse ID"
+// @Param id query int true "Warehouse ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
-// @Router /master/warehouse/{id} [get]
+// @Router /master/warehouse [get]
 func (h *WarehouseHandler) GetWarehouseDetail(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid warehouse id")
 		return
@@ -189,14 +189,14 @@ func (h *WarehouseHandler) CreateWarehouse(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Warehouse ID"
+// @Param id query int true "Warehouse ID"
 // @Param payload body warehouse.WarehouseReq true "Warehouse payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/warehouse/{id} [put]
+// @Router /master/warehouse [put]
 func (h *WarehouseHandler) UpdateWarehouse(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid warehouse id")
 		return
@@ -275,13 +275,13 @@ func (h *WarehouseHandler) UpdateWarehouse(c *gin.Context) {
 // @Tags master-warehouse
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Warehouse ID"
+// @Param id query int true "Warehouse ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/warehouse/{id} [delete]
+// @Router /master/warehouse [delete]
 func (h *WarehouseHandler) DeleteWarehouse(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid warehouse id")
 		return

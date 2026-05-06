@@ -82,14 +82,14 @@ func (h *CompanyHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Company ID"
+// @Param id query int true "Company ID"
 // @Param payload body company.CompanyRequest true "Company payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/company/{id} [put]
+// @Router /master/companies [put]
 func (h *CompanyHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid company id")
 		return
@@ -117,13 +117,13 @@ func (h *CompanyHandler) Update(c *gin.Context) {
 // @Tags master-company
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Company ID"
+// @Param id query int true "Company ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/company/{id} [get]
+// @Router /master/companies [get]
 func (h *CompanyHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid company id")
 		return
@@ -144,13 +144,13 @@ func (h *CompanyHandler) GetByID(c *gin.Context) {
 // @Tags master-company
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Company ID"
+// @Param id query int true "Company ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/company/{id} [delete]
+// @Router /master/companies [delete]
 func (h *CompanyHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid company id")
 		return

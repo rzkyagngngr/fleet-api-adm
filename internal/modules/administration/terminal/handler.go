@@ -112,14 +112,14 @@ func (h *TerminalHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Terminal ID"
+// @Param id query int true "Terminal ID"
 // @Param payload body terminal.TerminalRequest true "Terminal payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/terminals/{id} [put]
+// @Router /master/terminals [put]
 func (h *TerminalHandler) Update(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, _ := strconv.ParseUint(c.Query("id"), 10, 64)
 	var input TerminalRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
 		helper.ValidationErrorResponse(c, err)
@@ -145,13 +145,13 @@ func (h *TerminalHandler) Update(c *gin.Context) {
 // @Tags master-terminal
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Terminal ID"
+// @Param id query int true "Terminal ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/terminals/{id} [delete]
+// @Router /master/terminals [delete]
 func (h *TerminalHandler) Delete(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, _ := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err := h.service.Delete(c.Request.Context(), id); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -190,14 +190,14 @@ func (h *TerminalHandler) GetStats(c *gin.Context) {
 // @Tags master-terminal
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Terminal ID"
+// @Param id query int true "Terminal ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/terminals/{id} [get]
+// @Router /master/terminals [get]
 func (h *TerminalHandler) GetByID(c *gin.Context) {
-	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, _ := strconv.ParseUint(c.Query("id"), 10, 64)
 	res, err := h.service.GetByID(c.Request.Context(), id)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusNotFound, "terminal not found")

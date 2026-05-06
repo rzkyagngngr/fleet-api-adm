@@ -48,12 +48,12 @@ func (h *referenceHandler) GetAllReferences(c *gin.Context) {
 // @Tags master-references
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Reference ID"
+// @Param id query int true "Reference ID"
 // @Success 200 {object} helper.Response
 // @Failure 404 {object} helper.Response
-// @Router /master/references/{id} [get]
+// @Router /master/references [get]
 func (h *referenceHandler) GetReferenceDetail(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Query("id")
 	ref, err := h.service.GetHeaderWithDetails(id)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusNotFound, "reference not found")
@@ -114,12 +114,12 @@ func (h *referenceHandler) SaveReference(c *gin.Context) {
 // @Tags master-references
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Reference ID"
+// @Param id query int true "Reference ID"
 // @Success 200 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/references/{id} [delete]
+// @Router /master/references [delete]
 func (h *referenceHandler) DeleteReference(c *gin.Context) {
-	if err := h.service.DeleteReference(c.Param("id")); err != nil {
+	if err := h.service.DeleteReference(c.Query("id")); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
