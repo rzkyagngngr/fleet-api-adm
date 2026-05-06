@@ -128,19 +128,19 @@ func (h *CargoHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Cargo ID"
+// @Param id query int true "Cargo ID"
 // @Param payload body cargo.CargoRequest true "Cargo payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/barang/{id} [put]
+// @Router /master/barang [put]
 func (h *CargoHandler) Update(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
 		return
 	}
 
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid cargo ID")
 		return
@@ -181,18 +181,18 @@ func (h *CargoHandler) Update(c *gin.Context) {
 // @Tags master-barang
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Cargo ID"
+// @Param id query int true "Cargo ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/barang/{id} [delete]
+// @Router /master/barang [delete]
 func (h *CargoHandler) Delete(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
 		return
 	}
 
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid cargo ID")
 		return
@@ -212,18 +212,18 @@ func (h *CargoHandler) Delete(c *gin.Context) {
 // @Tags master-barang
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Cargo ID"
+// @Param id query int true "Cargo ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/barang/{id} [get]
+// @Router /master/barang [get]
 func (h *CargoHandler) GetByID(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "cargo service is not initialized")
 		return
 	}
 
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid cargo ID")
 		return

@@ -159,6 +159,33 @@ func (h *EquipmentHandler) SearchEquipments(c *gin.Context) {
 	helper.MetaSuccessResponse(c, http.StatusOK, "equipments retrieved successfully", equipments, meta)
 }
 
+// GetEquipmentDetail godoc
+// @Summary Get equipment detail
+// @Description Retrieve equipment detail by id
+// @Tags master-equipments
+// @Produce json
+// @Security BearerAuth
+// @Param id query int true "Equipment ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Router /master/equipment [get]
+func (h *EquipmentHandler) GetEquipmentDetail(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "invalid equipment id")
+		return
+	}
+
+	equipment, err := h.service.FindByID(c.Request.Context(), id)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, "equipment not found")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "equipment detail retrieved successfully", equipment)
+}
+
 // CreateEquipment godoc
 // @Summary Create equipment
 // @Description Create a new equipment record
@@ -253,14 +280,14 @@ func (h *EquipmentHandler) CreateEquipment(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Equipment ID"
+// @Param id query int true "Equipment ID"
 // @Param payload body equipment.EquipmentReq true "Equipment payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/equipment/{id} [put]
+// @Router /master/equipment [put]
 func (h *EquipmentHandler) UpdateEquipment(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid equipment id")
 		return
@@ -352,13 +379,13 @@ func (h *EquipmentHandler) UpdateEquipment(c *gin.Context) {
 // @Tags master-equipments
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Equipment ID"
+// @Param id query int true "Equipment ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/equipment/{id} [delete]
+// @Router /master/equipment [delete]
 func (h *EquipmentHandler) DeleteEquipment(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid equipment id")
 		return

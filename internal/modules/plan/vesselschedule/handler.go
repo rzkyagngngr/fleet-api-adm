@@ -107,13 +107,16 @@ func (h *VesselScheduleHandler) GetByID(c *gin.Context) {
 // @Tags plan-vessel-schedule
 // @Produce json
 // @Security BearerAuth
-// @Param schedule_code path string true "Vessel Schedule Code"
+// @Param schedule_code query string true "Vessel Schedule Code"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
-// @Router /plan/vessel-schedule/{schedule_code} [get]
+// @Router /plan/vessel-schedule [get]
 func (h *VesselScheduleHandler) GetByScheduleCode(c *gin.Context) {
-	scheduleCode := c.Param("schedule_code")
+	scheduleCode := c.Query("schedule_code")
+	if scheduleCode == "" {
+		scheduleCode = c.Param("schedule_code")
+	}
 	if scheduleCode == "" {
 		helper.ErrorResponse(c, http.StatusBadRequest, "schedule_code is required")
 		return
@@ -168,14 +171,17 @@ func (h *VesselScheduleHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param schedule_code path string true "Vessel Schedule Code"
+// @Param schedule_code query string true "Vessel Schedule Code"
 // @Param payload body vesselschedule.VesselScheduleRequest true "Vessel schedule payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /plan/vessel-schedule/{schedule_code} [put]
+// @Router /plan/vessel-schedule [put]
 func (h *VesselScheduleHandler) Update(c *gin.Context) {
-	scheduleCode := c.Param("schedule_code")
+	scheduleCode := c.Query("schedule_code")
+	if scheduleCode == "" {
+		scheduleCode = c.Param("schedule_code")
+	}
 	if scheduleCode == "" {
 		helper.ErrorResponse(c, http.StatusBadRequest, "schedule_code is required")
 		return

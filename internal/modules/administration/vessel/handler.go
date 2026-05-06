@@ -82,14 +82,14 @@ func (h *VesselHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Vessel ID"
+// @Param id query int true "Vessel ID"
 // @Param payload body vessel.VesselRequest true "Vessel payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/vessel/{id} [put]
+// @Router /master/vessel [put]
 func (h *VesselHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid vessel id")
 		return
@@ -117,13 +117,13 @@ func (h *VesselHandler) Update(c *gin.Context) {
 // @Tags master-vessel
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Vessel ID"
+// @Param id query int true "Vessel ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/vessel/{id} [get]
+// @Router /master/vessel [get]
 func (h *VesselHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid vessel id")
 		return
@@ -144,13 +144,13 @@ func (h *VesselHandler) GetByID(c *gin.Context) {
 // @Tags master-vessel
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Vessel ID"
+// @Param id query int true "Vessel ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/vessel/{id} [delete]
+// @Router /master/vessel [delete]
 func (h *VesselHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid vessel id")
 		return

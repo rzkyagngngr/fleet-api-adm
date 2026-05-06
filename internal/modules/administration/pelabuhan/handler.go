@@ -70,12 +70,12 @@ func (h *PortHandler) CreatePort(c *gin.Context) {
 	}
 
 	port := Port{
-		PortCode:    req.PortCode,
-		PortName:    &req.PortName,
-		PortCity:    &req.PortCity,
-		CountryCode: &req.CountryCode,
-		Status:      req.Status,
-		CreatedBy:   &userName,
+		PortCode:      req.PortCode,
+		PortName:      &req.PortName,
+		PortCity:      &req.PortCity,
+		CountryCode:   &req.CountryCode,
+		Status:        req.Status,
+		CreatedBy:     &userName,
 		LastUpdatedBy: userName,
 	}
 
@@ -87,6 +87,33 @@ func (h *PortHandler) CreatePort(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusCreated, "port created successfully", port)
 }
 
+// GetPortDetail godoc
+// @Summary Get port detail
+// @Description Retrieve port detail by id
+// @Tags master-ports
+// @Produce json
+// @Security BearerAuth
+// @Param id query int true "Port ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Router /master/pelabuhan [get]
+func (h *PortHandler) GetPortDetail(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "invalid port id")
+		return
+	}
+
+	port, err := h.service.FindByID(c.Request.Context(), id)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, "port not found")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "port detail retrieved successfully", port)
+}
+
 // UpdatePort godoc
 // @Summary Update port
 // @Description Update an existing port by id
@@ -94,14 +121,14 @@ func (h *PortHandler) CreatePort(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Port ID"
+// @Param id query int true "Port ID"
 // @Param payload body pelabuhan.PortReq true "Port payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/pelabuhan/{id} [put]
+// @Router /master/pelabuhan [put]
 func (h *PortHandler) UpdatePort(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid port id")
 		return
@@ -119,11 +146,11 @@ func (h *PortHandler) UpdatePort(c *gin.Context) {
 	}
 
 	port := Port{
-		PortCode:    req.PortCode,
-		PortName:    &req.PortName,
-		PortCity:    &req.PortCity,
-		CountryCode: &req.CountryCode,
-		Status:      req.Status,
+		PortCode:      req.PortCode,
+		PortName:      &req.PortName,
+		PortCity:      &req.PortCity,
+		CountryCode:   &req.CountryCode,
+		Status:        req.Status,
 		LastUpdatedBy: userName,
 	}
 
@@ -141,13 +168,13 @@ func (h *PortHandler) UpdatePort(c *gin.Context) {
 // @Tags master-ports
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Port ID"
+// @Param id query int true "Port ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/pelabuhan/{id} [delete]
+// @Router /master/pelabuhan [delete]
 func (h *PortHandler) DeletePort(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid port id")
 		return
