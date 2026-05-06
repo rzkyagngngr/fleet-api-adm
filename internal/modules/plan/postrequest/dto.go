@@ -2,6 +2,7 @@ package postrequest
 
 import (
 	"omniport-api/internal/helper"
+	"omniport-api/internal/modules/administration/file"
 	"time"
 )
 
@@ -42,6 +43,13 @@ type PostRequestDetailInput struct {
 	ConsigneeName       string     `json:"consignee_name"`
 }
 
+// AttachmentInput represents one file attachment.
+type AttachmentInput struct {
+	FileID  string `json:"file_id"  binding:"required"`
+	DocType string `json:"doc_type"`
+	DocName string `json:"doc_name"`
+}
+
 // CreatePostRequestInput is the main payload for creating a new cargo request.
 type CreatePostRequestInput struct {
 	PPKNumber     string     `json:"ppk_number"`
@@ -71,7 +79,8 @@ type CreatePostRequestInput struct {
 	ActivityName  string     `json:"activity_name"`
 	ToPPKNumber   string     `json:"to_ppk_number"`
 
-	Details []PostRequestDetailInput `json:"details" binding:"required,min=1,dive"`
+	Details     []PostRequestDetailInput `json:"details" binding:"required,min=1,dive"`
+	Attachments []AttachmentInput        `json:"attachments"`
 }
 
 // UpdatePostRequestInput is the payload for updating an existing request.
@@ -105,7 +114,8 @@ type UpdatePostRequestInput struct {
 	ToPPKNumber   string     `json:"to_ppk_number"`
 
 	// Replaces all details when provided
-	Details []PostRequestDetailInput `json:"details"`
+	Details     []PostRequestDetailInput `json:"details"`
+	Attachments []AttachmentInput        `json:"attachments"`
 }
 
 // SearchPostRequestInput is the body for the search/list endpoint.
@@ -218,6 +228,15 @@ type PostRequestResponse struct {
 	LastUpdatedDate *time.Time                  `json:"last_updated_date"`
 	LastUpdatedBy   string                      `json:"last_updated_by"`
 	Details         []PostRequestDetailResponse `json:"details"`
+	Attachments     []PostRequestFileResponse   `json:"attachments"`
+}
+
+// PostRequestFileResponse represents one file link in response.
+type PostRequestFileResponse struct {
+	ID      int64  `json:"id"`
+	DocType string `json:"doc_type"`
+	DocName string `json:"doc_name"`
+	file.FileAttachment
 }
 
 // PostRequestStatsResponse holds aggregated dashboard counts.
@@ -320,6 +339,16 @@ func (h *PostRequest) ToResponse(details []PostRequestDetail) PostRequestRespons
 	}
 	for _, d := range details {
 		res.Details = append(res.Details, detailToResponse(d))
+	}
+	for _, f := range h.Files {
+		res.Attachments = append(res.Attachments, PostRequestFileResponse{
+			ID:      f.ID,
+			DocType: f.DocType,
+			DocName: f.DocName,
+			FileAttachment: file.FileAttachment{
+				FileID: f.FileID,
+			},
+		})
 	}
 	return res
 }

@@ -13,11 +13,12 @@ import (
 // ─────────────────────────────────────────────────────────────
 
 type PostRequestRepository interface {
-	Create(ctx context.Context, header *PostRequest, details []PostRequestDetail) error
+	Create(ctx context.Context, header *PostRequest, details []PostRequestDetail, files []PostRequestFile) error
 	FindByID(ctx context.Context, id int64) (*PostRequest, []PostRequestDetail, error)
 	FindDetailsByRequestCode(ctx context.Context, requestCode string, branchCode, terminalCode int) ([]PostRequestDetail, error)
 	UpdateHeader(ctx context.Context, id int64, header *PostRequest) error
 	ReplaceDetails(ctx context.Context, requestCode string, branchCode, terminalCode int, details []PostRequestDetail) error
+	ReplaceFiles(ctx context.Context, headerID int64, files []PostRequestFile) error
 	Delete(ctx context.Context, id int64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]PostRequest, helper.PaginationMeta, error)
 	GetStats(ctx context.Context, branchCode, terminalCode int) (*PostRequestStatsResponse, error)
@@ -39,7 +40,7 @@ func NewPostRequestRepository(db *gorm.DB) PostRequestRepository {
 }
 
 // Create inserts the header and all detail rows inside a single transaction.
-func (r *postRequestRepository) Create(ctx context.Context, header *PostRequest, details []PostRequestDetail) error {
+func (r *postRequestRepository) Create(ctx context.Context, header *PostRequest, details []PostRequestDetail, files []PostRequestFile) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(header).Error; err != nil {
 			return err
@@ -56,6 +57,16 @@ func (r *postRequestRepository) Create(ctx context.Context, header *PostRequest,
 				return err
 			}
 		}
+
+		// Save Attachments
+		for i := range files {
+			files[i].HeaderID = header.ID
+		}
+		if len(files) > 0 {
+			if err := tx.Create(&files).Error; err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 }
@@ -63,7 +74,7 @@ func (r *postRequestRepository) Create(ctx context.Context, header *PostRequest,
 // FindByID retrieves header + all associated detail rows.
 func (r *postRequestRepository) FindByID(ctx context.Context, id int64) (*PostRequest, []PostRequestDetail, error) {
 	var header PostRequest
-	if err := r.db.WithContext(ctx).First(&header, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Files").First(&header, id).Error; err != nil {
 		return nil, nil, err
 	}
 	var details []PostRequestDetail
@@ -109,6 +120,24 @@ func (r *postRequestRepository) ReplaceDetails(ctx context.Context, requestCode 
 		return nil
 	})
 }
+// ReplaceFiles deletes old file links and inserts the new ones atomically.
+func (r *postRequestRepository) ReplaceFiles(ctx context.Context, headerID int64, files []PostRequestFile) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("header_id = ?", headerID).Delete(&PostRequestFile{}).Error; err != nil {
+			return err
+		}
+		for i := range files {
+			files[i].HeaderID = headerID
+		}
+		if len(files) > 0 {
+			if err := tx.Create(&files).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 
 // Delete removes the header. Detail rows are expected to be cascade-deleted
 // or cleaned up by the service layer before calling this.

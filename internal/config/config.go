@@ -12,6 +12,7 @@ type Config struct {
 	App      AppConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	Storage  StorageConfig
 }
 
 type AppConfig struct {
@@ -44,6 +45,13 @@ type DatabaseConfig struct {
 type JWTConfig struct {
 	Secret      string
 	ExpiryHours int
+}
+
+type StorageConfig struct {
+	S3Bucket   string
+	S3Region   string
+	S3BaseURL  string
+	S3Endpoint string
 }
 
 func (d DatabaseConfig) DSN(module ModuleDBConfig) string {
@@ -118,6 +126,12 @@ func Load() (*Config, error) {
 		JWT: JWTConfig{
 			Secret:      getEnv("JWT_SECRET", "secret"),
 			ExpiryHours: expiryHours,
+		},
+		Storage: StorageConfig{
+			S3Bucket:   getEnv("AWS_BUCKET_NAME", "omniport-assets"),
+			S3Region:   getEnv("AWS_REGION", "ap-southeast-3"),
+			S3BaseURL:  getEnv("AWS_S3_BASE_URL", ""),
+			S3Endpoint: getEnv("AWS_S3_ENDPOINT", ""),
 		},
 	}
 

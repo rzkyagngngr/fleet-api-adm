@@ -14,6 +14,7 @@ import (
 	"omniport-api/internal/database"
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
+	"omniport-api/internal/modules/administration/file"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/branch"
@@ -83,6 +84,7 @@ func main() {
 	branchRepo := branch.NewBranchRepository(db)
 	terminalRepo := terminal.NewTerminalRepository(db)
 	companyRepo := company.NewCompanyRepository(db)
+	fileRepo := file.NewFileRepository(db)
 
 	// Plan Module uses PLAN connection
 	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
@@ -102,11 +104,19 @@ func main() {
 	customerService := customer.NewCustomerService(db)
 	dockService := dock.NewDockService(db)
 	portService := pelabuhan.NewPortService(db)
-	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
+	
+	// Initialize S3 Provider
+	s3Provider, err := helper.NewS3Provider(context.Background(), cfg.Storage.S3Region, cfg.Storage.S3Endpoint)
+	if err != nil {
+		slog.Warn("Failed to initialize S3 provider, using dummy", "error", err)
+	}
+
 	tariffService := tariff.NewTariffService(db)
 	equipmentService := equipment.NewEquipmentService(db)
 	warehouseService := warehouse.NewWarehouseService(db)
 	lookupService := lookup.NewLookupService(db, equipmentService)
+	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
+	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db)
 
 	authHandler := auth.NewAuthHandler(authService)
@@ -123,6 +133,7 @@ func main() {
 	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
 	portHandler := pelabuhan.NewPortHandler(portService)
 	warehouseHandler := warehouse.NewWarehouseHandler(warehouseService)
+	fileHandler := file.NewFileHandler(fileService)
 
 	// Break circular dependency using adapter
 	userAdapter := &userProviderAdapter{s: userService}
@@ -163,6 +174,7 @@ func main() {
 		TerminalHandler:       terminalHandler,
 		CompanyHandler:        companyHandler,
 		PostRequestHandler:    postRequestHandler,
+		FileHandler:           fileHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)

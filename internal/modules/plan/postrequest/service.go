@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"omniport-api/internal/helper"
+	"omniport-api/internal/modules/administration/file"
 	"time"
 )
 
@@ -32,10 +33,16 @@ type PostRequestService interface {
 // IMPLEMENTATION
 // ─────────────────────────────────────────────────────────────
 
-type postRequestService struct{ repo PostRequestRepository }
+type postRequestService struct {
+	repo        PostRequestRepository
+	fileService file.FileService
+}
 
-func NewPostRequestService(repo PostRequestRepository) PostRequestService {
-	return &postRequestService{repo: repo}
+func NewPostRequestService(repo PostRequestRepository, fileService file.FileService) PostRequestService {
+	return &postRequestService{
+		repo:        repo,
+		fileService: fileService,
+	}
 }
 
 // generateRequestCode produces a unique code: PR-YYYYMMDD-<nano_suffix>
@@ -106,13 +113,36 @@ func (s *postRequestService) Create(
 	}
 
 	details := buildDetails(input.Details, requestCode, branchCode, terminalCode, branchName, terminalName, createdBy, now)
+	files := buildFiles(input.Attachments)
 
-	if err := s.repo.Create(ctx, header, details); err != nil {
+	if err := s.repo.Create(ctx, header, details, files); err != nil {
 		return nil, fmt.Errorf("create post_request: %w", err)
 	}
 
+	header.Files = files // For response
 	res := header.ToResponse(details)
+	s.fillFileURLs(ctx, &res)
 	return &res, nil
+}
+
+func (s *postRequestService) fillFileURLsBulk(ctx context.Context, results []*PostRequestResponse) {
+	if s.fileService == nil || len(results) == 0 {
+		return
+	}
+
+	var allAttachments []*file.FileAttachment
+	for _, res := range results {
+		if res == nil { continue }
+		for i := range res.Attachments {
+			allAttachments = append(allAttachments, &res.Attachments[i].FileAttachment)
+		}
+	}
+
+	_ = s.fileService.EnrichAttachments(ctx, allAttachments)
+}
+
+func (s *postRequestService) fillFileURLs(ctx context.Context, res *PostRequestResponse) {
+	s.fillFileURLsBulk(ctx, []*PostRequestResponse{res})
 }
 
 // GetByID fetches a request with all its manifest lines.
@@ -122,6 +152,7 @@ func (s *postRequestService) GetByID(ctx context.Context, id int64) (*PostReques
 		return nil, fmt.Errorf("post_request not found: %w", err)
 	}
 	res := header.ToResponse(details)
+	s.fillFileURLs(ctx, &res)
 	return &res, nil
 }
 
@@ -236,7 +267,16 @@ func (s *postRequestService) Update(ctx context.Context, id int64, input *Update
 		}
 	}
 
+	if len(input.Attachments) > 0 {
+		newFiles := buildFiles(input.Attachments)
+		if err := s.repo.ReplaceFiles(ctx, id, newFiles); err != nil {
+			return nil, fmt.Errorf("replace post_request_f: %w", err)
+		}
+		header.Files = newFiles
+	}
+
 	res := header.ToResponse(finalDetails)
+	s.fillFileURLs(ctx, &res)
 	return &res, nil
 }
 
@@ -251,11 +291,19 @@ func (s *postRequestService) Search(ctx context.Context, query helper.Pagination
 	if err != nil {
 		return nil, meta, err
 	}
-	var res []PostRequestResponse
-	for _, h := range rows {
+	
+	res := make([]PostRequestResponse, len(rows))
+	ptrs := make([]*PostRequestResponse, len(rows))
+	
+	for i, h := range rows {
 		// Details not loaded in list view for performance; use GetByID for full detail.
-		res = append(res, h.ToResponse(nil))
+		res[i] = h.ToResponse(nil)
+		ptrs[i] = &res[i]
 	}
+
+	// Fill technical metadata and URLs for the entire batch
+	s.fillFileURLsBulk(ctx, ptrs)
+
 	return res, meta, nil
 }
 
@@ -354,4 +402,16 @@ func buildDetails(
 		})
 	}
 	return details
+}
+
+func buildFiles(inputs []AttachmentInput) []PostRequestFile {
+	files := make([]PostRequestFile, 0, len(inputs))
+	for _, a := range inputs {
+		files = append(files, PostRequestFile{
+			FileID:  a.FileID,
+			DocType: a.DocType,
+			DocName: a.DocName,
+		})
+	}
+	return files
 }

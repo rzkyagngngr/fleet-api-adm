@@ -1,6 +1,8 @@
 package postrequest
 
-import "time"
+import (
+	"time"
+)
 
 // PostRequest maps to plan.post_requests
 type PostRequest struct {
@@ -44,6 +46,7 @@ type PostRequest struct {
 	CreationBy       string     `gorm:"column:creation_by"                           json:"creation_by"`
 	LastUpdatedDate  *time.Time `gorm:"column:last_updated_date"                     json:"last_updated_date"`
 	LastUpdatedBy    string     `gorm:"column:last_updated_by"                       json:"last_updated_by"`
+	Files            []PostRequestFile `gorm:"foreignKey:HeaderID;references:ID" json:"files"`
 }
 
 func (PostRequest) TableName() string { return "plan.post_requests" }
@@ -141,3 +144,14 @@ type PostVesselSchedule struct {
 
 func (PostVesselSchedule) TableName() string { return "plan.post_vessel_schedules" }
 
+
+// PostRequestFile maps to plan.post_requests_f
+type PostRequestFile struct {
+	ID       int64  `gorm:"primaryKey;autoIncrement" json:"id"`
+	HeaderID int64  `gorm:"column:header_id"         json:"header_id"`
+	FileID   string `gorm:"column:file_id"           json:"file_id"`
+	DocType  string `gorm:"column:doc_type"          json:"doc_type"`
+	DocName  string `gorm:"column:doc_name"          json:"doc_name"`
+}
+
+func (PostRequestFile) TableName() string { return "plan.post_requests_f" }

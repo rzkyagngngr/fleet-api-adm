@@ -13,6 +13,7 @@ import (
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/file"
 	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
@@ -55,6 +56,7 @@ type RouterConfig struct {
 	WarehouseHandler      *warehouse.WarehouseHandler
 	CompanyHandler        *company.CompanyHandler
 	PostRequestHandler    *postrequest.PostRequestHandler
+	FileHandler           *file.FileHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -276,6 +278,13 @@ func SetupRouter(cfg *RouterConfig) {
 			dermagas.GET("/:id", cfg.DermagaHandler.FindByID)
 			dermagas.PUT("/:id", cfg.DermagaHandler.Update)
 			dermagas.DELETE("/:id", cfg.DermagaHandler.Delete)
+		}
+
+		storage := v1.Group("/storage")
+		{
+			storage.POST("/upload-signature", cfg.FileHandler.GetUploadSignature)
+			storage.POST("/commit/:id", cfg.FileHandler.CommitUpload)
+			storage.GET("/file/:id", cfg.FileHandler.GetFileDetail)
 		}
 	}
 }
