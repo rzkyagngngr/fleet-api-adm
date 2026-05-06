@@ -14,7 +14,11 @@ const UserEmailKey = "user_email"
 const EmployeeIDKey = "employee_id"
 const FullNameKey = "full_name"
 const BranchCodeKey = "branch_code"
+const BranchNameKey = "branch_name"
 const TerminalCodeKey = "terminal_code"
+const TerminalNameKey = "terminal_name"
+const CompanyCodeKey = "company_code"
+const CompanyNameKey = "company_name"
 
 func AuthMiddleware(jwtUtil *helper.JWTUtil) gin.HandlerFunc {
 	// Public paths that do not require JWT authentication
@@ -63,7 +67,11 @@ func AuthMiddleware(jwtUtil *helper.JWTUtil) gin.HandlerFunc {
 		c.Set(EmployeeIDKey, claims.EmployeeID)
 		c.Set(FullNameKey, claims.FullName)
 		c.Set(BranchCodeKey, claims.BranchCode)
+		c.Set(BranchNameKey, claims.BranchName)
 		c.Set(TerminalCodeKey, claims.TerminalCode)
+		c.Set(TerminalNameKey, claims.TerminalName)
+		c.Set(CompanyCodeKey, claims.CompanyCode)
+		c.Set(CompanyNameKey, claims.CompanyName)
 		c.Next()
 	}
 }
@@ -80,6 +88,62 @@ func GetUserID(c *gin.Context) uint64 {
 // GetUserEmail retrieves the user email from the Gin context
 func GetUserEmail(c *gin.Context) string {
 	val, exists := c.Get(UserEmailKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
+}
+
+func GetFullName(c *gin.Context) string {
+	val, exists := c.Get(FullNameKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
+}
+
+func GetBranchCode(c *gin.Context) string {
+	val, exists := c.Get(BranchCodeKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
+}
+
+func GetBranchName(c *gin.Context) string {
+	val, exists := c.Get(BranchNameKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
+}
+
+func GetTerminalCode(c *gin.Context) string {
+	val, exists := c.Get(TerminalCodeKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
+}
+
+func GetTerminalName(c *gin.Context) string {
+	val, exists := c.Get(TerminalNameKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
+}
+
+func GetCompanyCode(c *gin.Context) string {
+	val, exists := c.Get(CompanyCodeKey)
+	if !exists {
+		return ""
+	}
+	return val.(string)
+}
+
+func GetCompanyName(c *gin.Context) string {
+	val, exists := c.Get(CompanyNameKey)
 	if !exists {
 		return ""
 	}

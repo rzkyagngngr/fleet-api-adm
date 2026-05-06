@@ -22,6 +22,7 @@ import (
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/file"
 	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
@@ -92,7 +93,7 @@ func main() {
 	cargoRepo := cargo.NewCargoRepository(dbRegistry.ADM)
 
 	accessService := access.NewAccessService(accessRepo)
-	authService := auth.NewAuthService(userRepo, jwtUtil)
+	authService := auth.NewAuthService(userRepo, dbRegistry.ADM, jwtUtil)
 	userService := user.NewUserService(userRepo)
 	menuService := menu.NewMenuService(dbRegistry.ADM)
 	roleService := role.NewRoleService(roleRepo)
@@ -108,7 +109,10 @@ func main() {
 	lookupService := lookup.NewLookupService(dbRegistry.ADM, equipmentService)
 	postRequestRepo := postrequest.NewPostRequestRepository(dbRegistry.PLAN)
 	opsPlanRepo := op.NewOpsPlanRepository(dbRegistry.PLAN, dbRegistry.ADM)
-	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
+	fileRepo := file.NewFileRepository(dbRegistry.ADM)
+	s3Provider, _ := helper.NewS3Provider(context.Background(), cfg.Storage.S3Region, cfg.Storage.S3Endpoint)
+	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
+	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	vesselScheduleService := vesselschedule.NewVesselScheduleService(dbRegistry.PLAN, dbRegistry.ADM)
 

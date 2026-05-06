@@ -17,6 +17,7 @@ type UserRepository interface {
 	GetUserMenusByRole(ctx context.Context, roleID *int64) ([]MenuAccessRow, error)
 	FindAll(ctx context.Context, limit int, offset int) ([]User, int64, error)
 	Update(ctx context.Context, id uint64, user *User) error
+	UpdateTerminalContext(ctx context.Context, id uint64, branchCode, branchName, terminalCode, terminalName string) error
 	Delete(ctx context.Context, id uint64) error
 	Search(ctx context.Context, param helper.PaginationQuery) ([]User, helper.PaginationMeta, error)
 	GetStats(ctx context.Context) (*UserStatsResponse, error)
@@ -97,6 +98,17 @@ func (r *userRepository) Update(ctx context.Context, id uint64, u *User) error {
 		}
 		return r.syncAssociations(tx, id, u.Branches, u.Terminals)
 	})
+}
+
+// UpdateTerminalContext updates only the active branch/terminal context for a user.
+// This is the dedicated method for the Change Terminal flow and does NOT touch M2M associations.
+func (r *userRepository) UpdateTerminalContext(ctx context.Context, id uint64, branchCode, branchName, terminalCode, terminalName string) error {
+	return r.db.WithContext(ctx).Model(&User{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"branch_code":   branchCode,
+		"branch_name":   branchName,
+		"terminal_code": terminalCode,
+		"terminal_name": terminalName,
+	}).Error
 }
 
 func (r *userRepository) syncAssociations(tx *gorm.DB, userID uint64, branches []branch.Branch, terminals []terminal.Terminal) error {

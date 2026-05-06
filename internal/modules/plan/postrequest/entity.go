@@ -1,8 +1,12 @@
 package postrequest
 
 import (
+	"omniport-api/internal/helper"
 	"time"
 )
+
+// IdentityContext holds the full operational identity of a user request.
+// (Already defined in helper, but entities will use it via interface)
 
 // PostRequest maps to plan.post_requests
 type PostRequest struct {
@@ -49,6 +53,13 @@ type PostRequest struct {
 	Files            []PostRequestFile `gorm:"foreignKey:HeaderID;references:ID" json:"files"`
 }
 
+func (p *PostRequest) SetIdentity(id helper.IdentityContext) {
+	p.BranchCode = id.GetBranchCodeInt()
+	p.TerminalCode = id.GetTerminalCodeInt()
+	p.BranchName = id.BranchName
+	p.TerminalName = id.TerminalName
+}
+
 func (PostRequest) TableName() string { return "plan.post_requests" }
 
 // PostRequestDetail maps to plan.post_requests_d
@@ -93,6 +104,17 @@ type PostRequestDetail struct {
 	LastUpdatedDate      *time.Time `gorm:"column:last_updated_date"                json:"last_updated_date"`
 	LastUpdatedBy        string     `gorm:"column:last_updated_by"                  json:"last_updated_by"`
 	ProgramName          string     `gorm:"column:program_name;not null"            json:"program_name"`
+}
+
+func (p *PostRequestDetail) SetIdentity(id helper.IdentityContext) {
+	if b := id.GetBranchCodeInt(); b != nil {
+		p.BranchCode = *b
+	}
+	if t := id.GetTerminalCodeInt(); t != nil {
+		p.TerminalCode = *t
+	}
+	p.BranchName = id.BranchName
+	p.TerminalName = id.TerminalName
 }
 
 func (PostRequestDetail) TableName() string { return "plan.post_requests_d" }

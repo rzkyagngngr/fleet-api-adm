@@ -92,9 +92,9 @@ func (h *PostRequestHandler) Create(c *gin.Context) {
 		return
 	}
 
-	branchCode, terminalCode, branchName, terminalName, employeeID := extractContext(c)
+	identity := helper.ExtractIdentity(c)
 
-	res, err := h.service.Create(c.Request.Context(), &input, branchCode, terminalCode, branchName, terminalName, employeeID)
+	res, err := h.service.Create(c.Request.Context(), &input, identity)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -165,8 +165,8 @@ func (h *PostRequestHandler) Update(c *gin.Context) {
 		return
 	}
 
-	employeeID, _ := c.Get(middleware.EmployeeIDKey)
-	res, err := h.service.Update(c.Request.Context(), id, &input, employeeID.(string))
+	identity := helper.ExtractIdentity(c)
+	res, err := h.service.Update(c.Request.Context(), id, &input, identity)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -218,15 +218,9 @@ func (h *PostRequestHandler) GetStats(c *gin.Context) {
 		return
 	}
 
-	branchCode, terminalCode := 0, 0
-	if bc, ok := c.Get(middleware.BranchCodeKey); ok {
-		branchCode, _ = parseContextInt(bc)
-	}
-	if tc, ok := c.Get(middleware.TerminalCodeKey); ok {
-		terminalCode, _ = parseContextInt(tc)
-	}
+	identity := helper.ExtractIdentity(c)
 
-	res, err := h.service.GetStats(c.Request.Context(), branchCode, terminalCode)
+	res, err := h.service.GetStats(c.Request.Context(), identity)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -260,8 +254,8 @@ func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	_, _, _, _, employeeID := extractContext(c)
-	if err := h.service.UpdateStatus(c.Request.Context(), id, input.Status, input.Remarks, employeeID); err != nil {
+	identity := helper.ExtractIdentity(c)
+	if err := h.service.UpdateStatus(c.Request.Context(), id, input.Status, input.Remarks, identity); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -272,22 +266,7 @@ func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
 // HELPER
 // ─────────────────────────────────────────────────────────────
 
-func extractContext(c *gin.Context) (branchCode, terminalCode int, branchName, terminalName, employeeID string) {
-
-	if v, ok := c.Get(middleware.BranchCodeKey); ok {
-		branchCode, _ = parseContextInt(v)
-	}
-	if v, ok := c.Get(middleware.TerminalCodeKey); ok {
-		terminalCode, _ = parseContextInt(v)
-	}
-	// branch_name and terminal_name are optional — can be passed as query params
-	branchName = c.DefaultQuery("branch_name", "")
-	terminalName = c.DefaultQuery("terminal_name", "")
-	if v, ok := c.Get(middleware.EmployeeIDKey); ok {
-		employeeID, _ = v.(string)
-	}
-	return
-}
+// extractContext is now deprecated in favor of helper.ExtractIdentity
 
 // SearchVesselSchedule godoc
 // @Summary      Search Vessel Schedules

@@ -92,7 +92,7 @@ func main() {
 	opsPlanRepo := op.NewOpsPlanRepository(reg.PLAN, reg.ADM)
 
 	accessService := access.NewAccessService(accessRepo)
-	authService := auth.NewAuthService(userRepo, jwtUtil)
+	authService := auth.NewAuthService(userRepo, db, jwtUtil)
 	userService := user.NewUserService(userRepo)
 	menuService := menu.NewMenuService(db)
 	roleService := role.NewRoleService(roleRepo)

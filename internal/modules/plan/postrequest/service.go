@@ -16,13 +16,13 @@ const programName = "ADM_SERVICE"
 // ─────────────────────────────────────────────────────────────
 
 type PostRequestService interface {
-	Create(ctx context.Context, input *CreatePostRequestInput, branchCode, terminalCode int, branchName, terminalName, createdBy string) (*PostRequestResponse, error)
+	Create(ctx context.Context, input *CreatePostRequestInput, identity helper.IdentityContext) (*PostRequestResponse, error)
 	GetByID(ctx context.Context, id int64) (*PostRequestResponse, error)
-	Update(ctx context.Context, id int64, input *UpdatePostRequestInput, updatedBy string) (*PostRequestResponse, error)
+	Update(ctx context.Context, id int64, input *UpdatePostRequestInput, identity helper.IdentityContext) (*PostRequestResponse, error)
 	Delete(ctx context.Context, id int64) error
 	Search(ctx context.Context, query helper.PaginationQuery) ([]PostRequestResponse, helper.PaginationMeta, error)
-	GetStats(ctx context.Context, branchCode, terminalCode int) (*PostRequestStatsResponse, error)
-	UpdateStatus(ctx context.Context, id int64, status int, remarks string, updatedBy string) error
+	GetStats(ctx context.Context, identity helper.IdentityContext) (*PostRequestStatsResponse, error)
+	UpdateStatus(ctx context.Context, id int64, status int, remarks string, identity helper.IdentityContext) error
 
 	// Vessel Schedule methods
 	SearchVesselSchedule(ctx context.Context, query helper.PaginationQuery) ([]PostVesselScheduleResponse, helper.PaginationMeta, error)
@@ -55,8 +55,7 @@ func generateRequestCode() string {
 func (s *postRequestService) Create(
 	ctx context.Context,
 	input *CreatePostRequestInput,
-	branchCode, terminalCode int,
-	branchName, terminalName, createdBy string,
+	identity helper.IdentityContext,
 ) (*PostRequestResponse, error) {
 
 	if input.VesselCode == "" || input.VesselName == "" {
@@ -72,10 +71,6 @@ func (s *postRequestService) Create(
 	planStatusDraft := 0
 
 	header := &PostRequest{
-		BranchCode:      &branchCode,
-		TerminalCode:    &terminalCode,
-		BranchName:      branchName,
-		TerminalName:    terminalName,
 		PPKNumber:       input.PPKNumber,
 		VesselCode:      input.VesselCode,
 		VesselName:      input.VesselName,
@@ -91,7 +86,7 @@ func (s *postRequestService) Create(
 		Description:     input.Description,
 		Status:          &statusPending,
 		PlanStatus:      &planStatusDraft,
-		ProgramName:     programName,
+		ProgramName:     "fleet-api-adm",
 		RefNumber:       input.RefNumber,
 		RefDate:         input.RefDate,
 		Ref1:            input.Ref1,
@@ -107,12 +102,25 @@ func (s *postRequestService) Create(
 		ActivityName:    input.ActivityName,
 		ToPPKNumber:     input.ToPPKNumber,
 		CreationDate:    &now,
-		CreationBy:      createdBy,
+		CreationBy:      identity.UserFullName,
 		LastUpdatedDate: &now,
-		LastUpdatedBy:   createdBy,
+		LastUpdatedBy:   identity.UserFullName,
 	}
 
-	details := buildDetails(input.Details, requestCode, branchCode, terminalCode, branchName, terminalName, createdBy, now)
+	// Automated Identity Injection
+	header.SetIdentity(identity)
+
+	// Build details with identity
+	bCode := 0
+	if bc := identity.GetBranchCodeInt(); bc != nil {
+		bCode = *bc
+	}
+	tCode := 0
+	if tc := identity.GetTerminalCodeInt(); tc != nil {
+		tCode = *tc
+	}
+
+	details := buildDetails(input.Details, requestCode, bCode, tCode, identity.BranchName, identity.TerminalName, identity.UserFullName, now)
 	files := buildFiles(input.Attachments)
 
 	if err := s.repo.Create(ctx, header, details, files); err != nil {
@@ -157,111 +165,114 @@ func (s *postRequestService) GetByID(ctx context.Context, id int64) (*PostReques
 }
 
 // Update patches header fields and, if details are provided, replaces manifest lines.
-func (s *postRequestService) Update(ctx context.Context, id int64, input *UpdatePostRequestInput, updatedBy string) (*PostRequestResponse, error) {
-	header, _, err := s.repo.FindByID(ctx, id)
+func (s *postRequestService) Update(
+	ctx context.Context,
+	id int64,
+	input *UpdatePostRequestInput,
+	identity helper.IdentityContext,
+) (*PostRequestResponse, error) {
+	existing, _, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("post_request not found")
 	}
 
-	now := time.Now()
-
 	// Patch only non-zero/non-empty fields
 	if input.PPKNumber != "" {
-		header.PPKNumber = input.PPKNumber
+		existing.PPKNumber = input.PPKNumber
 	}
 	if input.VesselCode != "" {
-		header.VesselCode = input.VesselCode
+		existing.VesselCode = input.VesselCode
 	}
 	if input.VesselName != "" {
-		header.VesselName = input.VesselName
+		existing.VesselName = input.VesselName
 	}
 	if input.VesselType != "" {
-		header.VesselType = input.VesselType
+		existing.VesselType = input.VesselType
 	}
 	if input.VoyageType != "" {
-		header.VoyageType = input.VoyageType
+		existing.VoyageType = input.VoyageType
 	}
 	if input.AgentName != "" {
-		header.AgentName = input.AgentName
+		existing.AgentName = input.AgentName
 	}
 	if input.RequestDate != nil {
-		header.RequestDate = *input.RequestDate
+		existing.RequestDate = *input.RequestDate
 	}
 	if input.PBMCode != "" {
-		header.PBMCode = input.PBMCode
+		existing.PBMCode = input.PBMCode
 	}
 	if input.PBMName != "" {
-		header.PBMName = input.PBMName
+		existing.PBMName = input.PBMName
 	}
 	if input.NoBC11 != "" {
-		header.NoBC11 = input.NoBC11
+		existing.NoBC11 = input.NoBC11
 	}
 	if input.DateBC11 != nil {
-		header.DateBC11 = input.DateBC11
+		existing.DateBC11 = input.DateBC11
 	}
 	if input.Description != "" {
-		header.Description = input.Description
+		existing.Description = input.Description
 	}
 	if input.RefNumber != "" {
-		header.RefNumber = input.RefNumber
+		existing.RefNumber = input.RefNumber
 	}
 	if input.RefDate != nil {
-		header.RefDate = input.RefDate
+		existing.RefDate = input.RefDate
 	}
 	if input.Ref1 != "" {
-		header.Ref1 = input.Ref1
+		existing.Ref1 = input.Ref1
 	}
 	if input.Ref2 != "" {
-		header.Ref2 = input.Ref2
+		existing.Ref2 = input.Ref2
 	}
 	if input.Val1 != nil {
-		header.Val1 = input.Val1
+		existing.Val1 = input.Val1
 	}
 	if input.Val2 != nil {
-		header.Val2 = input.Val2
+		existing.Val2 = input.Val2
 	}
 	if input.TotalManifest != nil {
-		header.TotalManifest = input.TotalManifest
+		existing.TotalManifest = input.TotalManifest
 	}
 	if input.BillableCode != "" {
-		header.BillableCode = input.BillableCode
+		existing.BillableCode = input.BillableCode
 	}
 	if input.BillableName != "" {
-		header.BillableName = input.BillableName
+		existing.BillableName = input.BillableName
 	}
 	if input.VesselCodeDst != "" {
-		header.VesselCodeDst = input.VesselCodeDst
+		existing.VesselCodeDst = input.VesselCodeDst
 	}
 	if input.VesselNameDst != "" {
-		header.VesselNameDst = input.VesselNameDst
+		existing.VesselNameDst = input.VesselNameDst
 	}
 	if input.ActivityCode != "" {
-		header.ActivityCode = input.ActivityCode
+		existing.ActivityCode = input.ActivityCode
 	}
 	if input.ActivityName != "" {
-		header.ActivityName = input.ActivityName
+		existing.ActivityName = input.ActivityName
 	}
 	if input.ToPPKNumber != "" {
-		header.ToPPKNumber = input.ToPPKNumber
+		existing.ToPPKNumber = input.ToPPKNumber
 	}
 
-	header.LastUpdatedDate = &now
-	header.LastUpdatedBy = updatedBy
+	existing.LastUpdatedBy = identity.UserFullName
+	existing.LastUpdatedDate = helper.TimePtr(time.Now())
 
-	if err := s.repo.UpdateHeader(ctx, id, header); err != nil {
+	if err := s.repo.UpdateHeader(ctx, id, existing); err != nil {
 		return nil, fmt.Errorf("update post_request header: %w", err)
 	}
 
 	var finalDetails []PostRequestDetail
 	if len(input.Details) > 0 {
-		newDetails := buildDetails(input.Details, header.RequestCode, *header.BranchCode, *header.TerminalCode,
-			header.BranchName, header.TerminalName, updatedBy, now)
-		if err := s.repo.ReplaceDetails(ctx, header.RequestCode, *header.BranchCode, *header.TerminalCode, newDetails); err != nil {
+		newDetails := buildDetails(input.Details, existing.RequestCode, *existing.BranchCode, *existing.TerminalCode,
+			existing.BranchName, existing.TerminalName, identity.UserFullName, *existing.LastUpdatedDate)
+		if err := s.repo.ReplaceDetails(ctx, existing.RequestCode, *existing.BranchCode, *existing.TerminalCode, newDetails); err != nil {
 			return nil, fmt.Errorf("replace post_request_d: %w", err)
 		}
 		finalDetails = newDetails
 	} else {
-		finalDetails, err = s.repo.FindDetailsByRequestCode(ctx, header.RequestCode, *header.BranchCode, *header.TerminalCode)
+		finalDetails, err = s.repo.FindDetailsByRequestCode(ctx, existing.RequestCode, *existing.BranchCode, *existing.TerminalCode)
 		if err != nil {
 			return nil, err
 		}
@@ -272,10 +283,10 @@ func (s *postRequestService) Update(ctx context.Context, id int64, input *Update
 		if err := s.repo.ReplaceFiles(ctx, id, newFiles); err != nil {
 			return nil, fmt.Errorf("replace post_request_f: %w", err)
 		}
-		header.Files = newFiles
+		existing.Files = newFiles
 	}
 
-	res := header.ToResponse(finalDetails)
+	res := existing.ToResponse(finalDetails)
 	s.fillFileURLs(ctx, &res)
 	return &res, nil
 }
@@ -308,16 +319,30 @@ func (s *postRequestService) Search(ctx context.Context, query helper.Pagination
 }
 
 // GetStats returns aggregated counts.
-func (s *postRequestService) GetStats(ctx context.Context, branchCode, terminalCode int) (*PostRequestStatsResponse, error) {
-	return s.repo.GetStats(ctx, branchCode, terminalCode)
+func (s *postRequestService) GetStats(ctx context.Context, identity helper.IdentityContext) (*PostRequestStatsResponse, error) {
+	bCode := 0
+	if bc := identity.GetBranchCodeInt(); bc != nil {
+		bCode = *bc
+	}
+	tCode := 0
+	if tc := identity.GetTerminalCodeInt(); tc != nil {
+		tCode = *tc
+	}
+	return s.repo.GetStats(ctx, bCode, tCode)
 }
 
-func (s *postRequestService) UpdateStatus(ctx context.Context, id int64, status int, remarks string, updatedBy string) error {
+func (s *postRequestService) UpdateStatus(
+	ctx context.Context,
+	id int64,
+	status int,
+	remarks string,
+	identity helper.IdentityContext,
+) error {
 	_, _, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return errors.New("permohonan tidak ditemukan")
 	}
-	return s.repo.UpdateStatus(ctx, id, status, remarks, updatedBy)
+	return s.repo.UpdateStatus(ctx, id, status, remarks, identity.UserFullName)
 }
 
 func (s *postRequestService) SearchVesselSchedule(ctx context.Context, query helper.PaginationQuery) ([]PostVesselScheduleResponse, helper.PaginationMeta, error) {
