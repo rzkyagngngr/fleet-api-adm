@@ -14,7 +14,6 @@ import (
 	"omniport-api/internal/database"
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
-	"omniport-api/internal/modules/administration/file"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/branch"
@@ -24,6 +23,7 @@ import (
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/file"
 	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
@@ -34,6 +34,7 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
@@ -88,6 +89,7 @@ func main() {
 
 	// Plan Module uses PLAN connection
 	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
+	opsPlanRepo := op.NewOpsPlanRepository(reg.PLAN, reg.ADM)
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, jwtUtil)
@@ -104,13 +106,13 @@ func main() {
 	customerService := customer.NewCustomerService(db)
 	dockService := dock.NewDockService(db)
 	portService := pelabuhan.NewPortService(db)
-	
 	// Initialize S3 Provider
 	s3Provider, err := helper.NewS3Provider(context.Background(), cfg.Storage.S3Region, cfg.Storage.S3Endpoint)
 	if err != nil {
 		slog.Warn("Failed to initialize S3 provider, using dummy", "error", err)
 	}
 
+	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	tariffService := tariff.NewTariffService(db)
 	equipmentService := equipment.NewEquipmentService(db)
 	warehouseService := warehouse.NewWarehouseService(db)
@@ -141,6 +143,7 @@ func main() {
 	terminalHandler := terminal.NewTerminalHandler(terminalService, userAdapter)
 	companyHandler := company.NewCompanyHandler(companyService)
 	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
+	opsPlanHandler := op.NewOpsPlanHandler(opsPlanService)
 	tariffHandler := tariff.NewTariffHandler(tariffService)
 	lookupHandler := lookup.NewLookupHandler(lookupService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
@@ -175,6 +178,7 @@ func main() {
 		CompanyHandler:        companyHandler,
 		PostRequestHandler:    postRequestHandler,
 		FileHandler:           fileHandler,
+		OpsPlanHandler:        opsPlanHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)

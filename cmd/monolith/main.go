@@ -30,6 +30,7 @@ import (
 	"omniport-api/internal/modules/administration/tariff"
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
@@ -106,7 +107,9 @@ func main() {
 	tariffService := tariff.NewTariffService(dbRegistry.ADM)
 	lookupService := lookup.NewLookupService(dbRegistry.ADM, equipmentService)
 	postRequestRepo := postrequest.NewPostRequestRepository(dbRegistry.PLAN)
+	opsPlanRepo := op.NewOpsPlanRepository(dbRegistry.PLAN, dbRegistry.ADM)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
+	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	vesselScheduleService := vesselschedule.NewVesselScheduleService(dbRegistry.PLAN, dbRegistry.ADM)
 
 	authHandler := auth.NewAuthHandler(authService)
@@ -125,6 +128,7 @@ func main() {
 	tariffHandler := tariff.NewTariffHandler(tariffService)
 	lookupHandler := lookup.NewLookupHandler(lookupService)
 	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
+	opsPlanHandler := op.NewOpsPlanHandler(opsPlanService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
 
 	r := gin.New()
@@ -152,6 +156,7 @@ func main() {
 		CargoHandler:          cargoHandler,
 		WarehouseHandler:      warehouseHandler,
 		PostRequestHandler:    postRequestHandler,
+		OpsPlanHandler:        opsPlanHandler,
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.App.Port)

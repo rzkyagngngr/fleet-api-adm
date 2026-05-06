@@ -31,6 +31,8 @@ type DockDetail struct {
 	DockID          uint64     `gorm:"column:dock_id" json:"dock_id"`
 	BerthCode       *string    `gorm:"column:berth_code;size:50" json:"berth_code"`
 	BerthName       *string    `gorm:"column:berth_name;size:150" json:"berth_name"`
+	BerthLatitude   *string    `gorm:"column:berth_latitude;size:50" json:"berth_latitude"`
+	BerthLongitude  *string    `gorm:"column:berth_longitude;size:50" json:"berth_longitude"`
 	MaxLoa          *int       `gorm:"column:max_loa" json:"max_loa"`
 	XPosition       *int       `gorm:"column:x_position" json:"x_position"`
 	YPosition       *int       `gorm:"column:y_position" json:"y_position"`
