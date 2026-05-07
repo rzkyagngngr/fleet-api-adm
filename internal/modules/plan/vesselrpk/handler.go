@@ -63,10 +63,15 @@ func (h *VesselRpkHandler) GetByID(c *gin.Context) {
 }
 
 func (h *VesselRpkHandler) Search(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "vessel rpk service is not initialized")
+		return
+	}
+
 	var req struct {
-		Page   int                    `json:"page"`
-		Limit  int                    `json:"limit"`
-		Search string                 `json:"search"`
+		Page    int                    `json:"page"`
+		Limit   int                    `json:"limit"`
+		Search  string                 `json:"search"`
 		Filters map[string]interface{} `json:"filters"`
 	}
 
@@ -75,8 +80,15 @@ func (h *VesselRpkHandler) Search(c *gin.Context) {
 		return
 	}
 
-	if req.Page <= 0 { req.Page = 1 }
-	if req.Limit <= 0 { req.Limit = 10 }
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.Limit <= 0 {
+		req.Limit = 10
+	}
+	if req.Limit > 200 {
+		req.Limit = 200
+	}
 
 	branchCode := c.GetInt64("branch_code")
 	terminalCode := c.GetInt64("terminal_code")

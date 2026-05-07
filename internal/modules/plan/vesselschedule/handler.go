@@ -6,8 +6,10 @@ import (
 	"omniport-api/internal/helper"
 	"omniport-api/internal/middleware"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type VesselScheduleHandler struct {
@@ -207,6 +209,56 @@ func (h *VesselScheduleHandler) Update(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "vessel schedule updated successfully", schedule)
 }
 
+// UpdateStatus godoc
+// @Summary Update vessel schedule status
+// @Description Update status by schedule_code from request body
+// @Tags plan-vessel-schedule
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param payload body vesselschedule.UpdateVesselScheduleStatusRequest true "Vessel schedule status payload"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /plan/vessel-schedule/status [put]
+func (h *VesselScheduleHandler) UpdateStatus(c *gin.Context) {
+	var req UpdateVesselScheduleStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ValidationErrorResponse(c, err)
+		return
+	}
+
+	scheduleCode := strings.TrimSpace(req.ScheduleCode)
+	if scheduleCode == "" {
+		helper.ErrorResponse(c, http.StatusBadRequest, "schedule_code is required")
+		return
+	}
+	if req.Status == nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "status is required")
+		return
+	}
+
+	userName := middleware.GetUserEmail(c)
+	if userName == "" {
+		userName = "SYSTEM"
+	}
+
+	if err := h.service.UpdateStatus(c.Request.Context(), scheduleCode, *req.Status, userName); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			helper.ErrorResponse(c, http.StatusNotFound, "vessel schedule not found")
+			return
+		}
+		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to update vessel schedule status")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "vessel schedule status updated successfully", gin.H{
+		"schedule_code": scheduleCode,
+		"status":        *req.Status,
+	})
+}
+
 // Delete godoc
 // @Summary Delete vessel schedule
 // @Description Delete vessel schedule by id
@@ -267,45 +319,48 @@ func (h *VesselScheduleHandler) buildScheduleFromRequest(c *gin.Context, req Ves
 	terminalName := authLocation.TerminalName
 
 	return &VesselSchedule{
-		BranchCode:          &branchCode,
-		TerminalCode:        &terminalCode,
-		BranchName:          &branchName,
-		TerminalName:        &terminalName,
-		VesselName:          req.VesselName,
-		VesselCode:          req.VesselCode,
-		VesselType:          req.VesselType,
-		VesselHatchNumber:   req.VesselHatchNumber,
-		VoyageNumber:        req.VoyageNumber,
-		PKKNumber:           req.PKKNumber,
-		VoyageType:          req.VoyageType,
-		GRT:                 req.GRT,
-		LOA:                 req.LOA,
-		AgencyName:          req.AgencyName,
-		PortAgent:           req.PortAgent,
-		EmergencyContact:    req.EmergencyContact,
-		OriginPortCode:      req.OriginPortCode,
-		OriginPortName:      req.OriginPortName,
-		DestinationPortCode: req.DestinationPortCode,
-		DestinationPortName: req.DestinationPortName,
-		DischargePortCode:   req.DischargePortCode,
-		DischargePortName:   req.DischargePortName,
-		AssignedBerthName:   req.AssignedBerthName,
-		DockID:              req.DockID,
-		DockCode:            req.DockCode,
-		DockName:            req.DockName,
-		BerthCode:           req.BerthCode,
-		BerthName:           req.BerthName,
-		BerthLatitude:       req.BerthLatitude,
-		BerthLongitude:      req.BerthLongitude,
-		BerthPosition:       req.BerthPosition,
-		PositionRange:       req.PositionRange,
-		ETA:                 req.ETA,
-		ETB:                 req.ETB,
-		ETC:                 req.ETC,
-		ETD:                 req.ETD,
-		Status:              req.Status,
-		CreationBy:          &userName,
-		LastUpdatedBy:       &userName,
+		BranchCode:             &branchCode,
+		TerminalCode:           &terminalCode,
+		BranchName:             &branchName,
+		TerminalName:           &terminalName,
+		VesselName:             req.VesselName,
+		VesselCode:             req.VesselCode,
+		VesselType:             req.VesselType,
+		VesselHatchNumber:      req.VesselHatchNumber,
+		VoyageNumber:           req.VoyageNumber,
+		PKKNumber:              req.PKKNumber,
+		PPKNumber:              req.PPKNumber,
+		VoyageType:             req.VoyageType,
+		GRT:                    req.GRT,
+		LOA:                    req.LOA,
+		AgencyName:             req.AgencyName,
+		PortAgent:              req.PortAgent,
+		EmergencyContact:       req.EmergencyContact,
+		OriginPortCode:         req.OriginPortCode,
+		OriginPortName:         req.OriginPortName,
+		DestinationPortCode:    req.DestinationPortCode,
+		DestinationPortName:    req.DestinationPortName,
+		DischargePortCode:      req.DischargePortCode,
+		DischargePortName:      req.DischargePortName,
+		AssignedBerthName:      req.AssignedBerthName,
+		DockID:                 req.DockID,
+		DockCode:               req.DockCode,
+		DockName:               req.DockName,
+		BerthCode:              req.BerthCode,
+		BerthName:              req.BerthName,
+		BerthLatitude:          req.BerthLatitude,
+		BerthLongitude:         req.BerthLongitude,
+		CodeInaportnet:         req.CodeInaportnet,
+		LocationNameInaportnet: req.LocationNameInaportnet,
+		StartBerthPosition:     req.StartBerthPosition,
+		EndBerthPosition:       req.EndBerthPosition,
+		ETA:                    req.ETA,
+		ETB:                    req.ETB,
+		ETC:                    req.ETC,
+		ETD:                    req.ETD,
+		Status:                 req.Status,
+		CreationBy:             &userName,
+		LastUpdatedBy:          &userName,
 	}, nil
 }
 

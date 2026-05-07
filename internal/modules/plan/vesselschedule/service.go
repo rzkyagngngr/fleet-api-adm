@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 	"omniport-api/internal/helper"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 )
 
 type VesselScheduleService interface {
-	Search(ctx context.Context, query helper.PaginationQuery) ([]VesselSchedule, helper.PaginationMeta, error)
+	Search(ctx context.Context, query helper.PaginationQuery) ([]VesselScheduleSearchResponse, helper.PaginationMeta, error)
 	Create(ctx context.Context, schedule *VesselSchedule) error
 	Update(ctx context.Context, scheduleCode string, schedule *VesselSchedule) error
+	UpdateStatus(ctx context.Context, scheduleCode string, status int, updatedBy string) error
 	Delete(ctx context.Context, id uint64) error
 	FindByID(ctx context.Context, id uint64) (*VesselSchedule, error)
 	FindByScheduleCode(ctx context.Context, scheduleCode string) (*VesselSchedule, error)
@@ -37,49 +39,56 @@ func NewVesselScheduleService(db *gorm.DB, authDB ...*gorm.DB) VesselScheduleSer
 	return &vesselScheduleService{db: db, authDB: locationDB}
 }
 
-func (s *vesselScheduleService) Search(ctx context.Context, query helper.PaginationQuery) ([]VesselSchedule, helper.PaginationMeta, error) {
+func (s *vesselScheduleService) Search(ctx context.Context, query helper.PaginationQuery) ([]VesselScheduleSearchResponse, helper.PaginationMeta, error) {
 	config := helper.NativePaginationConfig{
 		TableName: "plan.post_vessel_schedules",
 		SelectColumns: []string{
 			"id", "branch_code", "terminal_code", "branch_name", "terminal_name",
 			"schedule_code", "vessel_name", "vessel_code", "vessel_type", "voyage_number",
-			"vessel_hatch_number", "pkk_number", "voyage_type", "grt", "loa",
+			"vessel_hatch_number", "pkk_number", "ppk_number", "voyage_type", "grt", "loa",
 			"agency_name", "port_agent", "emergency_contact", "origin_port_code",
 			"origin_port_name", "destination_port_code", "destination_port_name",
 			"discharge_port_code", "discharge_port_name", "assigned_berth_name", "dock_id",
 			"dock_code", "dock_name", "berth_code", "berth_name", "berth_latitude",
-			"berth_longitude", "berth_position", "position_range", "eta", "etb", "etc", "etd", "status", "creation_date",
+			"berth_longitude", "code_inaportnet", "location_name_inaportnet",
+			"start_berth_position", "end_berth_position", "eta", "etb", "etc", "etd", "status", "creation_date",
 			"creation_by", "last_updated_date", "last_updated_by",
 		},
 		SearchColumns: []string{
 			"branch_name", "terminal_name", "schedule_code", "vessel_name", "vessel_code",
-			"vessel_type", "voyage_number", "pkk_number", "voyage_type", "agency_name",
+			"vessel_type", "voyage_number", "pkk_number", "ppk_number", "voyage_type", "agency_name",
 			"port_agent", "origin_port_code", "origin_port_name",
 			"destination_port_code", "destination_port_name", "discharge_port_code",
 			"discharge_port_name", "assigned_berth_name", "dock_code", "dock_name",
-			"berth_code", "berth_name", "berth_position", "position_range",
+			"berth_code", "berth_name", "code_inaportnet", "location_name_inaportnet",
+			"start_berth_position", "end_berth_position",
 		},
 		FilterableColumns: map[string]string{
-			"id":                    "id",
-			"branch_code":           "branch_code",
-			"terminal_code":         "terminal_code",
-			"schedule_code":         "schedule_code",
-			"vessel_code":           "vessel_code",
-			"vessel_type":           "vessel_type",
-			"voyage_number":         "voyage_number",
-			"pkk_number":            "pkk_number",
-			"voyage_type":           "voyage_type",
-			"origin_port_code":      "origin_port_code",
-			"destination_port_code": "destination_port_code",
-			"discharge_port_code":   "discharge_port_code",
-			"dock_id":               "dock_id",
-			"dock_code":             "dock_code",
-			"berth_code":            "berth_code",
-			"status":                "status",
-			"eta":                   "eta",
-			"etb":                   "etb",
-			"etc":                   "etc",
-			"etd":                   "etd",
+			"id":                       "id",
+			"branch_code":              "branch_code",
+			"terminal_code":            "terminal_code",
+			"schedule_code":            "schedule_code",
+			"vessel_code":              "vessel_code",
+			"vessel_type":              "vessel_type",
+			"voyage_number":            "voyage_number",
+			"pkk_number":               "pkk_number",
+			"ppk_number":               "ppk_number",
+			"voyage_type":              "voyage_type",
+			"origin_port_code":         "origin_port_code",
+			"destination_port_code":    "destination_port_code",
+			"discharge_port_code":      "discharge_port_code",
+			"dock_id":                  "dock_id",
+			"dock_code":                "dock_code",
+			"berth_code":               "berth_code",
+			"code_inaportnet":          "code_inaportnet",
+			"location_name_inaportnet": "location_name_inaportnet",
+			"start_berth_position":     "start_berth_position",
+			"end_berth_position":       "end_berth_position",
+			"status":                   "status",
+			"eta":                      "eta",
+			"etb":                      "etb",
+			"etc":                      "etc",
+			"etd":                      "etd",
 		},
 		SortableColumns: map[string]string{
 			"id":            "id",
@@ -88,6 +97,7 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 			"vessel_code":   "vessel_code",
 			"voyage_number": "voyage_number",
 			"pkk_number":    "pkk_number",
+			"ppk_number":    "ppk_number",
 			"voyage_type":   "voyage_type",
 			"agency_name":   "agency_name",
 			"eta":           "eta",
@@ -106,7 +116,72 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 
 	var rows []VesselSchedule
 	meta, err := helper.GetDynamicPaginatedNativeData(s.db.WithContext(ctx), config, query, &rows)
-	return rows, meta, err
+	if err != nil {
+		return nil, meta, err
+	}
+
+	res, err := s.withPlans(ctx, rows)
+	return res, meta, err
+}
+
+func (s *vesselScheduleService) withPlans(ctx context.Context, rows []VesselSchedule) ([]VesselScheduleSearchResponse, error) {
+	res := make([]VesselScheduleSearchResponse, len(rows))
+	ppkSet := make(map[string]struct{})
+
+	for i, row := range rows {
+		res[i] = VesselScheduleSearchResponse{
+			VesselSchedule: row,
+			Plans:          []VesselSchedulePlanResponse{},
+		}
+		if row.PPKNumber == nil {
+			continue
+		}
+		ppkNumber := strings.TrimSpace(*row.PPKNumber)
+		if ppkNumber == "" {
+			continue
+		}
+		ppkSet[ppkNumber] = struct{}{}
+	}
+
+	if len(ppkSet) == 0 {
+		return res, nil
+	}
+
+	ppkNumbers := make([]string, 0, len(ppkSet))
+	for ppkNumber := range ppkSet {
+		ppkNumbers = append(ppkNumbers, ppkNumber)
+	}
+
+	var plans []VesselSchedulePlanResponse
+	if err := s.db.WithContext(ctx).
+		Table("plan.post_loading_unloading_plans").
+		Select("ppk_number, plan_code, plan_date, activity_code, activity_name, activity_start_date, activity_end_date").
+		Where("ppk_number IN ?", ppkNumbers).
+		Order("ppk_number ASC, plan_date DESC, id DESC").
+		Find(&plans).Error; err != nil {
+		return nil, err
+	}
+
+	plansByPPK := make(map[string][]VesselSchedulePlanResponse)
+	for _, plan := range plans {
+		ppkNumber := strings.TrimSpace(plan.PPKNumber)
+		if ppkNumber == "" {
+			continue
+		}
+		plansByPPK[ppkNumber] = append(plansByPPK[ppkNumber], plan)
+	}
+
+	for i := range res {
+		if res[i].PPKNumber == nil {
+			continue
+		}
+		ppkNumber := strings.TrimSpace(*res[i].PPKNumber)
+		if grouped, ok := plansByPPK[ppkNumber]; ok {
+			res[i].Plans = grouped
+		}
+	}
+
+	return res, nil
 }
 
 func (s *vesselScheduleService) Create(ctx context.Context, schedule *VesselSchedule) error {
@@ -138,45 +213,67 @@ func (s *vesselScheduleService) Update(ctx context.Context, scheduleCode string,
 		Table(schedule.TableName()).
 		Where("schedule_code = ?", scheduleCode).
 		Updates(map[string]interface{}{
-			"branch_code":           schedule.BranchCode,
-			"terminal_code":         schedule.TerminalCode,
-			"branch_name":           schedule.BranchName,
-			"terminal_name":         schedule.TerminalName,
-			"vessel_name":           schedule.VesselName,
-			"vessel_code":           schedule.VesselCode,
-			"vessel_type":           schedule.VesselType,
-			"vessel_hatch_number":   schedule.VesselHatchNumber,
-			"voyage_number":         schedule.VoyageNumber,
-			"pkk_number":            schedule.PKKNumber,
-			"voyage_type":           schedule.VoyageType,
-			"grt":                   schedule.GRT,
-			"loa":                   schedule.LOA,
-			"agency_name":           schedule.AgencyName,
-			"port_agent":            schedule.PortAgent,
-			"emergency_contact":     schedule.EmergencyContact,
-			"origin_port_code":      schedule.OriginPortCode,
-			"origin_port_name":      schedule.OriginPortName,
-			"destination_port_code": schedule.DestinationPortCode,
-			"destination_port_name": schedule.DestinationPortName,
-			"discharge_port_code":   schedule.DischargePortCode,
-			"discharge_port_name":   schedule.DischargePortName,
-			"assigned_berth_name":   schedule.AssignedBerthName,
-			"dock_id":               schedule.DockID,
-			"dock_code":             schedule.DockCode,
-			"dock_name":             schedule.DockName,
-			"berth_code":            schedule.BerthCode,
-			"berth_name":            schedule.BerthName,
-			"berth_latitude":        schedule.BerthLatitude,
-			"berth_longitude":       schedule.BerthLongitude,
-			"berth_position":        schedule.BerthPosition,
-			"position_range":        schedule.PositionRange,
-			"eta":                   schedule.ETA,
-			"etb":                   schedule.ETB,
-			"etc":                   schedule.ETC,
-			"etd":                   schedule.ETD,
-			"status":                schedule.Status,
-			"last_updated_date":     schedule.LastUpdatedDate,
-			"last_updated_by":       schedule.LastUpdatedBy,
+			"branch_code":              schedule.BranchCode,
+			"terminal_code":            schedule.TerminalCode,
+			"branch_name":              schedule.BranchName,
+			"terminal_name":            schedule.TerminalName,
+			"vessel_name":              schedule.VesselName,
+			"vessel_code":              schedule.VesselCode,
+			"vessel_type":              schedule.VesselType,
+			"vessel_hatch_number":      schedule.VesselHatchNumber,
+			"voyage_number":            schedule.VoyageNumber,
+			"pkk_number":               schedule.PKKNumber,
+			"ppk_number":               schedule.PPKNumber,
+			"voyage_type":              schedule.VoyageType,
+			"grt":                      schedule.GRT,
+			"loa":                      schedule.LOA,
+			"agency_name":              schedule.AgencyName,
+			"port_agent":               schedule.PortAgent,
+			"emergency_contact":        schedule.EmergencyContact,
+			"origin_port_code":         schedule.OriginPortCode,
+			"origin_port_name":         schedule.OriginPortName,
+			"destination_port_code":    schedule.DestinationPortCode,
+			"destination_port_name":    schedule.DestinationPortName,
+			"discharge_port_code":      schedule.DischargePortCode,
+			"discharge_port_name":      schedule.DischargePortName,
+			"assigned_berth_name":      schedule.AssignedBerthName,
+			"dock_id":                  schedule.DockID,
+			"dock_code":                schedule.DockCode,
+			"dock_name":                schedule.DockName,
+			"berth_code":               schedule.BerthCode,
+			"berth_name":               schedule.BerthName,
+			"berth_latitude":           schedule.BerthLatitude,
+			"berth_longitude":          schedule.BerthLongitude,
+			"code_inaportnet":          schedule.CodeInaportnet,
+			"location_name_inaportnet": schedule.LocationNameInaportnet,
+			"start_berth_position":     schedule.StartBerthPosition,
+			"end_berth_position":       schedule.EndBerthPosition,
+			"eta":                      schedule.ETA,
+			"etb":                      schedule.ETB,
+			"etc":                      schedule.ETC,
+			"etd":                      schedule.ETD,
+			"status":                   schedule.Status,
+			"last_updated_date":        schedule.LastUpdatedDate,
+			"last_updated_by":          schedule.LastUpdatedBy,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (s *vesselScheduleService) UpdateStatus(ctx context.Context, scheduleCode string, status int, updatedBy string) error {
+	now := time.Now()
+	result := s.db.WithContext(ctx).
+		Table((VesselSchedule{}).TableName()).
+		Where("schedule_code = ?", scheduleCode).
+		Updates(map[string]interface{}{
+			"status":            status,
+			"last_updated_date": &now,
+			"last_updated_by":   updatedBy,
 		})
 	if result.Error != nil {
 		return result.Error

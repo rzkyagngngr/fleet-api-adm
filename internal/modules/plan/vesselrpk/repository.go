@@ -2,7 +2,9 @@ package vesselrpk
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -41,6 +43,10 @@ func (r *vesselRpkRepository) GetByID(ctx context.Context, id uint64) (*VesselRp
 }
 
 func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode int64, offset, limit int, search string, filters map[string]interface{}) ([]VesselRpk, int64, error) {
+	if r == nil || r.db == nil {
+		return nil, 0, errors.New("vessel rpk database is not initialized")
+	}
+
 	var list []VesselRpk
 	var total int64
 
@@ -92,7 +98,7 @@ func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode
 	err = query.Preload("Op").Preload("Op.OpDetail").
 		Offset(offset).Limit(limit).
 		Order("creation_date DESC").Find(&list).Error
-	
+
 	return list, total, err
 }
 
@@ -107,7 +113,7 @@ func (r *vesselRpkRepository) Update(ctx context.Context, id uint64, v *VesselRp
 		if v.Op != nil {
 			var existingOp VesselRpkOp
 			err := tx.Where("vessel_rpk_id = ?", id).First(&existingOp).Error
-			
+
 			if err == gorm.ErrRecordNotFound {
 				// Create new if not exists
 				v.Op.VesselRpkID = id
@@ -134,7 +140,7 @@ func (r *vesselRpkRepository) Update(ctx context.Context, id uint64, v *VesselRp
 						incomingDetailIDs = append(incomingDetailIDs, detail.ID)
 					}
 				}
-				
+
 				// Delete removed details
 				if len(incomingDetailIDs) > 0 {
 					tx.Where("vessel_rpk_op_id = ? AND id NOT IN ?", existingOp.ID, incomingDetailIDs).Delete(&VesselRpkOpDetail{})

@@ -2,6 +2,7 @@ package vesselrpk
 
 import (
 	"context"
+	"errors"
 	"omniport-api/internal/helper"
 )
 
@@ -43,6 +44,16 @@ func (s *vesselRpkService) GetByID(ctx context.Context, id uint64) (*VesselRpkRe
 }
 
 func (s *vesselRpkService) List(ctx context.Context, branchCode, terminalCode int64, page, limit int, search string, filters map[string]interface{}) ([]VesselRpkResponse, helper.PaginationMeta, error) {
+	if s == nil || s.repo == nil {
+		return nil, helper.PaginationMeta{}, errors.New("vessel rpk repository is not initialized")
+	}
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+
 	offset := (page - 1) * limit
 	list, total, err := s.repo.List(ctx, branchCode, terminalCode, offset, limit, search, filters)
 	if err != nil {
@@ -51,7 +62,10 @@ func (s *vesselRpkService) List(ctx context.Context, branchCode, terminalCode in
 
 	var res []VesselRpkResponse
 	for _, v := range list {
-		res = append(res, *s.mapEntityToResponse(&v))
+		mapped := s.mapEntityToResponse(&v)
+		if mapped != nil {
+			res = append(res, *mapped)
+		}
 	}
 
 	return res, helper.NewPaginationMeta(total, page, limit), nil
@@ -121,6 +135,10 @@ func (s *vesselRpkService) mapInputToEntity(input CreateVesselRpkInput) *VesselR
 }
 
 func (s *vesselRpkService) mapEntityToResponse(v *VesselRpk) *VesselRpkResponse {
+	if v == nil {
+		return nil
+	}
+
 	res := &VesselRpkResponse{
 		ID:                     v.ID,
 		NoPkk:                  v.NoPkk,

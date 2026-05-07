@@ -288,11 +288,12 @@ func SetupRouter(cfg *RouterConfig) {
 				vesselSchedule.POST("", cfg.VesselScheduleHandler.Create)
 				vesselSchedule.GET("", cfg.VesselScheduleHandler.GetByScheduleCode)
 				vesselSchedule.PUT("", cfg.VesselScheduleHandler.Update)
-				vesselSchedule.GET("/detail", cfg.VesselScheduleHandler.GetByScheduleCode)
-				vesselSchedule.PUT("/detail", cfg.VesselScheduleHandler.Update)
-				vesselSchedule.GET("/:schedule_code", cfg.VesselScheduleHandler.GetByScheduleCode)
-				vesselSchedule.PUT("/:schedule_code", cfg.VesselScheduleHandler.Update)
-				vesselSchedule.DELETE("/:id", cfg.VesselScheduleHandler.Delete)
+				vesselSchedule.PUT("/status", cfg.VesselScheduleHandler.UpdateStatus)
+				//vesselSchedule.GET("/detail", cfg.VesselScheduleHandler.GetByScheduleCode)
+				//vesselSchedule.PUT("/detail", cfg.VesselScheduleHandler.Update)
+				//vesselSchedule.GET("/:schedule_code", cfg.VesselScheduleHandler.GetByScheduleCode)
+				//vesselSchedule.PUT("/:schedule_code", cfg.VesselScheduleHandler.Update)
+				//vesselSchedule.DELETE("/:id", cfg.VesselScheduleHandler.Delete)
 			}
 
 			// Permohonan Jasa Barang (PJB)
