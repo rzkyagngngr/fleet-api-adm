@@ -1647,9 +1647,9 @@ func readyOpsPlanBaseQuery(detailTable string) string {
 			a.pbm_name,
 			a.activity_name,
 			a.activity_code,
-			STRING_AGG(DISTINCT COALESCE(b.cargo_name, ''), ';') AS cargo_name_list,
-			STRING_AGG(DISTINCT COALESCE(b.total::text, ''), ';') AS total_list,
-			STRING_AGG(DISTINCT COALESCE(b.cargo_unit, ''), ';') AS cargo_unit_list,
+			STRING_AGG(COALESCE(b.cargo_name, ''), ';' ORDER BY b.sequence_number, b.id) AS cargo_name_list,
+			STRING_AGG(COALESCE(b.total::text, ''), ';' ORDER BY b.sequence_number, b.id) AS total_list,
+			STRING_AGG(COALESCE(b.cargo_unit, ''), ';' ORDER BY b.sequence_number, b.id) AS cargo_unit_list,
 			SUM(COALESCE(b.total, 0)) AS total
 		FROM plan.post_requests a
 		JOIN %s b
