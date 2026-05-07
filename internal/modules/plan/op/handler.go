@@ -149,6 +149,84 @@ func (h *OpsPlanHandler) Create(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusCreated, "loading unloading plan created successfully", res)
 }
 
+// CreateDetermination godoc
+// @Summary      Create Loading Unloading Determination
+// @Description  Insert loading/unloading determination header, detail rows, and equipment rows
+// @Tags         plan-op
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        payload body op.CreateLoadingUnloadingDeterminationInput true "Create determination payload"
+// @Success      201 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/op/createDetermination [post]
+func (h *OpsPlanHandler) CreateDetermination(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "ops plan service is not initialized")
+		return
+	}
+
+	var input CreateLoadingUnloadingDeterminationInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		helper.ValidationErrorResponse(c, err)
+		return
+	}
+
+	branchCode, terminalCode := 0, 0
+	if v, ok := c.Get(middleware.BranchCodeKey); ok {
+		value, err := parseContextInt(v)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+			return
+		}
+		branchCode = value
+	}
+	if v, ok := c.Get(middleware.TerminalCodeKey); ok {
+		value, err := parseContextInt(v)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+			return
+		}
+		terminalCode = value
+	}
+
+	userID := middleware.GetUserID(c)
+	if userID == 0 {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "user id not found in token")
+		return
+	}
+	authLocation, err := h.service.GetAuthLocation(c.Request.Context(), userID)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "failed to resolve auth location")
+		return
+	}
+	branchName := authLocation.BranchName
+	terminalName := authLocation.TerminalName
+
+	createdBy := middleware.GetUserEmail(c)
+	if v, ok := c.Get(middleware.EmployeeIDKey); ok {
+		if employeeID, ok := v.(string); ok && employeeID != "" {
+			createdBy = employeeID
+		}
+	}
+
+	res, err := h.service.CreateDetermination(
+		c.Request.Context(),
+		&input,
+		branchCode,
+		terminalCode,
+		branchName,
+		terminalName,
+		createdBy,
+	)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.SuccessResponse(c, http.StatusCreated, "loading unloading determination created successfully", res)
+}
+
 // Update godoc
 // @Summary      Update Loading Unloading Plan
 // @Description  Update selected header fields and optionally replace detail rows by plan_code
@@ -205,6 +283,64 @@ func (h *OpsPlanHandler) Update(c *gin.Context) {
 		return
 	}
 	helper.SuccessResponse(c, http.StatusOK, "loading unloading plan updated successfully", res)
+}
+
+// UpdateDeterminedPlan godoc
+// @Summary      Update Determined Loading Unloading Plan
+// @Description  Update status 1/2 plan and rebuild related determination details without regenerating determination_code or work_order_code
+// @Tags         plan-op
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        payload body op.UpdateLoadingUnloadingPlanInput true "Update payload"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      404 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/op/updateDetermination [post]
+func (h *OpsPlanHandler) UpdateDeterminedPlan(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "ops plan service is not initialized")
+		return
+	}
+
+	var input UpdateLoadingUnloadingPlanInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		helper.ValidationErrorResponse(c, err)
+		return
+	}
+
+	branchCode, terminalCode := 0, 0
+	if v, ok := c.Get(middleware.BranchCodeKey); ok {
+		value, err := parseContextInt(v)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+			return
+		}
+		branchCode = value
+	}
+	if v, ok := c.Get(middleware.TerminalCodeKey); ok {
+		value, err := parseContextInt(v)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+			return
+		}
+		terminalCode = value
+	}
+
+	updatedBy := middleware.GetUserEmail(c)
+	if v, ok := c.Get(middleware.EmployeeIDKey); ok {
+		if employeeID, ok := v.(string); ok && employeeID != "" {
+			updatedBy = employeeID
+		}
+	}
+
+	res, err := h.service.UpdateDeterminedPlan(c.Request.Context(), &input, branchCode, terminalCode, updatedBy)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.SuccessResponse(c, http.StatusOK, "loading unloading determined plan updated successfully", res)
 }
 
 // GetDataRequest godoc
@@ -348,6 +484,57 @@ func (h *OpsPlanHandler) GetDetailOp(c *gin.Context) {
 	}
 
 	res, err := h.service.GetDetailOp(c.Request.Context(), branchCode, terminalCode, input.PlanIdentifier())
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, err.Error())
+		return
+	}
+	helper.SuccessResponse(c, http.StatusOK, "success", res)
+}
+
+// GetDetailDetermination godoc
+// @Summary      Get Loading Unloading Determination Detail
+// @Description  Loading/unloading determination header and detail rows by determination_code
+// @Tags         plan-op
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        payload body op.GetDetailDeterminationInput true "Detail payload"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      404 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/op/getDetailDetermination [post]
+func (h *OpsPlanHandler) GetDetailDetermination(c *gin.Context) {
+	if h == nil || h.service == nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, "ops plan service is not initialized")
+		return
+	}
+
+	var input GetDetailDeterminationInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	branchCode, terminalCode := 0, 0
+	if v, ok := c.Get(middleware.BranchCodeKey); ok {
+		value, err := parseContextInt(v)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid branch code in token")
+			return
+		}
+		branchCode = value
+	}
+	if v, ok := c.Get(middleware.TerminalCodeKey); ok {
+		value, err := parseContextInt(v)
+		if err != nil {
+			helper.ErrorResponse(c, http.StatusUnauthorized, "invalid terminal code in token")
+			return
+		}
+		terminalCode = value
+	}
+
+	res, err := h.service.GetDetailDetermination(c.Request.Context(), branchCode, terminalCode, input)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusNotFound, err.Error())
 		return
