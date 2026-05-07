@@ -36,6 +36,7 @@ import (
 	"omniport-api/internal/modules/administration/warehouse"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
+	"omniport-api/internal/modules/plan/vesselrpk"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
 
@@ -90,6 +91,7 @@ func main() {
 	// Plan Module uses PLAN connection
 	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
 	opsPlanRepo := op.NewOpsPlanRepository(reg.PLAN, reg.ADM)
+	vesselRpkRepo := vesselrpk.NewVesselRpkRepository(reg.PLAN)
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, db, jwtUtil)
@@ -119,6 +121,7 @@ func main() {
 	lookupService := lookup.NewLookupService(db, equipmentService)
 	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
+	vesselRpkService := vesselrpk.NewVesselRpkService(vesselRpkRepo)
 	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db)
 
 	authHandler := auth.NewAuthHandler(authService)
@@ -144,6 +147,7 @@ func main() {
 	companyHandler := company.NewCompanyHandler(companyService)
 	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
 	opsPlanHandler := op.NewOpsPlanHandler(opsPlanService)
+	vesselRpkHandler := vesselrpk.NewVesselRpkHandler(vesselRpkService)
 	tariffHandler := tariff.NewTariffHandler(tariffService)
 	lookupHandler := lookup.NewLookupHandler(lookupService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
@@ -179,6 +183,7 @@ func main() {
 		PostRequestHandler:    postRequestHandler,
 		FileHandler:           fileHandler,
 		OpsPlanHandler:        opsPlanHandler,
+		VesselRpkHandler:      vesselRpkHandler,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)

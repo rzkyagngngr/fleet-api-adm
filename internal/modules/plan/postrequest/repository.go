@@ -185,6 +185,13 @@ func (r *postRequestRepository) Search(ctx context.Context, param helper.Paginat
 			"status":        "status",
 			"plan_status":   "plan_status",
 			"vessel_code":   "vessel_code",
+			"vessel_name":   "vessel_name",
+			"pbm_name":      "pbm_name",
+			"request_code":  "request_code",
+			"ppk_number":    "ppk_number",
+			"voyage_type":   "voyage_type",
+			"request_date":  "request_date",
+			"total_manifest": "total_manifest",
 			"activity_code": "activity_code",
 		},
 		SortableColumns: map[string]string{

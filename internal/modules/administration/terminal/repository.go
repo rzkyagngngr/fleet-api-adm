@@ -59,10 +59,14 @@ func (r *terminalRepository) Search(ctx context.Context, param helper.Pagination
 		},
 		SearchColumns: []string{"terminal_code", "terminal_name", "branch_name", "company_name"},
 		FilterableColumns: map[string]string{
-			"status":       "status",
-			"branch_code":  "branch_code",
-			"is_go_live":   "is_go_live",
-			"company_code": "company_code",
+			"terminal_code": "terminal_code",
+			"terminal_name": "terminal_name",
+			"branch_name":   "branch_name",
+			"company_name":  "company_name",
+			"status":        "status",
+			"branch_code":   "branch_code",
+			"is_go_live":    "is_go_live",
+			"company_code":  "company_code",
 		},
 		SortableColumns: map[string]string{
 			"id":            "id",

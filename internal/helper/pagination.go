@@ -191,3 +191,16 @@ func maxInt(value int, fallback int) int {
 
 	return value
 }
+
+func NewPaginationMeta(totalItems int64, page int, limit int) PaginationMeta {
+	totalPages := 0
+	if limit > 0 {
+		totalPages = int(math.Ceil(float64(totalItems) / float64(limit)))
+	}
+	return PaginationMeta{
+		Page:       page,
+		Limit:      limit,
+		TotalItems: totalItems,
+		TotalPages: totalPages,
+	}
+}

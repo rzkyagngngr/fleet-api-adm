@@ -58,6 +58,10 @@ func (r *branchRepository) Search(ctx context.Context, param helper.PaginationQu
 		},
 		SearchColumns: []string{"branch_code::text", "branch_name", "company_name", "kd_port"},
 		FilterableColumns: map[string]string{
+			"branch_code": "branch_code",
+			"branch_name": "branch_name",
+			"company_name": "company_name",
+			"kd_port":      "kd_port",
 			"status":       "status",
 			"company_code": "company_code",
 		},

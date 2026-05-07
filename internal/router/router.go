@@ -26,6 +26,7 @@ import (
 	"omniport-api/internal/modules/administration/warehouse"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
+	"omniport-api/internal/modules/plan/vesselrpk"
 	"omniport-api/internal/modules/plan/vesselschedule"
 
 	"github.com/gin-gonic/gin"
@@ -59,6 +60,7 @@ type RouterConfig struct {
 	PostRequestHandler    *postrequest.PostRequestHandler
 	FileHandler           *file.FileHandler
 	OpsPlanHandler        *op.OpsPlanHandler
+	VesselRpkHandler      *vesselrpk.VesselRpkHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -134,9 +136,9 @@ func SetupRouter(cfg *RouterConfig) {
 				roles.POST("", cfg.RoleHandler.CreateRole)
 				roles.PUT("", cfg.RoleHandler.UpdateRole)
 				roles.DELETE("", cfg.RoleHandler.DeleteRole)
-				roles.GET("/:id/access", cfg.AccessHandler.GetRoleAccess)
-				roles.GET("/:id/all-menu-access", cfg.AccessHandler.GetAllMenuByRole)
-				roles.POST("/:id/access", cfg.AccessHandler.UpdateRoleAccess)
+				roles.GET("/access", cfg.AccessHandler.GetRoleAccess)
+				roles.GET("/all-menu-access", cfg.AccessHandler.GetAllMenuByRole)
+				roles.POST("/access", cfg.AccessHandler.UpdateRoleAccess)
 			}
 
 			references := master.Group("/references")
@@ -319,6 +321,16 @@ func SetupRouter(cfg *RouterConfig) {
 				opsPlan.POST("/getDetailOp", cfg.OpsPlanHandler.GetDetailOp)
 				opsPlan.POST("/getDataVesselSchedule", cfg.OpsPlanHandler.GetDataVesselSchedule)
 				opsPlan.POST("/getDataVesel", cfg.OpsPlanHandler.GetDataVesel)
+			}
+
+			// Vessel RPK (New Module)
+			vesselRpk := plan.Group("/vessel-rpk")
+			{
+				vesselRpk.POST("/search", cfg.VesselRpkHandler.Search)
+				vesselRpk.POST("", cfg.VesselRpkHandler.Create)
+				vesselRpk.GET("", cfg.VesselRpkHandler.GetByID)
+				vesselRpk.PUT("", cfg.VesselRpkHandler.Update)
+				vesselRpk.DELETE("", cfg.VesselRpkHandler.Delete)
 			}
 		}
 

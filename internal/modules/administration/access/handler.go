@@ -21,13 +21,17 @@ func NewAccessHandler(accessService AccessService) *AccessHandler {
 // @Tags master-role-access
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Role ID"
+// @Param id query int true "Role ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/roles/{id}/access [get]
+// @Router /master/roles/access [get]
 func (h *AccessHandler) GetRoleAccess(c *gin.Context) {
-	roleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	idStr := c.Query("id")
+	if idStr == "" {
+		idStr = c.Param("id")
+	}
+	roleID, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid role id")
 		return
@@ -46,13 +50,17 @@ func (h *AccessHandler) GetRoleAccess(c *gin.Context) {
 // @Tags master-role-access
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Role ID"
+// @Param id query int true "Role ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/roles/{id}/all-menu-access [get]
+// @Router /master/roles/all-menu-access [get]
 func (h *AccessHandler) GetAllMenuByRole(c *gin.Context) {
-	roleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	idStr := c.Query("id")
+	if idStr == "" {
+		idStr = c.Param("id")
+	}
+	roleID, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid role id")
 		return
@@ -72,14 +80,18 @@ func (h *AccessHandler) GetAllMenuByRole(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Role ID"
+// @Param id query int true "Role ID"
 // @Param payload body []access.Access true "Role access payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/roles/{id}/access [post]
+// @Router /master/roles/access [post]
 func (h *AccessHandler) UpdateRoleAccess(c *gin.Context) {
-	roleID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	idStr := c.Query("id")
+	if idStr == "" {
+		idStr = c.Param("id")
+	}
+	roleID, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid role id")
 		return

@@ -163,9 +163,12 @@ func (r *userRepository) Search(ctx context.Context, param helper.PaginationQuer
 		},
 		SearchColumns: []string{"u.employee_id", "u.full_name", "u.email", "u.job_title", "u.phone_number"},
 		FilterableColumns: map[string]string{
-			"employee_id": "u.employee_id", "full_name": "u.full_name", "status": "u.status",
+			"employee_id": "u.employee_id", "full_name": "u.full_name", "email": "u.email",
+			"job_title": "u.job_title", "phone_number": "u.phone_number", "status": "u.status",
 			"role_id": "u.role_id", "branch_code": "u.branch_code", "terminal_code": "u.terminal_code",
 			"company_code": "u.company_code", "superuser": "u.superuser",
+			"role_description": "r.hak_akses_nama", "branch_name": "u.branch_name",
+			"terminal_name": "u.terminal_name", "last_login_at": "u.last_login_at",
 		},
 		SortableColumns: map[string]string{"id": "u.id", "employee_id": "u.employee_id", "full_name": "u.full_name", "creation_date": "u.creation_date"},
 		DefaultSortBy: "id", DefaultSortOrder: "DESC", MaxLimit: 100, MaxDownloadLimit: 1000,
