@@ -83,15 +83,8 @@ func (r GetDetailOpInput) PlanIdentifier() string {
 
 type GetDetailDeterminationInput struct {
 	DeterminationCode string `json:"determination_code"`
+	WorkOrderCode     string `json:"work_order_code"`
 	PlanCode          string `json:"plan_code"`
-	PlanNumber        string `json:"plan_number"`
-}
-
-func (r GetDetailDeterminationInput) PlanIdentifier() string {
-	if r.PlanCode != "" {
-		return r.PlanCode
-	}
-	return r.PlanNumber
 }
 
 type ReadyOpsPlanResponse struct {

@@ -231,15 +231,29 @@ func (r *opsPlanRepository) GetDetailOp(ctx context.Context, branchCode, termina
 
 func (r *opsPlanRepository) GetDetailDetermination(ctx context.Context, branchCode, terminalCode int, input GetDetailDeterminationInput) ([]LoadingUnloadingDetermination, []LoadingUnloadingDeterminationDetail, []PostEquipmentDetermination, error) {
 	determinationCode := strings.TrimSpace(input.DeterminationCode)
-	if determinationCode == "" {
-		return nil, nil, nil, fmt.Errorf("determination_code is required")
+	workOrderCode := strings.TrimSpace(input.WorkOrderCode)
+	if determinationCode == "" && workOrderCode == "" {
+		return nil, nil, nil, fmt.Errorf("determination_code or work_order_code is required")
 	}
 
 	var headers []LoadingUnloadingDetermination
-	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND determination_code = ?", branchCode, terminalCode, determinationCode).
-		Order("determination_code ASC").
-		Find(&headers).Error; err != nil {
+	headerQuery := r.db.WithContext(ctx).
+		Where("branch_code = ? AND terminal_code = ?", branchCode, terminalCode)
+	if determinationCode != "" {
+		headerQuery = headerQuery.Where("determination_code = ?", determinationCode)
+	}
+	if workOrderCode != "" {
+		headerQuery = headerQuery.Where(`
+			determination_code IN (
+				SELECT determination_code
+				FROM plan.post_loading_unloading_determinations_d
+				WHERE branch_code = ?
+					AND terminal_code = ?
+					AND work_order_code = ?
+			)
+		`, branchCode, terminalCode, workOrderCode)
+	}
+	if err := headerQuery.Order("determination_code ASC").Find(&headers).Error; err != nil {
 		return nil, nil, nil, err
 	}
 	if len(headers) == 0 {

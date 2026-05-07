@@ -78,8 +78,9 @@ func (s *opsPlanService) GetDetailDetermination(ctx context.Context, branchCode,
 		return nil, errors.New("branch_code and terminal_code are required")
 	}
 	input.DeterminationCode = strings.TrimSpace(input.DeterminationCode)
-	if input.DeterminationCode == "" {
-		return nil, errors.New("determination_code is required")
+	input.WorkOrderCode = strings.TrimSpace(input.WorkOrderCode)
+	if input.DeterminationCode == "" && input.WorkOrderCode == "" {
+		return nil, errors.New("determination_code or work_order_code is required")
 	}
 
 	headers, details, detailsEquipment, err := s.repo.GetDetailDetermination(ctx, branchCode, terminalCode, input)
