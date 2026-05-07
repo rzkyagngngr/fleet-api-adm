@@ -120,7 +120,12 @@ func (h *PostRequestHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	idStr := c.Param("id")
+	if idStr == "" {
+		idStr = c.Query("id")
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
 		return
@@ -153,7 +158,12 @@ func (h *PostRequestHandler) Update(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	idStr := c.Param("id")
+	if idStr == "" {
+		idStr = c.Query("id")
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
 		return
@@ -191,7 +201,12 @@ func (h *PostRequestHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	idStr := c.Param("id")
+	if idStr == "" {
+		idStr = c.Query("id")
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
 		return
@@ -242,7 +257,12 @@ func (h *PostRequestHandler) GetStats(c *gin.Context) {
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id}/status [put]
 func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	idStr := c.Param("id")
+	if idStr == "" {
+		idStr = c.Query("id")
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid request ID")
 		return

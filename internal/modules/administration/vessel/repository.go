@@ -30,14 +30,40 @@ func (r *vesselRepository) Create(ctx context.Context, v *Vessel) error {
 
 func (r *vesselRepository) Update(ctx context.Context, id uint64, v *Vessel) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Update the main vessel
-		if err := tx.Where("id = ?", id).Updates(v).Error; err != nil {
+		// 1. Update the main vessel header
+		if err := tx.Model(&Vessel{}).Where("id = ?", id).Omit("HatchDetails").Updates(v).Error; err != nil {
 			return err
 		}
-		// Replace all hatch details
-		if err := tx.Model(v).Association("HatchDetails").Replace(v.HatchDetails); err != nil {
+
+		// 2. SMART SYNC: Manage details without losing existing IDs
+		// First, collect IDs from the incoming request
+		var incomingIDs []uint64
+		for _, detail := range v.HatchDetails {
+			if detail.ID > 0 {
+				incomingIDs = append(incomingIDs, detail.ID)
+			}
+		}
+
+		// 3. Delete only details that are NOT in the incoming request
+		deleteQuery := tx.Where("header_id = ?", id)
+		if len(incomingIDs) > 0 {
+			deleteQuery = deleteQuery.Where("id NOT IN ?", incomingIDs)
+		}
+		if err := deleteQuery.Delete(&VesselDetail{}).Error; err != nil {
 			return err
 		}
+
+		// 4. Save (Upsert) the incoming details
+		for i := range v.HatchDetails {
+			v.HatchDetails[i].HeaderID = id
+			// Sync denormalized vessel_code from header to details
+			v.HatchDetails[i].VesselCode = v.VesselCode
+			
+			if err := tx.Save(&v.HatchDetails[i]).Error; err != nil {
+				return err
+			}
+		}
+
 		return nil
 	})
 }

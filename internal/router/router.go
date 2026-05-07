@@ -240,8 +240,11 @@ func SetupRouter(cfg *RouterConfig) {
 				vessel.POST("/search", cfg.VesselHandler.Search)
 				vessel.POST("", cfg.VesselHandler.Create)
 				vessel.GET("", cfg.VesselHandler.GetByID)
+				vessel.GET("/:id", cfg.VesselHandler.GetByID)
 				vessel.PUT("", cfg.VesselHandler.Update)
+				vessel.PUT("/:id", cfg.VesselHandler.Update)
 				vessel.DELETE("", cfg.VesselHandler.Delete)
+				vessel.DELETE("/:id", cfg.VesselHandler.Delete)
 			}
 
 			branches := master.Group("/branches")
@@ -296,9 +299,13 @@ func SetupRouter(cfg *RouterConfig) {
 				reqBarang.GET("/stats", cfg.PostRequestHandler.GetStats)
 				reqBarang.POST("/search", cfg.PostRequestHandler.Search)
 				reqBarang.POST("", cfg.PostRequestHandler.Create)
+				reqBarang.GET("", cfg.PostRequestHandler.GetByID)
 				reqBarang.GET("/:id", cfg.PostRequestHandler.GetByID)
+				reqBarang.PUT("", cfg.PostRequestHandler.Update)
 				reqBarang.PUT("/:id", cfg.PostRequestHandler.Update)
+				reqBarang.PUT("/status", cfg.PostRequestHandler.UpdateStatus)
 				reqBarang.PUT("/:id/status", cfg.PostRequestHandler.UpdateStatus)
+				reqBarang.DELETE("", cfg.PostRequestHandler.Delete)
 				reqBarang.DELETE("/:id", cfg.PostRequestHandler.Delete)
 			}
 

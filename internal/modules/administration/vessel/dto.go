@@ -88,6 +88,7 @@ type VesselRequest struct {
 }
 
 type VesselDetailRequest struct {
+	ID          uint64 `json:"id"`
 	HatchCode   string `json:"hatch_code"`
 	HatchName   string `json:"hatch_name"`
 	CapacityMt  int64  `json:"capacity_mt"`

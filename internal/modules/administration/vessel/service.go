@@ -105,6 +105,7 @@ func (s *vesselService) UpdateVessel(ctx context.Context, id uint64, req *Vessel
 	var newHatches []VesselDetail
 	for _, h := range req.HatchDetails {
 		newHatches = append(newHatches, VesselDetail{
+			ID:           h.ID,
 			HeaderID:     v.ID,
 			BranchCode:   req.BranchCode,
 			TerminalCode: req.TerminalCode,

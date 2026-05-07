@@ -89,7 +89,12 @@ func (h *VesselHandler) Create(c *gin.Context) {
 // @Failure 500 {object} helper.Response
 // @Router /master/vessel [put]
 func (h *VesselHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
+	idStr := c.Param("id")
+	if idStr == "" {
+		idStr = c.Query("id")
+	}
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid vessel id")
 		return
@@ -123,7 +128,12 @@ func (h *VesselHandler) Update(c *gin.Context) {
 // @Failure 500 {object} helper.Response
 // @Router /master/vessel [get]
 func (h *VesselHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
+	idStr := c.Param("id")
+	if idStr == "" {
+		idStr = c.Query("id")
+	}
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid vessel id")
 		return
@@ -150,7 +160,12 @@ func (h *VesselHandler) GetByID(c *gin.Context) {
 // @Failure 500 {object} helper.Response
 // @Router /master/vessel [delete]
 func (h *VesselHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
+	idStr := c.Param("id")
+	if idStr == "" {
+		idStr = c.Query("id")
+	}
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid vessel id")
 		return
