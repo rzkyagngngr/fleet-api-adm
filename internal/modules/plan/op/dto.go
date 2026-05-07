@@ -57,12 +57,28 @@ type GetDataVeselInput struct {
 
 type GetDataOpInput struct {
 	PPKNumber    string `json:"ppk_number"`
+	PlanCode     string `json:"plan_code"`
 	PlanNumber   string `json:"plan_number"`
 	ActivityCode string `json:"activity_code"`
 }
 
+func (r GetDataOpInput) PlanIdentifier() string {
+	if r.PlanCode != "" {
+		return r.PlanCode
+	}
+	return r.PlanNumber
+}
+
 type GetDetailOpInput struct {
-	PlanNumber string `json:"plan_number" binding:"required"`
+	PlanCode   string `json:"plan_code"`
+	PlanNumber string `json:"plan_number"`
+}
+
+func (r GetDetailOpInput) PlanIdentifier() string {
+	if r.PlanCode != "" {
+		return r.PlanCode
+	}
+	return r.PlanNumber
 }
 
 type ReadyOpsPlanResponse struct {
@@ -114,7 +130,7 @@ type GetDataOpResponse struct {
 	TerminalCode *int       `json:"terminal_code"`
 	BranchName   string     `json:"branch_name"`
 	TerminalName string     `json:"terminal_name"`
-	PlanNumber   string     `json:"plan_number"`
+	PlanNumber   string     `json:"plan_code" gorm:"column:plan_code"`
 	PlanDate     *time.Time `json:"plan_date"`
 	ETA          *time.Time `json:"eta"`
 	PPKNumber    string     `json:"ppk_number"`
@@ -156,6 +172,7 @@ type CreateLoadingUnloadingPlanInput struct {
 	ShippingType      string                             `json:"shipping_type"`
 	AgentName         string                             `json:"agent_name"`
 	PPKNumber         string                             `json:"ppk_number" binding:"required"`
+	PlanCode          string                             `json:"plan_code"`
 	PlanNumber        string                             `json:"plan_number"`
 	PlanDate          time.Time                          `json:"plan_date" binding:"required"`
 	ETA               *time.Time                         `json:"eta"`
@@ -245,13 +262,21 @@ type CreatePostEquipmentPlanInput struct {
 }
 
 type UpdateLoadingUnloadingPlanInput struct {
-	PlanNumber        string                             `json:"plan_number" binding:"required"`
+	PlanCode          string                             `json:"plan_code"`
+	PlanNumber        string                             `json:"plan_number"`
 	TotalDays         *int                               `json:"total_days"`
 	TotalShifts       *int                               `json:"total_shifts"`
 	ActivityStartDate *time.Time                         `json:"activity_start_date"`
 	ActivityEndDate   *time.Time                         `json:"activity_end_date"`
 	Details           []CreateLoadingUnloadingPlanDInput `json:"details"`
 	DetailsEquipement []CreatePostEquipmentPlanInput     `json:"detailsEquipement"`
+}
+
+func (r UpdateLoadingUnloadingPlanInput) PlanIdentifier() string {
+	if r.PlanCode != "" {
+		return r.PlanCode
+	}
+	return r.PlanNumber
 }
 
 type LoadingUnloadingPlanResponse struct {
