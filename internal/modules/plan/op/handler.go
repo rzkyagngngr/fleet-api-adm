@@ -151,7 +151,7 @@ func (h *OpsPlanHandler) Create(c *gin.Context) {
 
 // Update godoc
 // @Summary      Update Loading Unloading Plan
-// @Description  Update selected header fields and optionally replace detail rows by plan_number
+// @Description  Update selected header fields and optionally replace detail rows by plan_code
 // @Tags         plan-op
 // @Accept       json
 // @Produce      json
@@ -306,7 +306,7 @@ func (h *OpsPlanHandler) GetDataOp(c *gin.Context) {
 
 // GetDetailOp godoc
 // @Summary      Get Operation Plan Detail
-// @Description  Loading/unloading plan header and detail rows by plan_number
+// @Description  Loading/unloading plan header and detail rows by plan_code
 // @Tags         plan-op
 // @Accept       json
 // @Produce      json
@@ -347,7 +347,7 @@ func (h *OpsPlanHandler) GetDetailOp(c *gin.Context) {
 		terminalCode = value
 	}
 
-	res, err := h.service.GetDetailOp(c.Request.Context(), branchCode, terminalCode, input.PlanNumber)
+	res, err := h.service.GetDetailOp(c.Request.Context(), branchCode, terminalCode, input.PlanIdentifier())
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusNotFound, err.Error())
 		return

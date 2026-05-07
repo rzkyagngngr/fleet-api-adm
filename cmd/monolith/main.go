@@ -17,18 +17,23 @@ import (
 	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
+	"omniport-api/internal/modules/administration/branch"
 	"omniport-api/internal/modules/administration/cargo"
+	"omniport-api/internal/modules/administration/company"
 	"omniport-api/internal/modules/administration/customer"
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/file"
 	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
 	"omniport-api/internal/modules/administration/reference"
 	"omniport-api/internal/modules/administration/role"
 	"omniport-api/internal/modules/administration/tariff"
+	"omniport-api/internal/modules/administration/terminal"
 	"omniport-api/internal/modules/administration/user"
+	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
@@ -90,15 +95,23 @@ func main() {
 	dermagaRepo := dermaga.NewDermagaRepository(dbRegistry.ADM)
 	referenceRepo := reference.NewReferenceRepository(dbRegistry.ADM)
 	cargoRepo := cargo.NewCargoRepository(dbRegistry.ADM)
+	branchRepo := branch.NewBranchRepository(dbRegistry.ADM)
+	terminalRepo := terminal.NewTerminalRepository(dbRegistry.ADM)
+	vesselRepo := vessel.NewVesselRepository(dbRegistry.ADM)
+	companyRepo := company.NewCompanyRepository(dbRegistry.ADM)
 
 	accessService := access.NewAccessService(accessRepo)
-	authService := auth.NewAuthService(userRepo, jwtUtil)
+	authService := auth.NewAuthService(userRepo, dbRegistry.ADM, jwtUtil)
 	userService := user.NewUserService(userRepo)
 	menuService := menu.NewMenuService(dbRegistry.ADM)
 	roleService := role.NewRoleService(roleRepo)
 	dermagaService := dermaga.NewDermagaService(dermagaRepo)
 	referenceService := reference.NewReferenceService(referenceRepo)
 	cargoService := cargo.NewCargoService(cargoRepo)
+	branchService := branch.NewBranchService(branchRepo)
+	terminalService := terminal.NewTerminalService(terminalRepo, branchRepo)
+	vesselService := vessel.NewVesselService(vesselRepo)
+	companyService := company.NewCompanyService(companyRepo)
 	customerService := customer.NewCustomerService(dbRegistry.ADM)
 	dockService := dock.NewDockService(dbRegistry.ADM)
 	equipmentService := equipment.NewEquipmentService(dbRegistry.ADM)
@@ -108,7 +121,10 @@ func main() {
 	lookupService := lookup.NewLookupService(dbRegistry.ADM, equipmentService)
 	postRequestRepo := postrequest.NewPostRequestRepository(dbRegistry.PLAN)
 	opsPlanRepo := op.NewOpsPlanRepository(dbRegistry.PLAN, dbRegistry.ADM)
-	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
+	fileRepo := file.NewFileRepository(dbRegistry.ADM)
+	s3Provider, _ := helper.NewS3Provider(context.Background(), cfg.Storage.S3Region, cfg.Storage.S3Endpoint)
+	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
+	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	vesselScheduleService := vesselschedule.NewVesselScheduleService(dbRegistry.PLAN, dbRegistry.ADM)
 
@@ -120,6 +136,11 @@ func main() {
 	dermagaHandler := dermaga.NewDermagaHandler(dermagaService)
 	referenceHandler := reference.NewReferenceHandler(referenceService)
 	cargoHandler := cargo.NewCargoHandler(cargoService)
+	userAdapter := &userProviderAdapter{s: userService}
+	branchHandler := branch.NewBranchHandler(branchService, userAdapter)
+	terminalHandler := terminal.NewTerminalHandler(terminalService, userAdapter)
+	vesselHandler := vessel.NewVesselHandler(vesselService)
+	companyHandler := company.NewCompanyHandler(companyService)
 	customerHandler := customer.NewCustomerHandler(customerService)
 	dockHandler := dock.NewDockHandler(dockService)
 	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
@@ -152,9 +173,13 @@ func main() {
 		PortHandler:           portHandler,
 		ReferenceHandler:      referenceHandler,
 		TariffHandler:         tariffHandler,
+		VesselHandler:         vesselHandler,
 		VesselScheduleHandler: vesselScheduleHandler,
 		CargoHandler:          cargoHandler,
 		WarehouseHandler:      warehouseHandler,
+		BranchHandler:         branchHandler,
+		TerminalHandler:       terminalHandler,
+		CompanyHandler:        companyHandler,
 		PostRequestHandler:    postRequestHandler,
 		OpsPlanHandler:        opsPlanHandler,
 	})
@@ -197,4 +222,12 @@ func parseLogLevel(level string) slog.Level {
 	default:
 		return slog.LevelInfo
 	}
+}
+
+type userProviderAdapter struct {
+	s user.UserService
+}
+
+func (a *userProviderAdapter) GetProfile(ctx context.Context, userID uint64) (any, error) {
+	return a.s.GetProfile(ctx, userID)
 }

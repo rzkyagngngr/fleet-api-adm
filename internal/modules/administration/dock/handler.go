@@ -81,13 +81,13 @@ func (h *DockHandler) SearchDock(c *gin.Context) {
 // @Tags master-dock
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Dock ID"
+// @Param id query int true "Dock ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
-// @Router /master/dock/{id} [get]
+// @Router /master/dock [get]
 func (h *DockHandler) GetDockDetail(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid dock id")
 		return
@@ -193,14 +193,14 @@ func (h *DockHandler) CreateDock(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Dock ID"
+// @Param id query int true "Dock ID"
 // @Param payload body dock.DockReq true "Dock payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/dock/{id} [put]
+// @Router /master/dock [put]
 func (h *DockHandler) UpdateDock(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid dock id")
 		return
@@ -282,13 +282,13 @@ func (h *DockHandler) UpdateDock(c *gin.Context) {
 // @Tags master-dock
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Dock ID"
+// @Param id query int true "Dock ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/dock/{id} [delete]
+// @Router /master/dock [delete]
 func (h *DockHandler) DeleteDock(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid dock id")
 		return

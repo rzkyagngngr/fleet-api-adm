@@ -80,13 +80,13 @@ func (h *TariffHandler) SearchStatusZero(c *gin.Context) {
 // @Tags master-tariff
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Tariff ID"
+// @Param id query int true "Tariff ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
-// @Router /master/tariff/{id} [get]
+// @Router /master/tariff [get]
 func (h *TariffHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid tariff id")
 		return
@@ -189,14 +189,14 @@ func (h *TariffHandler) Create(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Tariff ID"
+// @Param id query int true "Tariff ID"
 // @Param payload body tariff.TariffReq true "Tariff payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/tariff/{id} [put]
+// @Router /master/tariff [put]
 func (h *TariffHandler) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid tariff id")
 		return
@@ -276,7 +276,7 @@ func (h *TariffHandler) Update(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Tariff ID"
+// @Param id query int true "Tariff ID"
 // @Param payload body tariff.UpdateTariffStatusRequest true "Tariff status payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
@@ -317,13 +317,13 @@ func (h *TariffHandler) UpdateStatus(c *gin.Context) {
 // @Tags master-tariff
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Tariff ID"
+// @Param id query int true "Tariff ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/tariff/{id} [delete]
+// @Router /master/tariff [delete]
 func (h *TariffHandler) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid tariff id")
 		return

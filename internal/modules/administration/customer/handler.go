@@ -197,13 +197,13 @@ func (h *CustomerHandler) CreateCustomer(c *gin.Context) {
 // @Tags master-customers
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Customer ID"
+// @Param id query int true "Customer ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
-// @Router /master/customer/{id} [get]
+// @Router /master/customer [get]
 func (h *CustomerHandler) GetCustomerDetail(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := parseCustomerID(c)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid customer id")
 		return
@@ -225,14 +225,14 @@ func (h *CustomerHandler) GetCustomerDetail(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Customer ID"
+// @Param id query int true "Customer ID"
 // @Param payload body customer.CustomerReq true "Customer payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/customer/{id} [put]
+// @Router /master/customer [put]
 func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := parseCustomerID(c)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid customer id")
 		return
@@ -343,13 +343,13 @@ func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
 // @Tags master-customers
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Customer ID"
+// @Param id query int true "Customer ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/customer/{id} [delete]
+// @Router /master/customer [delete]
 func (h *CustomerHandler) DeleteCustomer(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := parseCustomerID(c)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid customer id")
 		return
@@ -361,6 +361,14 @@ func (h *CustomerHandler) DeleteCustomer(c *gin.Context) {
 	}
 
 	helper.SuccessResponse(c, http.StatusOK, "customer deleted successfully", nil)
+}
+
+func parseCustomerID(c *gin.Context) (uint64, error) {
+	id := c.Query("id")
+	if id == "" {
+		id = c.Param("id")
+	}
+	return strconv.ParseUint(id, 10, 64)
 }
 
 func parseContextInt(value interface{}) (int, error) {

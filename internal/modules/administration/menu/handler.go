@@ -33,6 +33,33 @@ func (h *MenuHandler) GetAllMenus(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "menus retrieved successfully", menus)
 }
 
+// GetMenuDetail godoc
+// @Summary Get menu detail
+// @Description Retrieve menu detail by id
+// @Tags master-menus
+// @Produce json
+// @Security BearerAuth
+// @Param id query int true "Menu ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Router /master/menus [get]
+func (h *MenuHandler) GetMenuDetail(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "invalid menu id")
+		return
+	}
+
+	menu, err := h.menuService.FindByID(c.Request.Context(), id)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, "menu not found")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "menu detail retrieved successfully", menu)
+}
+
 // SearchMenus godoc
 // @Summary Search menus
 // @Description Retrieve menus with server-side pagination, filtering, sorting, and download range support
@@ -93,14 +120,14 @@ func (h *MenuHandler) CreateMenu(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Menu ID"
+// @Param id query int true "Menu ID"
 // @Param payload body menu.Menu true "Menu payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/menus/{id} [put]
+// @Router /master/menus [put]
 func (h *MenuHandler) UpdateMenu(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid menu id")
 		return
@@ -123,13 +150,13 @@ func (h *MenuHandler) UpdateMenu(c *gin.Context) {
 // @Tags master-menus
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Menu ID"
+// @Param id query int true "Menu ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/menus/{id} [delete]
+// @Router /master/menus [delete]
 func (h *MenuHandler) DeleteMenu(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid menu id")
 		return

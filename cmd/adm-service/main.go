@@ -23,6 +23,7 @@ import (
 	"omniport-api/internal/modules/administration/dermaga"
 	"omniport-api/internal/modules/administration/dock"
 	"omniport-api/internal/modules/administration/equipment"
+	"omniport-api/internal/modules/administration/file"
 	"omniport-api/internal/modules/administration/lookup"
 	"omniport-api/internal/modules/administration/menu"
 	"omniport-api/internal/modules/administration/pelabuhan"
@@ -84,13 +85,14 @@ func main() {
 	branchRepo := branch.NewBranchRepository(db)
 	terminalRepo := terminal.NewTerminalRepository(db)
 	companyRepo := company.NewCompanyRepository(db)
+	fileRepo := file.NewFileRepository(db)
 
 	// Plan Module uses PLAN connection
 	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
 	opsPlanRepo := op.NewOpsPlanRepository(reg.PLAN, reg.ADM)
 
 	accessService := access.NewAccessService(accessRepo)
-	authService := auth.NewAuthService(userRepo, jwtUtil)
+	authService := auth.NewAuthService(userRepo, db, jwtUtil)
 	userService := user.NewUserService(userRepo)
 	menuService := menu.NewMenuService(db)
 	roleService := role.NewRoleService(roleRepo)
@@ -104,12 +106,19 @@ func main() {
 	customerService := customer.NewCustomerService(db)
 	dockService := dock.NewDockService(db)
 	portService := pelabuhan.NewPortService(db)
-	postRequestService := postrequest.NewPostRequestService(postRequestRepo)
+	// Initialize S3 Provider
+	s3Provider, err := helper.NewS3Provider(context.Background(), cfg.Storage.S3Region, cfg.Storage.S3Endpoint)
+	if err != nil {
+		slog.Warn("Failed to initialize S3 provider, using dummy", "error", err)
+	}
+
 	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	tariffService := tariff.NewTariffService(db)
 	equipmentService := equipment.NewEquipmentService(db)
 	warehouseService := warehouse.NewWarehouseService(db)
 	lookupService := lookup.NewLookupService(db, equipmentService)
+	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
+	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db)
 
 	authHandler := auth.NewAuthHandler(authService)
@@ -126,6 +135,7 @@ func main() {
 	equipmentHandler := equipment.NewEquipmentHandler(equipmentService)
 	portHandler := pelabuhan.NewPortHandler(portService)
 	warehouseHandler := warehouse.NewWarehouseHandler(warehouseService)
+	fileHandler := file.NewFileHandler(fileService)
 
 	// Break circular dependency using adapter
 	userAdapter := &userProviderAdapter{s: userService}
@@ -167,6 +177,7 @@ func main() {
 		TerminalHandler:       terminalHandler,
 		CompanyHandler:        companyHandler,
 		PostRequestHandler:    postRequestHandler,
+		FileHandler:           fileHandler,
 		OpsPlanHandler:        opsPlanHandler,
 	})
 

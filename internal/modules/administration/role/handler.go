@@ -33,6 +33,33 @@ func (h *RoleHandler) GetAllRoles(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "roles retrieved successfully", roles)
 }
 
+// GetRoleDetail godoc
+// @Summary Get role detail
+// @Description Retrieve role detail by id
+// @Tags master-roles
+// @Produce json
+// @Security BearerAuth
+// @Param id query int true "Role ID"
+// @Success 200 {object} helper.Response
+// @Failure 400 {object} helper.Response
+// @Failure 404 {object} helper.Response
+// @Router /master/roles [get]
+func (h *RoleHandler) GetRoleDetail(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "invalid role id")
+		return
+	}
+
+	role, err := h.roleService.FindByID(c.Request.Context(), id)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusNotFound, "role not found")
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "role detail retrieved successfully", role)
+}
+
 // CreateRole godoc
 // @Summary Create role
 // @Description Create a new role
@@ -65,14 +92,14 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Role ID"
+// @Param id query int true "Role ID"
 // @Param payload body role.Role true "Role payload"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/roles/{id} [put]
+// @Router /master/roles [put]
 func (h *RoleHandler) UpdateRole(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid role id")
 		return
@@ -95,13 +122,13 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 // @Tags master-roles
 // @Produce json
 // @Security BearerAuth
-// @Param id path int true "Role ID"
+// @Param id query int true "Role ID"
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/roles/{id} [delete]
+// @Router /master/roles [delete]
 func (h *RoleHandler) DeleteRole(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	id, err := strconv.ParseUint(c.Query("id"), 10, 64)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "invalid role id")
 		return

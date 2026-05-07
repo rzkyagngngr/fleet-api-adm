@@ -15,7 +15,7 @@ type OpsPlanRepository interface {
 	SearchReady(ctx context.Context, param helper.PaginationQuery) ([]ReadyOpsPlanResponse, helper.PaginationMeta, error)
 	GetDataRequest(ctx context.Context, ppkNumber, activityCode string) ([]ReadyOpDetailResponse, error)
 	GetDataOp(ctx context.Context, branchCode, terminalCode int, input GetDataOpInput) ([]GetDataOpResponse, error)
-	GetDetailOp(ctx context.Context, branchCode, terminalCode int, planNumber string) (*LoadingUnloadingPlan, []LoadingUnloadingPlanDetail, []PostEquipmentPlan, error)
+	GetDetailOp(ctx context.Context, branchCode, terminalCode int, planCode string) (*LoadingUnloadingPlan, []LoadingUnloadingPlanDetail, []PostEquipmentPlan, error)
 	GetDataVesselSchedule(ctx context.Context, ppkNumber, vesselCode string) ([]RawJSONResponse, error)
 	GetDataVesel(ctx context.Context, vesselCode string) ([]RawJSONResponse, error)
 	Create(ctx context.Context, header *LoadingUnloadingPlan, details []LoadingUnloadingPlanDetail, equipmentPlans []PostEquipmentPlan) error
@@ -176,8 +176,8 @@ func (r *opsPlanRepository) GetDataOp(ctx context.Context, branchCode, terminalC
 		whereParts = append(whereParts, "a.ppk_number = ?")
 		args = append(args, value)
 	}
-	if value := strings.TrimSpace(input.PlanNumber); value != "" {
-		whereParts = append(whereParts, "a.plan_number = ?")
+	if value := strings.TrimSpace(input.PlanIdentifier()); value != "" {
+		whereParts = append(whereParts, "a.plan_code = ?")
 		args = append(args, value)
 	}
 	if value := strings.TrimSpace(input.ActivityCode); value != "" {
@@ -193,17 +193,17 @@ func (r *opsPlanRepository) GetDataOp(ctx context.Context, branchCode, terminalC
 	return rows, nil
 }
 
-func (r *opsPlanRepository) GetDetailOp(ctx context.Context, branchCode, terminalCode int, planNumber string) (*LoadingUnloadingPlan, []LoadingUnloadingPlanDetail, []PostEquipmentPlan, error) {
+func (r *opsPlanRepository) GetDetailOp(ctx context.Context, branchCode, terminalCode int, planCode string) (*LoadingUnloadingPlan, []LoadingUnloadingPlanDetail, []PostEquipmentPlan, error) {
 	var header LoadingUnloadingPlan
 	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND plan_number = ?", branchCode, terminalCode, planNumber).
+		Where("branch_code = ? AND terminal_code = ? AND plan_code = ?", branchCode, terminalCode, planCode).
 		First(&header).Error; err != nil {
 		return nil, nil, nil, err
 	}
 
 	var details []LoadingUnloadingPlanDetail
 	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND plan_number = ?", branchCode, terminalCode, planNumber).
+		Where("branch_code = ? AND terminal_code = ? AND plan_code = ?", branchCode, terminalCode, planCode).
 		Order("sequence_no ASC").
 		Find(&details).Error; err != nil {
 		return nil, nil, nil, err
@@ -211,7 +211,7 @@ func (r *opsPlanRepository) GetDetailOp(ctx context.Context, branchCode, termina
 
 	var detailsEquipment []PostEquipmentPlan
 	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND plan_number = ?", branchCode, terminalCode, planNumber).
+		Where("branch_code = ? AND terminal_code = ? AND plan_code = ?", branchCode, terminalCode, planCode).
 		Order("sequence_no ASC").
 		Find(&detailsEquipment).Error; err != nil {
 		return nil, nil, nil, err
@@ -343,11 +343,12 @@ func (r *opsPlanRepository) Update(ctx context.Context, branchCode, terminalCode
 	var finalEquipmentPlans []PostEquipmentPlan
 
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		planCode := input.PlanIdentifier()
 		if err := tx.Where(
-			"branch_code = ? AND terminal_code = ? AND plan_number = ?",
+			"branch_code = ? AND terminal_code = ? AND plan_code = ?",
 			branchCode,
 			terminalCode,
-			input.PlanNumber,
+			planCode,
 		).First(&finalHeader).Error; err != nil {
 			return err
 		}
@@ -385,20 +386,20 @@ func (r *opsPlanRepository) Update(ctx context.Context, branchCode, terminalCode
 		equipmentPlansDeleted := false
 		if replaceDetails {
 			if err := tx.Where(
-				"branch_code = ? AND terminal_code = ? AND plan_number = ?",
+				"branch_code = ? AND terminal_code = ? AND plan_code = ?",
 				branchCode,
 				terminalCode,
-				input.PlanNumber,
+				planCode,
 			).Delete(&PostEquipmentPlan{}).Error; err != nil {
 				return err
 			}
 			equipmentPlansDeleted = true
 
 			if err := tx.Where(
-				"branch_code = ? AND terminal_code = ? AND plan_number = ?",
+				"branch_code = ? AND terminal_code = ? AND plan_code = ?",
 				branchCode,
 				terminalCode,
-				input.PlanNumber,
+				planCode,
 			).Delete(&LoadingUnloadingPlanDetail{}).Error; err != nil {
 				return err
 			}
@@ -411,7 +412,7 @@ func (r *opsPlanRepository) Update(ctx context.Context, branchCode, terminalCode
 			for i := range details {
 				details[i].BranchCode = branchCode
 				details[i].TerminalCode = terminalCode
-				details[i].PlanNumber = input.PlanNumber
+				details[i].PlanNumber = planCode
 				details[i].PlanDetailCode = fmt.Sprintf("%s%06d", detailPrefix, nextDetailSequence+i)
 			}
 			if len(details) > 0 {
@@ -422,10 +423,10 @@ func (r *opsPlanRepository) Update(ctx context.Context, branchCode, terminalCode
 		}
 
 		if err := tx.Where(
-			"branch_code = ? AND terminal_code = ? AND plan_number = ?",
+			"branch_code = ? AND terminal_code = ? AND plan_code = ?",
 			branchCode,
 			terminalCode,
-			input.PlanNumber,
+			planCode,
 		).Order("sequence_no ASC").Find(&finalDetails).Error; err != nil {
 			return err
 		}
@@ -433,10 +434,10 @@ func (r *opsPlanRepository) Update(ctx context.Context, branchCode, terminalCode
 		if replaceEquipmentPlans {
 			if !equipmentPlansDeleted {
 				if err := tx.Where(
-					"branch_code = ? AND terminal_code = ? AND plan_number = ?",
+					"branch_code = ? AND terminal_code = ? AND plan_code = ?",
 					branchCode,
 					terminalCode,
-					input.PlanNumber,
+					planCode,
 				).Delete(&PostEquipmentPlan{}).Error; err != nil {
 					return err
 				}
@@ -455,10 +456,10 @@ func (r *opsPlanRepository) Update(ctx context.Context, branchCode, terminalCode
 		}
 
 		return tx.Where(
-			"branch_code = ? AND terminal_code = ? AND plan_number = ?",
+			"branch_code = ? AND terminal_code = ? AND plan_code = ?",
 			branchCode,
 			terminalCode,
-			input.PlanNumber,
+			planCode,
 		).Order("sequence_no ASC").Find(&finalEquipmentPlans).Error
 	})
 	if err != nil {
@@ -474,10 +475,10 @@ func (r *opsPlanRepository) nextPlanNumber(tx *gorm.DB, branchCode, terminalCode
 
 	var lastSequence int
 	if err := tx.Raw(`
-		SELECT COALESCE(MAX(CAST(SUBSTRING(plan_number FROM ? FOR 6) AS INTEGER)), 0)
+		SELECT COALESCE(MAX(CAST(SUBSTRING(plan_code FROM ? FOR 6) AS INTEGER)), 0)
 		FROM plan.post_loading_unloading_plans
-		WHERE plan_number LIKE ?
-			AND SUBSTRING(plan_number FROM ? FOR 6) ~ '^[0-9]{6}$'
+		WHERE plan_code LIKE ?
+			AND SUBSTRING(plan_code FROM ? FOR 6) ~ '^[0-9]{6}$'
 	`, startPosition, prefix+"%", startPosition).Scan(&lastSequence).Error; err != nil {
 		return "", err
 	}
@@ -794,7 +795,7 @@ func getDataOpQuery(whereClause string) string {
 			a.terminal_code,
 			a.branch_name,
 			a.terminal_name,
-			a.plan_number,
+			a.plan_code,
 			a.plan_date,
 			a.eta,
 			a.ppk_number,
@@ -821,7 +822,7 @@ func getDataOpQuery(whereClause string) string {
 			a.status
 		FROM plan.post_loading_unloading_plans a
 		LEFT JOIN plan.post_loading_unloading_plans_d b
-			ON a.plan_number = b.plan_number
+			ON a.plan_code = b.plan_code
 			AND a.branch_code = b.branch_code
 			AND a.terminal_code = b.terminal_code
 		WHERE %s
@@ -830,7 +831,7 @@ func getDataOpQuery(whereClause string) string {
 			a.terminal_code,
 			a.branch_name,
 			a.terminal_name,
-			a.plan_number,
+			a.plan_code,
 			a.plan_date,
 			a.eta,
 			a.ppk_number,
@@ -843,7 +844,7 @@ func getDataOpQuery(whereClause string) string {
 			a.loa,
 			a.shipping_type,
 			a.status
-		ORDER BY a.plan_date DESC, a.plan_number DESC
+		ORDER BY a.plan_date DESC, a.plan_code DESC
 	`, whereClause)
 }
 

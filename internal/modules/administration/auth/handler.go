@@ -126,3 +126,29 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	helper.SuccessResponse(c, http.StatusOK, "token refreshed successfully", result)
 }
+
+// Me godoc
+// @Summary Get current session
+// @Description Returns the authenticated user's profile and menus. Used as a session heartbeat/validation endpoint.
+// @Tags auth
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} helper.Response
+// @Failure 401 {object} helper.Response
+// @Failure 500 {object} helper.Response
+// @Router /auth/me [get]
+func (h *AuthHandler) Me(c *gin.Context) {
+	userID, exists := c.Get(middleware.UserIDKey)
+	if !exists {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	result, err := h.authService.RefreshToken(c.Request.Context(), userID.(uint64))
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "session retrieved successfully", result)
+}

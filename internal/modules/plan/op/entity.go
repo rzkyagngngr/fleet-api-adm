@@ -16,7 +16,7 @@ type LoadingUnloadingPlan struct {
 	ShippingType      string     `gorm:"column:shipping_type" json:"shipping_type"`
 	AgentName         string     `gorm:"column:agent_name" json:"agent_name"`
 	PPKNumber         string     `gorm:"column:ppk_number" json:"ppk_number"`
-	PlanNumber        string     `gorm:"column:plan_number;not null" json:"plan_number"`
+	PlanNumber        string     `gorm:"column:plan_code;not null" json:"plan_code"`
 	PlanDate          time.Time  `gorm:"column:plan_date;not null" json:"plan_date"`
 	ETA               *time.Time `gorm:"column:eta" json:"eta"`
 	ETD               *time.Time `gorm:"column:etd" json:"etd"`
@@ -47,7 +47,7 @@ type LoadingUnloadingPlanDetail struct {
 	ID              int64      `gorm:"primaryKey;autoIncrement" json:"id"`
 	BranchCode      int        `gorm:"column:branch_code;not null" json:"branch_code"`
 	TerminalCode    int        `gorm:"column:terminal_code;not null" json:"terminal_code"`
-	PlanNumber      string     `gorm:"column:plan_number;not null" json:"plan_number"`
+	PlanNumber      string     `gorm:"column:plan_code;not null" json:"plan_code"`
 	SequenceNo      int        `gorm:"column:sequence_no;not null" json:"sequence_no"`
 	ActivityDate    *time.Time `gorm:"column:activity_date" json:"activity_date"`
 	Stowage         string     `gorm:"column:stowage" json:"stowage"`
@@ -102,7 +102,7 @@ type PostEquipmentPlan struct {
 	ID              int64      `gorm:"primaryKey;autoIncrement" json:"id"`
 	BranchCode      int        `gorm:"column:branch_code;not null" json:"branch_code"`
 	TerminalCode    int        `gorm:"column:terminal_code;not null" json:"terminal_code"`
-	PlanNumber      string     `gorm:"column:plan_number;not null" json:"plan_number"`
+	PlanNumber      string     `gorm:"column:plan_code;not null" json:"plan_code"`
 	SequenceNo      int        `gorm:"column:sequence_no;not null" json:"sequence_no"`
 	EquipmentCode   string     `gorm:"column:equipment_code;not null" json:"equipment_code"`
 	EquipmentName   string     `gorm:"column:equipment_name" json:"equipment_name"`
