@@ -8,7 +8,7 @@ import (
 type VesselRpkService interface {
 	Create(ctx context.Context, input CreateVesselRpkInput, branchCode, terminalCode int64, userID string) (*VesselRpkResponse, error)
 	GetByID(ctx context.Context, id uint64) (*VesselRpkResponse, error)
-	List(ctx context.Context, branchCode, terminalCode int64, page, limit int, search string) ([]VesselRpkResponse, helper.PaginationMeta, error)
+	List(ctx context.Context, branchCode, terminalCode int64, page, limit int, search string, filters map[string]interface{}) ([]VesselRpkResponse, helper.PaginationMeta, error)
 	Update(ctx context.Context, id uint64, input CreateVesselRpkInput, userID string) error
 	Delete(ctx context.Context, id uint64) error
 }
@@ -42,9 +42,9 @@ func (s *vesselRpkService) GetByID(ctx context.Context, id uint64) (*VesselRpkRe
 	return s.mapEntityToResponse(v), nil
 }
 
-func (s *vesselRpkService) List(ctx context.Context, branchCode, terminalCode int64, page, limit int, search string) ([]VesselRpkResponse, helper.PaginationMeta, error) {
+func (s *vesselRpkService) List(ctx context.Context, branchCode, terminalCode int64, page, limit int, search string, filters map[string]interface{}) ([]VesselRpkResponse, helper.PaginationMeta, error) {
 	offset := (page - 1) * limit
-	list, total, err := s.repo.List(ctx, branchCode, terminalCode, offset, limit, search)
+	list, total, err := s.repo.List(ctx, branchCode, terminalCode, offset, limit, search, filters)
 	if err != nil {
 		return nil, helper.PaginationMeta{}, err
 	}
@@ -90,6 +90,8 @@ func (s *vesselRpkService) mapInputToEntity(input CreateVesselRpkInput) *VesselR
 		Reason:                 input.Reason,
 		Notes:                  input.Notes,
 		Payload:                input.Payload,
+		BranchCode:             input.BranchCode,
+		TerminalCode:           input.TerminalCode,
 	}
 
 	if input.Op != nil {
@@ -142,6 +144,8 @@ func (s *vesselRpkService) mapEntityToResponse(v *VesselRpk) *VesselRpkResponse 
 		TerminalCode:           v.TerminalCode,
 		CreationDate:           v.CreationDate,
 		CreationBy:             v.CreationBy,
+		LastUpdatedDate:        v.LastUpdatedDate,
+		LastUpdatedBy:          v.LastUpdatedBy,
 	}
 
 	if v.Op != nil {

@@ -2,13 +2,14 @@ package vesselrpk
 
 import (
 	"context"
+	"fmt"
 	"gorm.io/gorm"
 )
 
 type VesselRpkRepository interface {
 	Create(ctx context.Context, v *VesselRpk) error
 	GetByID(ctx context.Context, id uint64) (*VesselRpk, error)
-	List(ctx context.Context, branchCode, terminalCode int64, offset, limit int, search string) ([]VesselRpk, int64, error)
+	List(ctx context.Context, branchCode, terminalCode int64, offset, limit int, search string, filters map[string]interface{}) ([]VesselRpk, int64, error)
 	Update(ctx context.Context, id uint64, v *VesselRpk) error
 	Delete(ctx context.Context, id uint64) error
 }
@@ -39,7 +40,7 @@ func (r *vesselRpkRepository) GetByID(ctx context.Context, id uint64) (*VesselRp
 	return &v, nil
 }
 
-func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode int64, offset, limit int, search string) ([]VesselRpk, int64, error) {
+func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode int64, offset, limit int, search string, filters map[string]interface{}) ([]VesselRpk, int64, error) {
 	var list []VesselRpk
 	var total int64
 
@@ -57,6 +58,29 @@ func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode
 	if search != "" {
 		s := "%" + search + "%"
 		query = query.Where("(no_pkk ILIKE ? OR no_ppk ILIKE ? OR no_rkbm ILIKE ?)", s, s, s)
+	}
+
+	// Dynamic Filters from Frontend
+	if filters != nil {
+		// Whitelist of allowed column filters from Datatable
+		allowedCols := []string{"no_pkk", "rpk_type", "distribution", "creation_by", "start_mooring"}
+		for _, col := range allowedCols {
+			if val, ok := filters[col]; ok && val != "" {
+				query = query.Where(col+" ILIKE ?", "%"+fmt.Sprintf("%v", val)+"%")
+			}
+		}
+
+		// Allow overriding if superadmin (token claims branch = 0)
+		if branchCode == 0 {
+			if val, ok := filters["branch_code"]; ok && val != "" && val != "0" {
+				query = query.Where("branch_code = ?", val)
+			}
+		}
+		if terminalCode == 0 {
+			if val, ok := filters["terminal_code"]; ok && val != "" && val != "0" {
+				query = query.Where("terminal_code = ?", val)
+			}
+		}
 	}
 
 	err := query.Count(&total).Error

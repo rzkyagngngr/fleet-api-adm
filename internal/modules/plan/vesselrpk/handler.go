@@ -24,8 +24,14 @@ func (h *VesselRpkHandler) Create(c *gin.Context) {
 	}
 
 	branchCode := c.GetInt64("branch_code")
+	if branchCode == 0 && input.BranchCode > 0 {
+		branchCode = input.BranchCode
+	}
 	terminalCode := c.GetInt64("terminal_code")
-	userID := c.GetString("user_id")
+	if terminalCode == 0 && input.TerminalCode > 0 {
+		terminalCode = input.TerminalCode
+	}
+	userID := c.GetString("employee_id")
 
 	res, err := h.service.Create(c.Request.Context(), input, branchCode, terminalCode, userID)
 	if err != nil {
@@ -75,7 +81,7 @@ func (h *VesselRpkHandler) Search(c *gin.Context) {
 	branchCode := c.GetInt64("branch_code")
 	terminalCode := c.GetInt64("terminal_code")
 
-	list, meta, err := h.service.List(c.Request.Context(), branchCode, terminalCode, req.Page, req.Limit, req.Search)
+	list, meta, err := h.service.List(c.Request.Context(), branchCode, terminalCode, req.Page, req.Limit, req.Search, req.Filters)
 	if err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -101,7 +107,7 @@ func (h *VesselRpkHandler) Update(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetString("user_id")
+	userID := c.GetString("employee_id")
 
 	if err := h.service.Update(c.Request.Context(), id, input, userID); err != nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())

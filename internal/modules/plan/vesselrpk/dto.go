@@ -24,6 +24,8 @@ type CreateVesselRpkInput struct {
 	Reason                 string               `json:"reason"`
 	Notes                  string               `json:"notes"`
 	Payload                map[string]interface{} `json:"payload"`
+	BranchCode             int64                `json:"branch_code"`
+	TerminalCode           int64                `json:"terminal_code"`
 	Op                     *CreateOpInput        `json:"op"`
 }
 
@@ -74,6 +76,8 @@ type VesselRpkResponse struct {
 	TerminalCode           int64             `json:"terminal_code"`
 	CreationDate           time.Time         `json:"creation_date"`
 	CreationBy             string            `json:"creation_by"`
+	LastUpdatedDate        *time.Time        `json:"last_updated_date"`
+	LastUpdatedBy          string            `json:"last_updated_by"`
 }
 
 type VesselRpkOpResponse struct {
