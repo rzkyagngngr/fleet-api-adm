@@ -314,11 +314,14 @@ func SetupRouter(cfg *RouterConfig) {
 			opsPlan := plan.Group("/op")
 			{
 				opsPlan.POST("", cfg.OpsPlanHandler.Create)
+				opsPlan.POST("/createDetermination", cfg.OpsPlanHandler.CreateDetermination)
 				opsPlan.POST("/update", cfg.OpsPlanHandler.Update)
+				opsPlan.POST("/updateDetermination", cfg.OpsPlanHandler.UpdateDeterminedPlan)
 				opsPlan.POST("/readyOp", cfg.OpsPlanHandler.ReadyOpsPlan)
 				opsPlan.POST("/getDataRequest", cfg.OpsPlanHandler.GetDataRequest)
 				opsPlan.POST("/getDataOp", cfg.OpsPlanHandler.GetDataOp)
 				opsPlan.POST("/getDetailOp", cfg.OpsPlanHandler.GetDetailOp)
+				opsPlan.POST("/getDetailDetermination", cfg.OpsPlanHandler.GetDetailDetermination)
 				opsPlan.POST("/getDataVesselSchedule", cfg.OpsPlanHandler.GetDataVesselSchedule)
 				opsPlan.POST("/getDataVesel", cfg.OpsPlanHandler.GetDataVesel)
 			}
