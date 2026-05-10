@@ -13,15 +13,15 @@ type PosmReference struct {
 	Val1            *int64           `json:"val1"`
 	KdAktif         string           `gorm:"size:1" json:"kd_aktif"`
 	CreationDate    time.Time        `gorm:"not null;default:CURRENT_TIMESTAMP" json:"creation_date"`
-	CreationBy      string           `gorm:"not null;size:30" json:"creation_by"`
+	CreationBy      string           `gorm:"not null;size:50" json:"creation_by"`
 	LastUpdatedDate *time.Time       `json:"last_updated_date"`
-	LastUpdatedBy   string           `gorm:"size:10" json:"last_updated_by"`
+	LastUpdatedBy   string           `gorm:"size:50" json:"last_updated_by"`
 	ProgramName     string           `gorm:"not null;size:50" json:"program_name"`
 	LevelAkses      string           `gorm:"not null;size:30" json:"level_akses"`
 	Details         []PosmReferenceD `gorm:"foreignKey:IdRefFile;references:IdRefFile" json:"details"`
 }
 
-func (PosmReference) TableName() string { return "posm_reference" }
+func (PosmReference) TableName() string { return "adm.posm_reference" }
 
 type PosmReferenceD struct {
 	ID              int64      `gorm:"primaryKey;autoIncrement" json:"id"`
@@ -43,12 +43,12 @@ type PosmReferenceD struct {
 	Ref5            string     `gorm:"size:50" json:"ref5"`
 	KdAktif         string     `gorm:"size:1" json:"kd_aktif"`
 	CreationDate    time.Time  `gorm:"not null" json:"creation_date"`
-	CreationBy      string     `gorm:"not null;size:30" json:"creation_by"`
+	CreationBy      string     `gorm:"not null;size:50" json:"creation_by"`
 	LastUpdatedDate *time.Time `json:"last_updated_date"`
-	LastUpdatedBy   string     `gorm:"size:10" json:"last_updated_by"`
+	LastUpdatedBy   string     `gorm:"size:50" json:"last_updated_by"`
 	ProgramName     string     `gorm:"not null;size:50" json:"program_name"`
 	LevelAkses      string     `gorm:"not null;size:30" json:"level_akses"`
 	Rc              *int64     `json:"rc"`
 }
 
-func (PosmReferenceD) TableName() string { return "posm_reference_d" }
+func (PosmReferenceD) TableName() string { return "adm.posm_reference_d" }
