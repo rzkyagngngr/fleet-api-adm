@@ -1706,6 +1706,7 @@ func getDataRequestQuery(detailTable string) string {
 			b.cargo_unit,
 			b.cargo_nature,
 			b.cargo_packaging,
+			b.stowage_code,
 			b.stowage,
 			b.consignee_code,
 			b.consignee_name,
@@ -1731,6 +1732,7 @@ func getDataRequestQuery(detailTable string) string {
 			b.cargo_unit,
 			b.cargo_nature,
 			b.cargo_packaging,
+			b.stowage_code,
 			b.stowage,
 			b.consignee_code,
 			b.consignee_name

@@ -125,6 +125,7 @@ type ReadyOpDetailResponse struct {
 	CargoUnit      string   `json:"cargo_unit"`
 	CargoNature    string   `json:"cargo_nature"`
 	CargoPackaging string   `json:"cargo_packaging"`
+	StowageCode    string   `json:"stowage_code" gorm:"column:stowage_code"`
 	Stowage        string   `json:"stowage"`
 	ConsigneeCode  string   `json:"consignee_code"`
 	ConsigneeName  string   `json:"consignee_name"`
