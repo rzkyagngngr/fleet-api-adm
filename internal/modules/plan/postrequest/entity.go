@@ -16,6 +16,8 @@ type PostRequest struct {
 	BranchName       string     `gorm:"column:branch_name"                           json:"branch_name"`
 	TerminalName     string     `gorm:"column:terminal_name"                         json:"terminal_name"`
 	PPKNumber        string     `gorm:"column:ppk_number"                            json:"ppk_number"`
+	ScheduleID       *int64     `gorm:"column:schedule_id"                           json:"schedule_id"`
+	ScheduleCode     string     `gorm:"column:schedule_code"                         json:"schedule_code"`
 	VesselCode       string     `gorm:"column:vessel_code"                           json:"vessel_code"`
 	VesselName       string     `gorm:"column:vessel_name"                           json:"vessel_name"`
 	VesselType       string     `gorm:"column:vessel_type"                           json:"vessel_type"`
@@ -82,6 +84,7 @@ type PostRequestDetail struct {
 	CargoNatureDesc      string     `gorm:"column:cargo_nature_desc"                json:"cargo_nature_desc"`
 	CargoPackaging       string     `gorm:"column:cargo_packaging"                  json:"cargo_packaging"`
 	Stowage              string     `gorm:"column:stowage"                          json:"stowage"`
+	StowageCode          string     `gorm:"column:stowage_code"                     json:"stowage_code"`
 	PlannedDate          *time.Time `gorm:"column:planned_date"                     json:"planned_date"`
 	WarehouseID          string     `gorm:"column:warehouse_id"                     json:"warehouse_id"`
 	BLAWBNumber          string     `gorm:"column:bl_awb_number"                    json:"bl_awb_number"`
@@ -99,6 +102,8 @@ type PostRequestDetail struct {
 	WarehouseName        string     `gorm:"column:warehouse_name"                   json:"warehouse_name"`
 	ConsigneeCode        string     `gorm:"column:consignee_code"                   json:"consignee_code"`
 	ConsigneeName        string     `gorm:"column:consignee_name"                   json:"consignee_name"`
+	BillingCode          string     `gorm:"column:billing_code"                     json:"billing_code"`
+	BillingName          string     `gorm:"column:billing_name"                     json:"billing_name"`
 	CreationDate         *time.Time `gorm:"column:creation_date"                    json:"creation_date"`
 	CreationBy           string     `gorm:"column:creation_by"                      json:"creation_by"`
 	LastUpdatedDate      *time.Time `gorm:"column:last_updated_date"                json:"last_updated_date"`

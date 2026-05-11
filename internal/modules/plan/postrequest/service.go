@@ -72,6 +72,8 @@ func (s *postRequestService) Create(
 
 	header := &PostRequest{
 		PPKNumber:       input.PPKNumber,
+		ScheduleID:      input.ScheduleID,
+		ScheduleCode:    input.ScheduleCode,
 		VesselCode:      input.VesselCode,
 		VesselName:      input.VesselName,
 		VesselType:      input.VesselType,
@@ -179,6 +181,12 @@ func (s *postRequestService) Update(
 	// Patch only non-zero/non-empty fields
 	if input.PPKNumber != "" {
 		existing.PPKNumber = input.PPKNumber
+	}
+	if input.ScheduleID != nil {
+		existing.ScheduleID = input.ScheduleID
+	}
+	if input.ScheduleCode != "" {
+		existing.ScheduleCode = input.ScheduleCode
 	}
 	if input.VesselCode != "" {
 		existing.VesselCode = input.VesselCode
@@ -402,6 +410,7 @@ func buildDetails(
 			CargoNatureDesc:     d.CargoNatureDesc,
 			CargoPackaging:      d.CargoPackaging,
 			Stowage:             d.Stowage,
+			StowageCode:         d.StowageCode,
 			PlannedDate:         d.PlannedDate,
 			WarehouseID:         d.WarehouseID,
 			BLAWBNumber:         d.BLAWBNumber,
@@ -419,6 +428,8 @@ func buildDetails(
 			WarehouseName:       d.WarehouseName,
 			ConsigneeCode:       d.ConsigneeCode,
 			ConsigneeName:       d.ConsigneeName,
+			BillingCode:         d.BillingCode,
+			BillingName:         d.BillingName,
 			CreationDate:        &now,
 			CreationBy:          createdBy,
 			LastUpdatedDate:     &now,

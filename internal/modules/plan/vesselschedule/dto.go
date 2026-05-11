@@ -58,6 +58,12 @@ type VesselScheduleSearchResponse struct {
 	Plans []VesselSchedulePlanResponse `json:"plans"`
 }
 
+type VesselScheduleDetailResponse struct {
+	VesselSchedule
+	Vessel       interface{}   `json:"vessel"`
+	HatchDetails []interface{} `json:"hatch_details"`
+}
+
 type VesselSchedulePlanResponse struct {
 	PPKNumber         string     `json:"ppk_number" gorm:"column:ppk_number"`
 	PlanCode          string     `json:"plan_code" gorm:"column:plan_code"`

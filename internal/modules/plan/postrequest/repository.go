@@ -164,7 +164,7 @@ func (r *postRequestRepository) Search(ctx context.Context, param helper.Paginat
 		TableName: "plan.post_requests",
 		SelectColumns: []string{
 			"id", "branch_code", "terminal_code", "branch_name", "terminal_name",
-			"ppk_number", "vessel_code", "vessel_name", "vessel_type", "voyage_type",
+			"ppk_number", "schedule_id", "schedule_code", "vessel_code", "vessel_name", "vessel_type", "voyage_type",
 			"agent_name", "request_code", "request_date",
 			"pbm_code", "pbm_name", "no_bc11", "date_bc11",
 			"description", "status", "plan_status",

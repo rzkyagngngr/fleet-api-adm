@@ -17,7 +17,7 @@ type VesselScheduleService interface {
 	UpdateStatus(ctx context.Context, scheduleCode string, status int, updatedBy string) error
 	Delete(ctx context.Context, id uint64) error
 	FindByID(ctx context.Context, id uint64) (*VesselSchedule, error)
-	FindByScheduleCode(ctx context.Context, scheduleCode string) (*VesselSchedule, error)
+	FindByScheduleCode(ctx context.Context, scheduleCode string) (*VesselScheduleDetailResponse, error)
 	GetAuthLocation(ctx context.Context, userID uint64) (*VesselScheduleAuthLocation, error)
 }
 
@@ -304,7 +304,7 @@ func (s *vesselScheduleService) FindByID(ctx context.Context, id uint64) (*Vesse
 	return &row, nil
 }
 
-func (s *vesselScheduleService) FindByScheduleCode(ctx context.Context, scheduleCode string) (*VesselSchedule, error) {
+func (s *vesselScheduleService) FindByScheduleCode(ctx context.Context, scheduleCode string) (*VesselScheduleDetailResponse, error) {
 	var row VesselSchedule
 	result := s.db.WithContext(ctx).
 		Table((VesselSchedule{}).TableName()).
@@ -313,7 +313,51 @@ func (s *vesselScheduleService) FindByScheduleCode(ctx context.Context, schedule
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return &row, nil
+
+	res := &VesselScheduleDetailResponse{
+		VesselSchedule: row,
+		HatchDetails:   []interface{}{},
+	}
+
+	vCode := ""
+	if row.VesselCode != nil {
+		vCode = *row.VesselCode
+	}
+	bCode := 0
+	if row.BranchCode != nil {
+		bCode = *row.BranchCode
+	}
+	tCode := 0
+	if row.TerminalCode != nil {
+		tCode = *row.TerminalCode
+	}
+
+	if vCode != "" {
+		var vessel map[string]interface{}
+		if err := s.authDB.WithContext(ctx).
+			Table("adm.posm_vessel").
+			Where("vessel_code = ? AND branch_code = ? AND terminal_code = ?", vCode, bCode, tCode).
+			Limit(1).
+			Scan(&vessel).Error; err == nil && len(vessel) > 0 {
+
+			res.Vessel = vessel
+
+			var hatches []map[string]interface{}
+			if err := s.authDB.WithContext(ctx).
+				Table("adm.posm_vessel_d").
+				Where("vessel_code = ? AND branch_code = ? AND terminal_code = ?", vCode, bCode, tCode).
+				Order("hatch_code ASC").
+				Find(&hatches).Error; err == nil {
+
+				res.HatchDetails = make([]interface{}, len(hatches))
+				for i, h := range hatches {
+					res.HatchDetails[i] = h
+				}
+			}
+		}
+	}
+
+	return res, nil
 }
 
 func (s *vesselScheduleService) nextScheduleCode(tx *gorm.DB, now time.Time, schedule *VesselSchedule) (string, error) {

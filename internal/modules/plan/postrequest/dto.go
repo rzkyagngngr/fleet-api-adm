@@ -24,6 +24,7 @@ type PostRequestDetailInput struct {
 	CargoNatureDesc     string     `json:"cargo_nature_desc"`
 	CargoPackaging      string     `json:"cargo_packaging"`
 	Stowage             string     `json:"stowage"`
+	StowageCode         string     `json:"stowage_code"`
 	PlannedDate         *time.Time `json:"planned_date"`
 	WarehouseID         string     `json:"warehouse_id"`
 	BLAWBNumber         string     `json:"bl_awb_number"`
@@ -41,6 +42,8 @@ type PostRequestDetailInput struct {
 	WarehouseName       string     `json:"warehouse_name"`
 	ConsigneeCode       string     `json:"consignee_code"`
 	ConsigneeName       string     `json:"consignee_name"`
+	BillingCode         string     `json:"billing_code"`
+	BillingName         string     `json:"billing_name"`
 }
 
 // AttachmentInput represents one file attachment.
@@ -55,6 +58,8 @@ type CreatePostRequestInput struct {
 	PPKNumber     string     `json:"ppk_number"`
 	VesselCode    string     `json:"vessel_code"     binding:"required"`
 	VesselName    string     `json:"vessel_name"     binding:"required"`
+	ScheduleID    *int64     `json:"schedule_id"`
+	ScheduleCode  string     `json:"schedule_code"`
 	VesselType    string     `json:"vessel_type"`
 	VoyageType    string     `json:"voyage_type"`
 	AgentName     string     `json:"agent_name"`
@@ -89,6 +94,8 @@ type UpdatePostRequestInput struct {
 	PPKNumber     string     `json:"ppk_number"`
 	VesselCode    string     `json:"vessel_code"`
 	VesselName    string     `json:"vessel_name"`
+	ScheduleID    *int64     `json:"schedule_id"`
+	ScheduleCode  string     `json:"schedule_code"`
 	VesselType    string     `json:"vessel_type"`
 	VoyageType    string     `json:"voyage_type"`
 	AgentName     string     `json:"agent_name"`
@@ -163,6 +170,7 @@ type PostRequestDetailResponse struct {
 	CargoNatureDesc     string     `json:"cargo_nature_desc"`
 	CargoPackaging      string     `json:"cargo_packaging"`
 	Stowage             string     `json:"stowage"`
+	StowageCode         string     `json:"stowage_code"`
 	PlannedDate         *time.Time `json:"planned_date"`
 	WarehouseID         string     `json:"warehouse_id"`
 	BLAWBNumber         string     `json:"bl_awb_number"`
@@ -180,6 +188,8 @@ type PostRequestDetailResponse struct {
 	WarehouseName       string     `json:"warehouse_name"`
 	ConsigneeCode       string     `json:"consignee_code"`
 	ConsigneeName       string     `json:"consignee_name"`
+	BillingCode         string     `json:"billing_code"`
+	BillingName         string     `json:"billing_name"`
 	CreationDate        *time.Time `json:"creation_date"`
 	CreationBy          string     `json:"creation_by"`
 	LastUpdatedDate     *time.Time `json:"last_updated_date"`
@@ -196,6 +206,8 @@ type PostRequestResponse struct {
 	PPKNumber       string                      `json:"ppk_number"`
 	VesselCode      string                      `json:"vessel_code"`
 	VesselName      string                      `json:"vessel_name"`
+	ScheduleID      *int64                      `json:"schedule_id"`
+	ScheduleCode    string                      `json:"schedule_code"`
 	VesselType      string                      `json:"vessel_type"`
 	VoyageType      string                      `json:"voyage_type"`
 	AgentName       string                      `json:"agent_name"`
@@ -271,6 +283,7 @@ func detailToResponse(d PostRequestDetail) PostRequestDetailResponse {
 		CargoNatureDesc:     d.CargoNatureDesc,
 		CargoPackaging:      d.CargoPackaging,
 		Stowage:             d.Stowage,
+		StowageCode:         d.StowageCode,
 		PlannedDate:         d.PlannedDate,
 		WarehouseID:         d.WarehouseID,
 		BLAWBNumber:         d.BLAWBNumber,
@@ -288,6 +301,8 @@ func detailToResponse(d PostRequestDetail) PostRequestDetailResponse {
 		WarehouseName:       d.WarehouseName,
 		ConsigneeCode:       d.ConsigneeCode,
 		ConsigneeName:       d.ConsigneeName,
+		BillingCode:         d.BillingCode,
+		BillingName:         d.BillingName,
 		CreationDate:        d.CreationDate,
 		CreationBy:          d.CreationBy,
 		LastUpdatedDate:     d.LastUpdatedDate,
@@ -305,6 +320,8 @@ func (h *PostRequest) ToResponse(details []PostRequestDetail) PostRequestRespons
 		PPKNumber:       h.PPKNumber,
 		VesselCode:      h.VesselCode,
 		VesselName:      h.VesselName,
+		ScheduleID:      h.ScheduleID,
+		ScheduleCode:    h.ScheduleCode,
 		VesselType:      h.VesselType,
 		VoyageType:      h.VoyageType,
 		AgentName:       h.AgentName,
