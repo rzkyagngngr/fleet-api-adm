@@ -1652,8 +1652,6 @@ func readyOpsPlanBaseQuery(detailTable string) string {
 			a.vessel_name,
 			a.agent_name,
 			a.voyage_type,
-			NULL::numeric AS target_performance,
-			NULL::numeric AS target_productivity,
 			0::numeric AS grt,
 			0::numeric AS loa,
 			a.vessel_type,

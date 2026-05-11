@@ -98,8 +98,6 @@ type ReadyOpsPlanResponse struct {
 	VesselName         string     `json:"vessel_name"`
 	AgentName          string     `json:"agent_name"`
 	VoyageType         string     `json:"voyage_type"`
-	TargetPerformance  *float64   `json:"target_performance"`
-	TargetProductivity *float64   `json:"target_productivity"`
 	GRT                *float64   `json:"grt"`
 	LOA                *float64   `json:"loa"`
 	VesselType         string     `json:"vessel_type"`
