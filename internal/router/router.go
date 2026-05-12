@@ -27,6 +27,7 @@ import (
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselrpk"
+	"omniport-api/internal/modules/plan/vesselrpkmanual"
 	"omniport-api/internal/modules/plan/vesselschedule"
 
 	"github.com/gin-gonic/gin"
@@ -60,7 +61,8 @@ type RouterConfig struct {
 	PostRequestHandler    *postrequest.PostRequestHandler
 	FileHandler           *file.FileHandler
 	OpsPlanHandler        *op.OpsPlanHandler
-	VesselRpkHandler      *vesselrpk.VesselRpkHandler
+	VesselRpkHandler       *vesselrpk.VesselRpkHandler
+	VesselRpkManualHandler *vesselrpkmanual.VesselRpkHandler
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -335,6 +337,16 @@ func SetupRouter(cfg *RouterConfig) {
 				vesselRpk.GET("", cfg.VesselRpkHandler.GetByID)
 				vesselRpk.PUT("", cfg.VesselRpkHandler.Update)
 				vesselRpk.DELETE("", cfg.VesselRpkHandler.Delete)
+			}
+
+			// Vessel RPK Manual
+			vesselRpkManual := plan.Group("/vessel-rpk-manual")
+			{
+				vesselRpkManual.POST("/search", cfg.VesselRpkManualHandler.Search)
+				vesselRpkManual.POST("", cfg.VesselRpkManualHandler.Create)
+				vesselRpkManual.GET("", cfg.VesselRpkManualHandler.GetByID)
+				vesselRpkManual.PUT("", cfg.VesselRpkManualHandler.Update)
+				vesselRpkManual.DELETE("", cfg.VesselRpkManualHandler.Delete)
 			}
 		}
 

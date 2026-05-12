@@ -1,4 +1,4 @@
-package vesselrpk
+package vesselrpkmanual
 
 import (
 	"context"

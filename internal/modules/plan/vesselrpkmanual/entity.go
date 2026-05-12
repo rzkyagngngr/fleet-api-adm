@@ -1,4 +1,4 @@
-package vesselrpk
+package vesselrpkmanual
 
 import (
 	"database/sql/driver"
@@ -82,9 +82,9 @@ type VesselRpkOpDetail struct {
 	VesselRpkOpID      uint64 `gorm:"column:vessel_rpk_op_id" json:"vessel_rpk_op_id"`
 	RkbmMuatNumber    string `gorm:"column:rkbm_muat_number" json:"rkbm_muat_number"`
 	RkbmBongkarNumber string `gorm:"column:rkbm_bongkar_number" json:"rkbm_bongkar_number"`
-	Loading           string     `gorm:"column:loading" json:"loading"`
-	Discharging       string     `gorm:"column:discharging" json:"discharging"`
-	Commodity         string     `gorm:"column:commodity" json:"commodity"`
+	Loading           string `gorm:"column:loading" json:"loading"`
+	Discharging       string `gorm:"column:discharging" json:"discharging"`
+	Commodity         string `gorm:"column:commodity" json:"commodity"`
 }
 
 func (VesselRpkOpDetail) TableName() string { return "plan.post_vessel_rpk_op_detail" }
