@@ -146,7 +146,7 @@ func (h *OpsPlanHandler) Create(c *gin.Context) {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.SuccessResponse(c, http.StatusCreated, "loading unloading plan created successfully", res)
+	helper.SuccessResponse(c, http.StatusCreated, "Data berhasil di plan", res)
 }
 
 // CreateDetermination godoc
@@ -224,7 +224,7 @@ func (h *OpsPlanHandler) CreateDetermination(c *gin.Context) {
 		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.SuccessResponse(c, http.StatusCreated, "loading unloading determination created successfully", res)
+	helper.SuccessResponse(c, http.StatusCreated, "Data plan berhasil dikonfirmasi", res)
 }
 
 // Update godoc
@@ -287,7 +287,7 @@ func (h *OpsPlanHandler) Update(c *gin.Context) {
 
 // UpdateDeterminedPlan godoc
 // @Summary      Update Determined Loading Unloading Plan
-// @Description  Update status 1/2 plan and rebuild related determination details without regenerating determination_code or work_order_code
+// @Description  Update status 1/2 plan and rebuild related confirmed plan details without regenerating confirmed_plan_code or work_order_code
 // @Tags         plan-op
 // @Accept       json
 // @Produce      json
@@ -493,7 +493,7 @@ func (h *OpsPlanHandler) GetDetailOp(c *gin.Context) {
 
 // GetDetailDetermination godoc
 // @Summary      Get Loading Unloading Determination Detail
-// @Description  Loading/unloading determination header and detail rows by determination_code
+// @Description  Loading/unloading confirmed plan header and detail rows by confirmed_plan_code
 // @Tags         plan-op
 // @Accept       json
 // @Produce      json
