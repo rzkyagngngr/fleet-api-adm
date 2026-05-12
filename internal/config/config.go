@@ -16,11 +16,15 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Port     string
-	Env      string
-	LogLevel string
-	Mode     string
-	Ports    map[string]string
+	Port              string
+	Env               string
+	LogLevel          string
+	Mode              string
+	Ports             map[string]string
+	ReadHeaderTimeout int
+	ReadTimeout       int
+	WriteTimeout      int
+	IdleTimeout       int
 }
 
 type ModuleDBConfig struct {
@@ -34,6 +38,10 @@ type DatabaseConfig struct {
 	Port    string
 	Name    string
 	SSLMode string
+	MaxOpen int
+	MaxIdle int
+	MaxLife int
+	MaxIdleTime int
 
 	Adm  ModuleDBConfig
 	Plan ModuleDBConfig
@@ -84,6 +92,10 @@ func Load() (*Config, error) {
 			Env:      getEnv("APP_ENV", "development"),
 			LogLevel: getEnv("APP_LOG_LEVEL", "INFO"),
 			Mode:     getEnv("APP_MODE", "monolith"),
+			ReadHeaderTimeout: getEnvAsInt("APP_READ_HEADER_TIMEOUT_SEC", 5),
+			ReadTimeout:       getEnvAsInt("APP_READ_TIMEOUT_SEC", 15),
+			WriteTimeout:      getEnvAsInt("APP_WRITE_TIMEOUT_SEC", 30),
+			IdleTimeout:       getEnvAsInt("APP_IDLE_TIMEOUT_SEC", 60),
 			Ports: map[string]string{
 				"ADM":  getEnv("APP_PORT_ADM", "8081"),
 				"PLAN": getEnv("APP_PORT_PLAN", "8082"),
@@ -97,6 +109,10 @@ func Load() (*Config, error) {
 			Port:    getEnv("DB_PORT", "5432"),
 			Name:    getEnv("DB_NAME", "omniport"),
 			SSLMode: getEnv("DB_SSLMODE", "disable"),
+			MaxOpen: getEnvAsInt("DB_MAX_OPEN_CONNS", 40),
+			MaxIdle: getEnvAsInt("DB_MAX_IDLE_CONNS", 20),
+			MaxLife: getEnvAsInt("DB_CONN_MAX_LIFETIME_MIN", 30),
+			MaxIdleTime: getEnvAsInt("DB_CONN_MAX_IDLE_TIME_MIN", 10),
 			Adm: ModuleDBConfig{
 				User:     getEnv("DB_ADM_USER", ""),
 				Password: getEnv("DB_ADM_PASSWORD", ""),
@@ -153,4 +169,16 @@ func getEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func getEnvAsInt(key string, fallback int) int {
+	value, ok := os.LookupEnv(key)
+	if !ok {
+		return fallback
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
 }

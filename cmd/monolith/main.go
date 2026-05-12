@@ -14,7 +14,6 @@ import (
 	"omniport-api/internal/config"
 	"omniport-api/internal/database"
 	"omniport-api/internal/helper"
-	"omniport-api/internal/middleware"
 	"omniport-api/internal/modules/administration/access"
 	"omniport-api/internal/modules/administration/auth"
 	"omniport-api/internal/modules/administration/branch"
@@ -158,8 +157,6 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-	r.Use(middleware.Logger())
-	r.Use(middleware.CORS())
 
 	router.SetupRouter(&router.RouterConfig{
 		Engine:                r,
@@ -190,7 +187,14 @@ func main() {
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.App.Port)
-	srv := &http.Server{Addr: addr, Handler: r}
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           r,
+		ReadHeaderTimeout: time.Duration(cfg.App.ReadHeaderTimeout) * time.Second,
+		ReadTimeout:       time.Duration(cfg.App.ReadTimeout) * time.Second,
+		WriteTimeout:      time.Duration(cfg.App.WriteTimeout) * time.Second,
+		IdleTimeout:       time.Duration(cfg.App.IdleTimeout) * time.Second,
+	}
 
 	go func() {
 		slog.Info("Server running", "port", cfg.App.Port, "env", cfg.App.Env, "mode", cfg.App.Mode)

@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"omniport-api/internal/config"
 
@@ -55,5 +56,20 @@ func openIfConfigured(cfg *config.Config, moduleCfg config.ModuleDBConfig, gormC
 	if moduleCfg.User == "" {
 		return nil, nil
 	}
-	return gorm.Open(postgres.Open(cfg.Database.DSN(moduleCfg)), gormConfig)
+	db, err := gorm.Open(postgres.Open(cfg.Database.DSN(moduleCfg)), gormConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB.SetMaxOpenConns(cfg.Database.MaxOpen)
+	sqlDB.SetMaxIdleConns(cfg.Database.MaxIdle)
+	sqlDB.SetConnMaxLifetime(time.Duration(cfg.Database.MaxLife) * time.Minute)
+	sqlDB.SetConnMaxIdleTime(time.Duration(cfg.Database.MaxIdleTime) * time.Minute)
+
+	return db, nil
 }
