@@ -69,6 +69,7 @@ func SetupRouter(cfg *RouterConfig) {
 	r.Use(middleware.TraceMiddleware())
 	r.Use(middleware.Logger())
 	r.Use(middleware.CORS())
+	registerStaticHealthRoutes(r)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
