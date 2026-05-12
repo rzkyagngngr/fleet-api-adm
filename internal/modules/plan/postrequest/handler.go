@@ -114,6 +114,7 @@ func (h *PostRequestHandler) Create(c *gin.Context) {
 // @Failure      404 {object} helper.Response
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id} [get]
+// @Router       /plan/request/barang [get]
 func (h *PostRequestHandler) GetByID(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
@@ -152,6 +153,7 @@ func (h *PostRequestHandler) GetByID(c *gin.Context) {
 // @Failure      404 {object} helper.Response
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id} [put]
+// @Router       /plan/request/barang [put]
 func (h *PostRequestHandler) Update(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
@@ -195,6 +197,7 @@ func (h *PostRequestHandler) Update(c *gin.Context) {
 // @Failure      400 {object} helper.Response
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id} [delete]
+// @Router       /plan/request/barang [delete]
 func (h *PostRequestHandler) Delete(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
@@ -256,6 +259,7 @@ func (h *PostRequestHandler) GetStats(c *gin.Context) {
 // @Failure      400 {object} helper.Response
 // @Failure      500 {object} helper.Response
 // @Router       /plan/request/barang/{id}/status [put]
+// @Router       /plan/request/barang/status [put]
 func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	if idStr == "" {
@@ -299,7 +303,6 @@ func (h *PostRequestHandler) UpdateStatus(c *gin.Context) {
 // @Success      200 {object} helper.MetaResponse
 // @Failure      400 {object} helper.Response
 // @Failure      500 {object} helper.Response
-// @Router       /plan/vessel-schedule/search [post]
 func (h *PostRequestHandler) SearchVesselSchedule(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")
@@ -382,7 +385,6 @@ func parseContextInt(value interface{}) (int, error) {
 // @Failure      400 {object} helper.Response
 // @Failure      404 {object} helper.Response
 // @Failure      500 {object} helper.Response
-// @Router       /plan/vessel-schedule/{id} [get]
 func (h *PostRequestHandler) GetVesselScheduleByID(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "post request service is not initialized")

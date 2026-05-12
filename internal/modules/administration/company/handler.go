@@ -29,7 +29,7 @@ func NewCompanyHandler(service CompanyService) *CompanyHandler {
 // @Success 200 {object} helper.MetaResponse
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/company/search [post]
+// @Router /master/companies/search [post]
 func (h *CompanyHandler) Search(c *gin.Context) {
 	var input SearchCompaniesRequest
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -57,7 +57,7 @@ func (h *CompanyHandler) Search(c *gin.Context) {
 // @Success 201 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /master/company [post]
+// @Router /master/companies [post]
 func (h *CompanyHandler) Create(c *gin.Context) {
 	var input CompanyRequest
 	if err := c.ShouldBindJSON(&input); err != nil {

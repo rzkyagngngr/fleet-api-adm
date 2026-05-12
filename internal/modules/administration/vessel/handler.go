@@ -88,6 +88,7 @@ func (h *VesselHandler) Create(c *gin.Context) {
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
 // @Router /master/vessel [put]
+// @Router /master/vessel/{id} [put]
 func (h *VesselHandler) Update(c *gin.Context) {
 	idStr := c.Param("id")
 	if idStr == "" {
@@ -127,6 +128,7 @@ func (h *VesselHandler) Update(c *gin.Context) {
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
 // @Router /master/vessel [get]
+// @Router /master/vessel/{id} [get]
 func (h *VesselHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	if idStr == "" {
@@ -159,6 +161,7 @@ func (h *VesselHandler) GetByID(c *gin.Context) {
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
 // @Router /master/vessel [delete]
+// @Router /master/vessel/{id} [delete]
 func (h *VesselHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	if idStr == "" {

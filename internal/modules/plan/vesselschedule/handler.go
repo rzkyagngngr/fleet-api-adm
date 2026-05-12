@@ -86,7 +86,6 @@ func (h *VesselScheduleHandler) Search(c *gin.Context) {
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 404 {object} helper.Response
-// @Router /plan/vessel-schedule/{id} [get]
 func (h *VesselScheduleHandler) GetByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -269,7 +268,6 @@ func (h *VesselScheduleHandler) UpdateStatus(c *gin.Context) {
 // @Success 200 {object} helper.Response
 // @Failure 400 {object} helper.Response
 // @Failure 500 {object} helper.Response
-// @Router /plan/vessel-schedule/{id} [delete]
 func (h *VesselScheduleHandler) Delete(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

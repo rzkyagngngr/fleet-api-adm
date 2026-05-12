@@ -16,6 +16,18 @@ func NewVesselRpkHandler(service VesselRpkService) *VesselRpkHandler {
 	return &VesselRpkHandler{service: service}
 }
 
+// Create godoc
+// @Summary      Create Vessel RPK Manual
+// @Description  Create a new manual vessel RPK
+// @Tags         plan-vessel-rpk-manual
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        payload body vesselrpkmanual.CreateVesselRpkInput true "Create payload"
+// @Success      201 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/vessel-rpk-manual [post]
 func (h *VesselRpkHandler) Create(c *gin.Context) {
 	var input CreateVesselRpkInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -42,6 +54,17 @@ func (h *VesselRpkHandler) Create(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusCreated, "Vessel RPK created successfully", res)
 }
 
+// GetByID godoc
+// @Summary      Get Vessel RPK Manual Detail
+// @Description  Get a manual vessel RPK by id
+// @Tags         plan-vessel-rpk-manual
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id query int true "Vessel RPK Manual ID"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      404 {object} helper.Response
+// @Router       /plan/vessel-rpk-manual [get]
 func (h *VesselRpkHandler) GetByID(c *gin.Context) {
 	idStr := c.Query("id")
 	if idStr == "" {
@@ -62,18 +85,25 @@ func (h *VesselRpkHandler) GetByID(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "Success", res)
 }
 
+// Search godoc
+// @Summary      Search Vessel RPK Manual
+// @Description  Paginated list of manual vessel RPK records
+// @Tags         plan-vessel-rpk-manual
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        payload body vesselrpkmanual.SearchVesselRpkRequest true "Search payload"
+// @Success      200 {object} helper.MetaResponse
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/vessel-rpk-manual/search [post]
 func (h *VesselRpkHandler) Search(c *gin.Context) {
 	if h == nil || h.service == nil {
 		helper.ErrorResponse(c, http.StatusInternalServerError, "vessel rpk service is not initialized")
 		return
 	}
 
-	var req struct {
-		Page    int                    `json:"page"`
-		Limit   int                    `json:"limit"`
-		Search  string                 `json:"search"`
-		Filters map[string]interface{} `json:"filters"`
-	}
+	var req SearchVesselRpkRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -102,6 +132,19 @@ func (h *VesselRpkHandler) Search(c *gin.Context) {
 	helper.MetaSuccessResponse(c, http.StatusOK, "Success", list, meta)
 }
 
+// Update godoc
+// @Summary      Update Vessel RPK Manual
+// @Description  Update a manual vessel RPK by id
+// @Tags         plan-vessel-rpk-manual
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id query int true "Vessel RPK Manual ID"
+// @Param        payload body vesselrpkmanual.CreateVesselRpkInput true "Update payload"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/vessel-rpk-manual [put]
 func (h *VesselRpkHandler) Update(c *gin.Context) {
 	idStr := c.Query("id")
 	if idStr == "" {
@@ -129,6 +172,17 @@ func (h *VesselRpkHandler) Update(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "Vessel RPK updated successfully", nil)
 }
 
+// Delete godoc
+// @Summary      Delete Vessel RPK Manual
+// @Description  Delete a manual vessel RPK by id
+// @Tags         plan-vessel-rpk-manual
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id query int true "Vessel RPK Manual ID"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /plan/vessel-rpk-manual [delete]
 func (h *VesselRpkHandler) Delete(c *gin.Context) {
 	idStr := c.Query("id")
 	if idStr == "" {
