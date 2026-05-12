@@ -23,6 +23,8 @@ type CreateVesselRpkInput struct {
 	NoRkbm                 string               `json:"no_rkbm"`
 	Reason                 string               `json:"reason"`
 	Notes                  string               `json:"notes"`
+	OpsPlanCode            string               `json:"ops_plan_code"`
+	ActivityCode           string               `json:"activity_code"`
 	Payload                map[string]interface{} `json:"payload"`
 	BranchCode             int64                `json:"branch_code"`
 	TerminalCode           int64                `json:"terminal_code"`
@@ -72,6 +74,8 @@ type VesselRpkResponse struct {
 	NoRkbm                 string            `json:"no_rkbm"`
 	Reason                 string            `json:"reason"`
 	Notes                  string            `json:"notes"`
+	OpsPlanCode            string            `json:"ops_plan_code"`
+	ActivityCode           string            `json:"activity_code"`
 	Payload                JSONB             `json:"payload"`
 	Ops                    []VesselRpkOpResponse `json:"ops"`
 	BranchCode             int64             `json:"branch_code"`

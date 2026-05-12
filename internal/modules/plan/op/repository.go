@@ -205,7 +205,10 @@ func (r *opsPlanRepository) GetDataOp(ctx context.Context, branchCode, terminalC
 func (r *opsPlanRepository) GetDetailOp(ctx context.Context, branchCode, terminalCode int, planCode string) (*LoadingUnloadingPlan, []LoadingUnloadingPlanDetail, []PostEquipmentPlan, error) {
 	var header LoadingUnloadingPlan
 	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND plan_code = ?", branchCode, terminalCode, planCode).
+		Table("plan.post_vessel_plan a").
+		Select("a.*, COALESCE(rpk.id, 0) AS vessel_rpk_id").
+		Joins("LEFT JOIN plan.post_vessel_rpk rpk ON a.plan_code = rpk.ops_plan_code AND a.branch_code = rpk.branch_code AND a.terminal_code = rpk.terminal_code").
+		Where("a.branch_code = ? AND a.terminal_code = ? AND a.plan_code = ?", branchCode, terminalCode, planCode).
 		First(&header).Error; err != nil {
 		return nil, nil, nil, err
 	}
@@ -1818,8 +1821,13 @@ func getDataOpQuery(whereClause string) string {
 			COALESCE(pa.pbm_name, '') AS pbm_name,
 			COALESCE(pa.confirmed_plan_code, '') AS confirmed_plan_code,
 			COALESCE(pa.work_order_code, '') AS work_order_code,
-			a.status
+			a.status,
+			COALESCE(rpk.id, 0) AS vessel_rpk_id
 		FROM selected_plans a
+		LEFT JOIN plan.post_vessel_rpk rpk
+			ON a.plan_code = rpk.ops_plan_code
+			AND a.branch_code = rpk.branch_code
+			AND a.terminal_code = rpk.terminal_code
 		LEFT JOIN berth_agg ba
 			ON a.plan_code = ba.plan_code
 			AND a.branch_code = ba.branch_code

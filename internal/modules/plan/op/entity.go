@@ -39,6 +39,7 @@ type LoadingUnloadingPlan struct {
 	LastUpdatedDate   *time.Time `gorm:"column:last_updated_date" json:"last_updated_date"`
 	LastUpdatedBy     string     `gorm:"column:last_updated_by" json:"last_updated_by"`
 	ProgramName       string     `gorm:"column:program_name;not null" json:"program_name"`
+	VesselRpkID       uint64     `gorm:"-" json:"vessel_rpk_id"`
 }
 
 func (LoadingUnloadingPlan) TableName() string { return "plan.post_vessel_plan" }

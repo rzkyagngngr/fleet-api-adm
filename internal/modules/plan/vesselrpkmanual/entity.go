@@ -46,6 +46,8 @@ type VesselRpk struct {
 	NoRkbm                 string        `gorm:"column:no_rkbm" json:"no_rkbm"`
 	Reason                 string        `gorm:"column:reason" json:"reason"`
 	Notes                  string        `gorm:"column:notes" json:"notes"`
+	OpsPlanCode            string        `gorm:"column:ops_plan_code" json:"ops_plan_code"`
+	ActivityCode           string        `gorm:"column:activity_code" json:"activity_code"`
 	Payload                JSONB         `gorm:"column:payload;type:jsonb" json:"payload"`
 	
 	// Relations

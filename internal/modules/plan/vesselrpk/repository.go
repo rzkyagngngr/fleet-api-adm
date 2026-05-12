@@ -50,20 +50,22 @@ func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode
 	var list []VesselRpk
 	var total int64
 
-	query := r.db.WithContext(ctx).Model(&VesselRpk{})
+	query := r.db.WithContext(ctx).Model(&VesselRpk{}).
+		Select("plan.post_vessel_rpk.*, vp.vessel_name").
+		Joins("LEFT JOIN plan.post_vessel_plan vp ON plan.post_vessel_rpk.ops_plan_code = vp.plan_code")
 
 	// Multi-tenancy
 	if branchCode > 0 {
-		query = query.Where("branch_code = ?", branchCode)
+		query = query.Where("plan.post_vessel_rpk.branch_code = ?", branchCode)
 	}
 	if terminalCode > 0 {
-		query = query.Where("terminal_code = ?", terminalCode)
+		query = query.Where("plan.post_vessel_rpk.terminal_code = ?", terminalCode)
 	}
 
 	// Advanced Search (JSONB & Related Fields)
 	if search != "" {
 		s := "%" + search + "%"
-		query = query.Where("(no_pkk ILIKE ? OR no_ppk ILIKE ? OR no_rkbm ILIKE ?)", s, s, s)
+		query = query.Where("(plan.post_vessel_rpk.no_pkk ILIKE ? OR plan.post_vessel_rpk.no_ppk ILIKE ? OR plan.post_vessel_rpk.no_rkbm ILIKE ? OR vp.vessel_name ILIKE ?)", s, s, s, s)
 	}
 
 	// Dynamic Filters from Frontend
@@ -71,18 +73,18 @@ func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode
 		allowedCols := []string{"no_pkk", "rpk_type", "distribution", "creation_by", "start_mooring"}
 		for _, col := range allowedCols {
 			if val, ok := filters[col]; ok && val != "" {
-				query = query.Where(col+" ILIKE ?", "%"+fmt.Sprintf("%v", val)+"%")
+				query = query.Where("plan.post_vessel_rpk."+col+" ILIKE ?", "%"+fmt.Sprintf("%v", val)+"%")
 			}
 		}
 
 		if branchCode == 0 {
 			if val, ok := filters["branch_code"]; ok && val != "" && val != "0" {
-				query = query.Where("branch_code = ?", val)
+				query = query.Where("plan.post_vessel_rpk.branch_code = ?", val)
 			}
 		}
 		if terminalCode == 0 {
 			if val, ok := filters["terminal_code"]; ok && val != "" && val != "0" {
-				query = query.Where("terminal_code = ?", val)
+				query = query.Where("plan.post_vessel_rpk.terminal_code = ?", val)
 			}
 		}
 	}
@@ -94,7 +96,7 @@ func (r *vesselRpkRepository) List(ctx context.Context, branchCode, terminalCode
 
 	err = query.Preload("Ops").Preload("Ops.OpDetail").
 		Offset(offset).Limit(limit).
-		Order("creation_date DESC").Find(&list).Error
+		Order("plan.post_vessel_rpk.creation_date DESC").Find(&list).Error
 
 	return list, total, err
 }

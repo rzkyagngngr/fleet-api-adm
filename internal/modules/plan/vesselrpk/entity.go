@@ -32,6 +32,7 @@ type VesselRpk struct {
 	ID                     uint64        `gorm:"primaryKey;autoIncrement" json:"id"`
 	NoPkk                  string        `gorm:"column:no_pkk;not null" json:"no_pkk"`
 	NoPpk                  string        `gorm:"column:no_ppk" json:"no_ppk"`
+	VesselName             string        `gorm:"-" json:"vessel_name"`
 	LocationCodeInaportnet string        `gorm:"column:location_code_inaportnet" json:"location_code_inaportnet"`
 	RpkType                string        `gorm:"column:rpk_type" json:"rpk_type"`
 	BerthPosition          string        `gorm:"column:berth_position" json:"berth_position"`
@@ -46,6 +47,8 @@ type VesselRpk struct {
 	NoRkbm                 string        `gorm:"column:no_rkbm" json:"no_rkbm"`
 	Reason                 string        `gorm:"column:reason" json:"reason"`
 	Notes                  string        `gorm:"column:notes" json:"notes"`
+	OpsPlanCode            string        `gorm:"column:ops_plan_code" json:"ops_plan_code"`
+	ActivityCode           string        `gorm:"column:activity_code" json:"activity_code"`
 	Payload                JSONB         `gorm:"column:payload;type:jsonb" json:"payload"`
 	
 	// Relations

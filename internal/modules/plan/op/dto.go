@@ -153,6 +153,7 @@ type GetDataOpResponse struct {
 	DeterminationCode string     `json:"confirmed_plan_code" gorm:"column:confirmed_plan_code"`
 	WorkOrderCode     string     `json:"work_order_code"`
 	Status            *int       `json:"status"`
+	VesselRpkID       uint64     `json:"vessel_rpk_id"`
 }
 
 type RawJSONResponse struct {
