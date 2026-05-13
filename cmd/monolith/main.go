@@ -34,11 +34,15 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/chat"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselrpk"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
+	"omniport-api/internal/wire/modules/PlanToChat"
+	"omniport-api/internal/wire/modules/ChatToPlan"
+
 
 	"github.com/gin-gonic/gin"
 )
@@ -82,6 +86,11 @@ func main() {
 		slog.Error("Plan database connection is not configured")
 		os.Exit(1)
 	}
+	if dbRegistry.CHAT == nil {
+		slog.Error("Chat database connection is not configured")
+		os.Exit(1)
+	}
+
 
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -99,6 +108,9 @@ func main() {
 	terminalRepo := terminal.NewTerminalRepository(dbRegistry.ADM)
 	vesselRepo := vessel.NewVesselRepository(dbRegistry.ADM)
 	companyRepo := company.NewCompanyRepository(dbRegistry.ADM)
+	chatRepo := chat.NewRepository(dbRegistry.CHAT)
+
+
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, dbRegistry.ADM, jwtUtil)
@@ -128,7 +140,26 @@ func main() {
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	vesselRpkService := vesselrpk.NewVesselRpkService(vesselRpkRepo)
-	vesselScheduleService := vesselschedule.NewVesselScheduleService(dbRegistry.PLAN, dbRegistry.ADM)
+	
+	// Bridge: Chat -> Plan (Clean & Dumb Wire)
+	directProvider := chattoplan.NewDirectVesselProvider(nil)
+	vesselProvider := chattoplan.NewChatToPlanWire(cfg.App.Mode, directProvider, nil) // Microservice provider can be added later
+	
+	chatService := chat.NewService(chatRepo, chat.NewTelegramClientFromEnv(), s3Provider, cfg.Storage.S3Bucket, cfg.Chat.TelegramParentChatID, vesselProvider)
+	chatInit := plantochat.NewPlanToChatWire(
+		cfg.App.Mode,
+		plantochat.NewDirectPlanToChatWire(chatService),
+		plantochat.NewRestPlanToChatWire(resolveChatInternalBaseURL(cfg), cfg.Chat.InternalToken),
+	)
+	vesselScheduleService := vesselschedule.NewVesselScheduleService(dbRegistry.PLAN, dbRegistry.ADM, vesselschedule.ChatInitSettings{
+		Initializer:          chatInit,
+		TelegramParentChatID: cfg.Chat.TelegramParentChatID,
+	})
+
+	// Finalize Bridge: Inject Plan service into Chat's direct provider
+	directProvider.SetPlanService(vesselScheduleService)
+
+
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -154,6 +185,7 @@ func main() {
 	opsPlanHandler := op.NewOpsPlanHandler(opsPlanService)
 	vesselRpkHandler := vesselrpk.NewVesselRpkHandler(vesselRpkService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
+	chatHandler := chat.NewChatHandler(chatService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -184,6 +216,8 @@ func main() {
 		PostRequestHandler:    postRequestHandler,
 		OpsPlanHandler:        opsPlanHandler,
 		VesselRpkHandler:      vesselRpkHandler,
+		ChatHandler:           chatHandler,
+		InternalServiceToken:  cfg.Chat.InternalToken,
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.App.Port)
@@ -231,6 +265,13 @@ func parseLogLevel(level string) slog.Level {
 	default:
 		return slog.LevelInfo
 	}
+}
+
+func resolveChatInternalBaseURL(cfg *config.Config) string {
+	if cfg.Chat.InternalBaseURL != "" {
+		return cfg.Chat.InternalBaseURL
+	}
+	return fmt.Sprintf("http://localhost:%s", cfg.App.PortFor("ADM"))
 }
 
 type userProviderAdapter struct {

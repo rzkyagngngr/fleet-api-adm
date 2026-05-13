@@ -33,11 +33,15 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/chat"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselrpk"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
+	"omniport-api/internal/wire/modules/PlanToChat"
+	"omniport-api/internal/wire/modules/ChatToPlan"
+
 
 	"github.com/gin-gonic/gin"
 )
@@ -86,6 +90,9 @@ func main() {
 	terminalRepo := terminal.NewTerminalRepository(db)
 	companyRepo := company.NewCompanyRepository(db)
 	fileRepo := file.NewFileRepository(db)
+	chatRepo := chat.NewRepository(reg.CHAT)
+
+
 
 	// Plan Module uses PLAN connection
 	postRequestRepo := postrequest.NewPostRequestRepository(reg.PLAN)
@@ -121,7 +128,28 @@ func main() {
 	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	vesselRpkService := vesselrpk.NewVesselRpkService(vesselRpkRepo)
-	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db)
+
+	// Bridge: Chat -> Plan
+	vesselProvider := chattoplan.NewDirectVesselProvider(nil)
+
+	chatService := chat.NewService(chatRepo, chat.NewTelegramClientFromEnv(), s3Provider, cfg.Storage.S3Bucket, cfg.Chat.TelegramParentChatID, vesselProvider)
+	chatInit := plantochat.NewPlanToChatWire(
+		cfg.App.Mode,
+		plantochat.NewDirectPlanToChatWire(chatService),
+		plantochat.NewRestPlanToChatWire(resolveChatInternalBaseURL(cfg), cfg.Chat.InternalToken),
+	)
+	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db, vesselschedule.ChatInitSettings{
+		Initializer:          chatInit,
+		TelegramParentChatID: cfg.Chat.TelegramParentChatID,
+	})
+
+	// Finalize Bridge: Inject Plan service into Chat's provider
+	if vp, ok := vesselProvider.(*chattoplan.DirectVesselProvider); ok {
+		vp.SetPlanService(vesselScheduleService)
+	} else if vp, ok := vesselProvider.(interface{ SetPlanService(vesselschedule.VesselScheduleService) }); ok {
+		vp.SetPlanService(vesselScheduleService)
+	}
+
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -150,6 +178,7 @@ func main() {
 	tariffHandler := tariff.NewTariffHandler(tariffService)
 	lookupHandler := lookup.NewLookupHandler(lookupService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
+	chatHandler := chat.NewChatHandler(chatService)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -181,6 +210,8 @@ func main() {
 		FileHandler:           fileHandler,
 		OpsPlanHandler:        opsPlanHandler,
 		VesselRpkHandler:      vesselRpkHandler,
+		ChatHandler:           chatHandler,
+		InternalServiceToken:  cfg.Chat.InternalToken,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)
@@ -228,6 +259,13 @@ func setupLogger(cfg *config.Config) {
 		logHandler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel})
 	}
 	slog.SetDefault(slog.New(logHandler))
+}
+
+func resolveChatInternalBaseURL(cfg *config.Config) string {
+	if cfg.Chat.InternalBaseURL != "" {
+		return cfg.Chat.InternalBaseURL
+	}
+	return fmt.Sprintf("http://localhost:%s", cfg.App.PortFor("ADM"))
 }
 
 func parseLogLevel(level string) slog.Level {

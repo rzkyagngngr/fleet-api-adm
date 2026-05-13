@@ -44,6 +44,8 @@ type VesselSchedule struct {
 	ETB                    *time.Time `gorm:"column:etb" json:"etb"`
 	ETC                    *time.Time `gorm:"column:etc" json:"etc"`
 	ETD                    *time.Time `gorm:"column:etd" json:"etd"`
+	TelegramTopicID        *string    `gorm:"column:telegram_topic_id" json:"telegram_topic_id"`
+	TelegramTopicName      *string    `gorm:"column:telegram_topic_name;size:200" json:"telegram_topic_name"`
 	Status                 *int       `gorm:"column:status" json:"status"`
 	CreationDate           *time.Time `gorm:"column:creation_date" json:"creation_date"`
 	CreationBy             *string    `gorm:"column:creation_by;size:100" json:"creation_by"`

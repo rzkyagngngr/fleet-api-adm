@@ -259,6 +259,40 @@ func (h *VesselScheduleHandler) UpdateStatus(c *gin.Context) {
 	})
 }
 
+func (h *VesselScheduleHandler) InitChatGroup(c *gin.Context) {
+	var req InitChatGroupRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		req.ScheduleCode = strings.TrimSpace(c.Query("schedule_code"))
+		if req.ScheduleCode == "" {
+			helper.ValidationErrorResponse(c, err)
+			return
+		}
+	}
+
+	scheduleCode := strings.TrimSpace(req.ScheduleCode)
+	if scheduleCode == "" {
+		helper.ErrorResponse(c, http.StatusBadRequest, "schedule_code is required")
+		return
+	}
+
+	actor := middleware.GetUserEmail(c)
+	if actor == "" {
+		actor = "SYSTEM"
+	}
+
+	row, err := h.service.InitChatGroup(c.Request.Context(), scheduleCode, actor)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			helper.ErrorResponse(c, http.StatusNotFound, "vessel schedule not found")
+			return
+		}
+		helper.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	helper.SuccessResponse(c, http.StatusOK, "telegram chat group initialized successfully", row)
+}
+
 // Delete godoc
 // @Summary Delete vessel schedule
 // @Description Delete vessel schedule by id

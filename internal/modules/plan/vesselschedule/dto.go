@@ -89,3 +89,7 @@ type UpdateVesselScheduleStatusRequest struct {
 	ScheduleCode string `json:"schedule_code" binding:"required"`
 	Status       *int   `json:"status" binding:"required"`
 }
+
+type InitChatGroupRequest struct {
+	ScheduleCode string `json:"schedule_code" binding:"required"`
+}

@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"bytes"
 	"context"
 	"time"
 
@@ -78,6 +79,16 @@ func (s *s3Provider) DeleteObject(ctx context.Context, bucket, key string) error
 	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
+	})
+	return err
+}
+
+func (s *s3Provider) UploadObject(ctx context.Context, bucket, key, contentType string, data []byte) error {
+	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(data),
+		ContentType: aws.String(contentType),
 	})
 	return err
 }

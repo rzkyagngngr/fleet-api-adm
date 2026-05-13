@@ -3,6 +3,7 @@ package vesselschedule
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"omniport-api/internal/helper"
 	"strings"
 	"time"
@@ -15,15 +16,19 @@ type VesselScheduleService interface {
 	Create(ctx context.Context, schedule *VesselSchedule) error
 	Update(ctx context.Context, scheduleCode string, schedule *VesselSchedule) error
 	UpdateStatus(ctx context.Context, scheduleCode string, status int, updatedBy string) error
+	InitChatGroup(ctx context.Context, scheduleCode string, actor string) (*VesselSchedule, error)
 	Delete(ctx context.Context, id uint64) error
 	FindByID(ctx context.Context, id uint64) (*VesselSchedule, error)
 	FindByScheduleCode(ctx context.Context, scheduleCode string) (*VesselScheduleDetailResponse, error)
+	FindByTopicID(ctx context.Context, topicID int64) (*VesselSchedule, error)
 	GetAuthLocation(ctx context.Context, userID uint64) (*VesselScheduleAuthLocation, error)
 }
 
 type vesselScheduleService struct {
-	db     *gorm.DB
-	authDB *gorm.DB
+	db                   *gorm.DB
+	authDB               *gorm.DB
+	chatInit             ScheduleChatInitializer
+	telegramParentChatID int64
 }
 
 type VesselScheduleAuthLocation struct {
@@ -31,12 +36,36 @@ type VesselScheduleAuthLocation struct {
 	TerminalName string
 }
 
-func NewVesselScheduleService(db *gorm.DB, authDB ...*gorm.DB) VesselScheduleService {
+type ChatInitSettings struct {
+	Initializer          ScheduleChatInitializer
+	TelegramParentChatID int64
+}
+
+func NewVesselScheduleService(db *gorm.DB, opts ...interface{}) VesselScheduleService {
 	locationDB := db
-	if len(authDB) > 0 && authDB[0] != nil {
-		locationDB = authDB[0]
+	var chatInit ScheduleChatInitializer
+	var telegramParentChatID int64
+
+	for _, opt := range opts {
+		switch v := opt.(type) {
+		case *gorm.DB:
+			if v != nil {
+				locationDB = v
+			}
+		case ScheduleChatInitializer:
+			chatInit = v
+		case ChatInitSettings:
+			chatInit = v.Initializer
+			telegramParentChatID = v.TelegramParentChatID
+		}
 	}
-	return &vesselScheduleService{db: db, authDB: locationDB}
+
+	return &vesselScheduleService{
+		db:                   db,
+		authDB:               locationDB,
+		chatInit:             chatInit,
+		telegramParentChatID: telegramParentChatID,
+	}
 }
 
 func (s *vesselScheduleService) Search(ctx context.Context, query helper.PaginationQuery) ([]VesselScheduleSearchResponse, helper.PaginationMeta, error) {
@@ -51,7 +80,9 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 			"discharge_port_code", "discharge_port_name", "assigned_berth_name", "dock_id",
 			"dock_code", "dock_name", "berth_code", "berth_name", "berth_latitude",
 			"berth_longitude", "code_inaportnet", "location_name_inaportnet",
-			"start_berth_position", "end_berth_position", "eta", "etb", "etc", "etd", "status", "creation_date",
+			"start_berth_position", "end_berth_position", "eta", "etb", "etc", "etd",
+			"telegram_topic_id", "telegram_topic_name",
+			"status", "creation_date",
 			"creation_by", "last_updated_date", "last_updated_by",
 		},
 		SearchColumns: []string{
@@ -67,24 +98,34 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 			"id":                       "id",
 			"branch_code":              "branch_code",
 			"terminal_code":            "terminal_code",
+			"branch_name":              "branch_name",
+			"terminal_name":            "terminal_name",
 			"schedule_code":            "schedule_code",
+			"vessel_name":              "vessel_name",
 			"vessel_code":              "vessel_code",
 			"vessel_type":              "vessel_type",
 			"voyage_number":            "voyage_number",
 			"pkk_number":               "pkk_number",
 			"ppk_number":               "ppk_number",
 			"voyage_type":              "voyage_type",
+			"agency_name":              "agency_name",
+			"port_agent":               "port_agent",
 			"origin_port_code":         "origin_port_code",
+			"origin_port_name":         "origin_port_name",
 			"destination_port_code":    "destination_port_code",
+			"destination_port_name":    "destination_port_name",
 			"discharge_port_code":      "discharge_port_code",
+			"discharge_port_name":      "discharge_port_name",
+			"assigned_berth_name":      "assigned_berth_name",
 			"dock_id":                  "dock_id",
 			"dock_code":                "dock_code",
+			"dock_name":                "dock_name",
 			"berth_code":               "berth_code",
+			"berth_name":               "berth_name",
 			"code_inaportnet":          "code_inaportnet",
 			"location_name_inaportnet": "location_name_inaportnet",
 			"start_berth_position":     "start_berth_position",
 			"end_berth_position":       "end_berth_position",
-			"status":                   "status",
 			"eta":                      "eta",
 			"etb":                      "etb",
 			"etc":                      "etc",
@@ -93,29 +134,29 @@ func (s *vesselScheduleService) Search(ctx context.Context, query helper.Paginat
 		SortableColumns: map[string]string{
 			"id":            "id",
 			"schedule_code": "schedule_code",
-			"vessel_name":   "vessel_name",
-			"vessel_code":   "vessel_code",
-			"voyage_number": "voyage_number",
-			"pkk_number":    "pkk_number",
-			"ppk_number":    "ppk_number",
-			"voyage_type":   "voyage_type",
-			"agency_name":   "agency_name",
-			"eta":           "eta",
-			"etb":           "etb",
-			"etc":           "etc",
-			"etd":           "etd",
-			"status":        "status",
-			"creation_date": "creation_date",
-			"last_updated":  "last_updated_date",
 		},
 		DefaultSortBy:    "id",
 		DefaultSortOrder: "DESC",
-		MaxLimit:         100,
-		MaxDownloadLimit: 1000,
+	}
+
+	// Handle semantic status mapping
+	if statusVal, ok := query.Filters["status"]; ok {
+		switch strings.ToLower(statusVal) {
+		case "active":
+			query.Filters["status"] = "active_mapping"
+		case "suspended":
+			query.Filters["status"] = "2"
+		}
 	}
 
 	var rows []VesselSchedule
-	meta, err := helper.GetDynamicPaginatedNativeData(s.db.WithContext(ctx), config, query, &rows)
+	db := s.db.WithContext(ctx)
+	if query.Filters["status"] == "active_mapping" {
+		delete(query.Filters, "status")
+		db = db.Where("status IN ?", []int{0, 1})
+	}
+
+	meta, err := helper.GetDynamicPaginatedNativeData(db, config, query, &rows)
 	if err != nil {
 		return nil, meta, err
 	}
@@ -153,12 +194,13 @@ func (s *vesselScheduleService) withPlans(ctx context.Context, rows []VesselSche
 	}
 
 	var plans []VesselSchedulePlanResponse
-	if err := s.db.WithContext(ctx).
-		Table("plan.post_loading_unloading_plans").
-		Select("ppk_number, plan_code, plan_date, activity_code, activity_name, activity_start_date, activity_end_date").
-		Where("ppk_number IN ?", ppkNumbers).
-		Order("ppk_number ASC, plan_date DESC, id DESC").
-		Find(&plans).Error; err != nil {
+	query := `
+		SELECT ppk_number, plan_code, plan_date, activity_code, activity_name, activity_start_date, activity_end_date 
+		FROM plan.post_loading_unloading_plans 
+		WHERE ppk_number IN (?) 
+		ORDER BY ppk_number ASC, plan_date DESC, id DESC`
+
+	if err := s.db.WithContext(ctx).Raw(query, ppkNumbers).Scan(&plans).Error; err != nil {
 		return nil, err
 	}
 
@@ -186,7 +228,6 @@ func (s *vesselScheduleService) withPlans(ctx context.Context, rows []VesselSche
 
 func (s *vesselScheduleService) Create(ctx context.Context, schedule *VesselSchedule) error {
 	now := time.Now()
-	schedule.ID = 0
 	schedule.CreationDate = &now
 	schedule.LastUpdatedDate = &now
 
@@ -201,80 +242,79 @@ func (s *vesselScheduleService) Create(ctx context.Context, schedule *VesselSche
 		}
 		schedule.ScheduleCode = &scheduleCode
 
-		return tx.Table(schedule.TableName()).Omit("id").Create(schedule).Error
+		query := `
+			INSERT INTO plan.post_vessel_schedules (
+				branch_code, terminal_code, branch_name, terminal_name, schedule_code, 
+				vessel_name, vessel_code, vessel_type, vessel_hatch_number, voyage_number, 
+				pkk_number, ppk_number, voyage_type, grt, loa, agency_name, port_agent, 
+				emergency_contact, origin_port_code, origin_port_name, destination_port_code, 
+				destination_port_name, discharge_port_code, discharge_port_name, 
+				assigned_berth_name, dock_id, dock_code, dock_name, berth_code, berth_name, 
+				berth_latitude, berth_longitude, code_inaportnet, location_name_inaportnet, 
+				start_berth_position, end_berth_position, eta, etb, etc, etd, status, 
+				creation_date, creation_by, last_updated_date, last_updated_by
+			) VALUES (
+				?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+			) RETURNING id`
+
+		return tx.Raw(query,
+			schedule.BranchCode, schedule.TerminalCode, schedule.BranchName, schedule.TerminalName, schedule.ScheduleCode,
+			schedule.VesselName, schedule.VesselCode, schedule.VesselType, schedule.VesselHatchNumber, schedule.VoyageNumber,
+			schedule.PKKNumber, schedule.PPKNumber, schedule.VoyageType, schedule.GRT, schedule.LOA, schedule.AgencyName, schedule.PortAgent,
+			schedule.EmergencyContact, schedule.OriginPortCode, schedule.OriginPortName, schedule.DestinationPortCode,
+			schedule.DestinationPortName, schedule.DischargePortCode, schedule.DischargePortName,
+			schedule.AssignedBerthName, schedule.DockID, schedule.DockCode, schedule.DockName, schedule.BerthCode, schedule.BerthName,
+			schedule.BerthLatitude, schedule.BerthLongitude, schedule.CodeInaportnet, schedule.LocationNameInaportnet,
+			schedule.StartBerthPosition, schedule.EndBerthPosition, schedule.ETA, schedule.ETB, schedule.ETC, schedule.ETD, schedule.Status,
+			schedule.CreationDate, schedule.CreationBy, schedule.LastUpdatedDate, schedule.LastUpdatedBy,
+		).Scan(&schedule.ID).Error
 	})
 }
 
 func (s *vesselScheduleService) Update(ctx context.Context, scheduleCode string, schedule *VesselSchedule) error {
 	now := time.Now()
-	schedule.LastUpdatedDate = &now
+	query := `
+		UPDATE plan.post_vessel_schedules SET 
+			branch_code = ?, terminal_code = ?, vessel_name = ?, vessel_code = ?, 
+			vessel_type = ?, vessel_hatch_number = ?, voyage_number = ?, pkk_number = ?, 
+			ppk_number = ?, voyage_type = ?, grt = ?, loa = ?, agency_name = ?, 
+			port_agent = ?, emergency_contact = ?, origin_port_code = ?, origin_port_name = ?, 
+			destination_port_code = ?, destination_port_name = ?, discharge_port_code = ?, 
+			discharge_port_name = ?, assigned_berth_name = ?, dock_id = ?, dock_code = ?, 
+			dock_name = ?, berth_code = ?, berth_name = ?, berth_latitude = ?, 
+			berth_longitude = ?, code_inaportnet = ?, location_name_inaportnet = ?, 
+			start_berth_position = ?, end_berth_position = ?, eta = ?, etb = ?, 
+			etc = ?, etd = ?, status = ?, last_updated_date = ?, last_updated_by = ? 
+		WHERE schedule_code = ?`
 
-	result := s.db.WithContext(ctx).
-		Table(schedule.TableName()).
-		Where("schedule_code = ?", scheduleCode).
-		Updates(map[string]interface{}{
-			"branch_code":              schedule.BranchCode,
-			"terminal_code":            schedule.TerminalCode,
-			"branch_name":              schedule.BranchName,
-			"terminal_name":            schedule.TerminalName,
-			"vessel_name":              schedule.VesselName,
-			"vessel_code":              schedule.VesselCode,
-			"vessel_type":              schedule.VesselType,
-			"vessel_hatch_number":      schedule.VesselHatchNumber,
-			"voyage_number":            schedule.VoyageNumber,
-			"pkk_number":               schedule.PKKNumber,
-			"ppk_number":               schedule.PPKNumber,
-			"voyage_type":              schedule.VoyageType,
-			"grt":                      schedule.GRT,
-			"loa":                      schedule.LOA,
-			"agency_name":              schedule.AgencyName,
-			"port_agent":               schedule.PortAgent,
-			"emergency_contact":        schedule.EmergencyContact,
-			"origin_port_code":         schedule.OriginPortCode,
-			"origin_port_name":         schedule.OriginPortName,
-			"destination_port_code":    schedule.DestinationPortCode,
-			"destination_port_name":    schedule.DestinationPortName,
-			"discharge_port_code":      schedule.DischargePortCode,
-			"discharge_port_name":      schedule.DischargePortName,
-			"assigned_berth_name":      schedule.AssignedBerthName,
-			"dock_id":                  schedule.DockID,
-			"dock_code":                schedule.DockCode,
-			"dock_name":                schedule.DockName,
-			"berth_code":               schedule.BerthCode,
-			"berth_name":               schedule.BerthName,
-			"berth_latitude":           schedule.BerthLatitude,
-			"berth_longitude":          schedule.BerthLongitude,
-			"code_inaportnet":          schedule.CodeInaportnet,
-			"location_name_inaportnet": schedule.LocationNameInaportnet,
-			"start_berth_position":     schedule.StartBerthPosition,
-			"end_berth_position":       schedule.EndBerthPosition,
-			"eta":                      schedule.ETA,
-			"etb":                      schedule.ETB,
-			"etc":                      schedule.ETC,
-			"etd":                      schedule.ETD,
-			"status":                   schedule.Status,
-			"last_updated_date":        schedule.LastUpdatedDate,
-			"last_updated_by":          schedule.LastUpdatedBy,
-		})
+	result := s.db.WithContext(ctx).Exec(query,
+		schedule.BranchCode, schedule.TerminalCode, schedule.VesselName, schedule.VesselCode,
+		schedule.VesselType, schedule.VesselHatchNumber, schedule.VoyageNumber, schedule.PKKNumber,
+		schedule.PPKNumber, schedule.VoyageType, schedule.GRT, schedule.LOA, schedule.AgencyName,
+		schedule.PortAgent, schedule.EmergencyContact, schedule.OriginPortCode, schedule.OriginPortName,
+		schedule.DestinationPortCode, schedule.DestinationPortName, schedule.DischargePortCode,
+		schedule.DischargePortName, schedule.AssignedBerthName, schedule.DockID, schedule.DockCode,
+		schedule.DockName, schedule.BerthCode, schedule.BerthName, schedule.BerthLatitude,
+		schedule.BerthLongitude, schedule.CodeInaportnet, schedule.LocationNameInaportnet,
+		schedule.StartBerthPosition, schedule.EndBerthPosition, schedule.ETA, schedule.ETB,
+		schedule.ETC, schedule.ETD, schedule.Status, &now, schedule.LastUpdatedBy,
+		scheduleCode,
+	)
+
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
+
 	return nil
 }
 
 func (s *vesselScheduleService) UpdateStatus(ctx context.Context, scheduleCode string, status int, updatedBy string) error {
 	now := time.Now()
-	result := s.db.WithContext(ctx).
-		Table((VesselSchedule{}).TableName()).
-		Where("schedule_code = ?", scheduleCode).
-		Updates(map[string]interface{}{
-			"status":            status,
-			"last_updated_date": &now,
-			"last_updated_by":   updatedBy,
-		})
+	query := `UPDATE plan.post_vessel_schedules SET status = ?, last_updated_date = ?, last_updated_by = ? WHERE schedule_code = ?`
+	result := s.db.WithContext(ctx).Exec(query, status, &now, updatedBy, scheduleCode)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -285,7 +325,8 @@ func (s *vesselScheduleService) UpdateStatus(ctx context.Context, scheduleCode s
 }
 
 func (s *vesselScheduleService) Delete(ctx context.Context, id uint64) error {
-	result := s.db.WithContext(ctx).Table((VesselSchedule{}).TableName()).Where("id = ?", id).Delete(&VesselSchedule{})
+	query := `DELETE FROM plan.post_vessel_schedules WHERE id = ?`
+	result := s.db.WithContext(ctx).Exec(query, id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -297,21 +338,24 @@ func (s *vesselScheduleService) Delete(ctx context.Context, id uint64) error {
 
 func (s *vesselScheduleService) FindByID(ctx context.Context, id uint64) (*VesselSchedule, error) {
 	var row VesselSchedule
-	result := s.db.WithContext(ctx).Table((VesselSchedule{}).TableName()).Where("id = ?", id).First(&row)
-	if result.Error != nil {
-		return nil, result.Error
+	query := `SELECT * FROM plan.post_vessel_schedules WHERE id = ? LIMIT 1`
+	if err := s.db.WithContext(ctx).Raw(query, id).Scan(&row).Error; err != nil {
+		return nil, err
+	}
+	if row.ID == 0 {
+		return nil, gorm.ErrRecordNotFound
 	}
 	return &row, nil
 }
 
 func (s *vesselScheduleService) FindByScheduleCode(ctx context.Context, scheduleCode string) (*VesselScheduleDetailResponse, error) {
 	var row VesselSchedule
-	result := s.db.WithContext(ctx).
-		Table((VesselSchedule{}).TableName()).
-		Where("schedule_code = ?", scheduleCode).
-		First(&row)
-	if result.Error != nil {
-		return nil, result.Error
+	query := `SELECT * FROM plan.post_vessel_schedules WHERE schedule_code = ? LIMIT 1`
+	if err := s.db.WithContext(ctx).Raw(query, scheduleCode).Scan(&row).Error; err != nil {
+		return nil, err
+	}
+	if row.ID == 0 {
+		return nil, gorm.ErrRecordNotFound
 	}
 
 	res := &VesselScheduleDetailResponse{
@@ -319,36 +363,14 @@ func (s *vesselScheduleService) FindByScheduleCode(ctx context.Context, schedule
 		HatchDetails:   []interface{}{},
 	}
 
-	vCode := ""
-	if row.VesselCode != nil {
-		vCode = *row.VesselCode
-	}
-	bCode := 0
-	if row.BranchCode != nil {
-		bCode = *row.BranchCode
-	}
-	tCode := 0
-	if row.TerminalCode != nil {
-		tCode = *row.TerminalCode
-	}
-
-	if vCode != "" {
+	if row.VesselCode != nil && *row.VesselCode != "" {
 		var vessel map[string]interface{}
-		if err := s.authDB.WithContext(ctx).
-			Table("adm.posm_vessel").
-			Where("vessel_code = ? AND branch_code = ? AND terminal_code = ?", vCode, bCode, tCode).
-			Limit(1).
-			Scan(&vessel).Error; err == nil && len(vessel) > 0 {
-
+		vesselQuery := `SELECT * FROM adm.posm_vessel WHERE vessel_code = ? AND branch_code = ? AND terminal_code = ? LIMIT 1`
+		if err := s.authDB.WithContext(ctx).Raw(vesselQuery, *row.VesselCode, row.BranchCode, row.TerminalCode).Scan(&vessel).Error; err == nil && len(vessel) > 0 {
 			res.Vessel = vessel
-
 			var hatches []map[string]interface{}
-			if err := s.authDB.WithContext(ctx).
-				Table("adm.posm_vessel_d").
-				Where("vessel_code = ? AND branch_code = ? AND terminal_code = ?", vCode, bCode, tCode).
-				Order("hatch_code ASC").
-				Find(&hatches).Error; err == nil {
-
+			hatchQuery := `SELECT * FROM adm.posm_vessel_d WHERE vessel_code = ? AND branch_code = ? AND terminal_code = ? ORDER BY hatch_code ASC`
+			if err := s.authDB.WithContext(ctx).Raw(hatchQuery, *row.VesselCode, row.BranchCode, row.TerminalCode).Scan(&hatches).Error; err == nil {
 				res.HatchDetails = make([]interface{}, len(hatches))
 				for i, h := range hatches {
 					res.HatchDetails[i] = h
@@ -360,6 +382,92 @@ func (s *vesselScheduleService) FindByScheduleCode(ctx context.Context, schedule
 	return res, nil
 }
 
+func (s *vesselScheduleService) FindByTopicID(ctx context.Context, topicID int64) (*VesselSchedule, error) {
+	var row VesselSchedule
+	sTopicID := fmt.Sprintf("%d", topicID)
+	query := `SELECT * FROM plan.post_vessel_schedules WHERE telegram_topic_id = ? LIMIT 1`
+	if err := s.db.WithContext(ctx).Raw(query, sTopicID).Scan(&row).Error; err != nil {
+		return nil, err
+	}
+	if row.ID == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &row, nil
+}
+
+func (s *vesselScheduleService) GetAuthLocation(ctx context.Context, userID uint64) (*VesselScheduleAuthLocation, error) {
+	var result VesselScheduleAuthLocation
+	query := `SELECT branch_name, terminal_name FROM adm.posm_users WHERE id = ? LIMIT 1`
+	if err := s.authDB.WithContext(ctx).Raw(query, userID).Scan(&result).Error; err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (s *vesselScheduleService) InitChatGroup(ctx context.Context, scheduleCode string, actor string) (*VesselSchedule, error) {
+	trimmedCode := strings.TrimSpace(scheduleCode)
+	if trimmedCode == "" {
+		return nil, fmt.Errorf("schedule_code is required")
+	}
+
+	var current VesselSchedule
+	findQuery := `SELECT * FROM plan.post_vessel_schedules WHERE schedule_code = ? LIMIT 1`
+	if err := s.db.WithContext(ctx).Raw(findQuery, trimmedCode).Scan(&current).Error; err != nil {
+		return nil, err
+	}
+
+	if err := s.ensureScheduleChatInitialized(ctx, &current, actor); err != nil {
+		return nil, err
+	}
+
+	if err := s.db.WithContext(ctx).Raw(findQuery, trimmedCode).Scan(&current).Error; err != nil {
+		return nil, err
+	}
+	return &current, nil
+}
+
+func (s *vesselScheduleService) ensureScheduleChatInitialized(ctx context.Context, current *VesselSchedule, actor string) error {
+	if s.chatInit == nil || current == nil || current.ID == 0 {
+		return nil
+	}
+	if s.telegramParentChatID == 0 {
+		return fmt.Errorf("TELEGRAM_PARENT_CHAT_ID is not configured")
+	}
+	if current.TelegramTopicID != nil && *current.TelegramTopicID != "" {
+		return nil
+	}
+
+	topicID, topicName, err := s.chatInit.InitScheduleChat(ctx, ChatInitRequest{
+		ScheduleID:     current.ID,
+		TelegramChatID: s.telegramParentChatID,
+		TopicName:      buildScheduleTopicName(current),
+		Actor:          actor,
+	})
+	if err != nil {
+		return err
+	}
+
+	if topicID != nil && *topicID != 0 {
+		now := time.Now()
+		sTopicID := fmt.Sprintf("%d", *topicID)
+		updateQuery := `UPDATE plan.post_vessel_schedules SET telegram_topic_id = ?, telegram_topic_name = ?, last_updated_date = ?, last_updated_by = ? WHERE id = ?`
+		return s.db.WithContext(ctx).Exec(updateQuery, sTopicID, topicName, &now, actor, current.ID).Error
+	}
+
+	return nil
+}
+
+func buildScheduleTopicName(s *VesselSchedule) string {
+	vessel := "VESSEL"
+	if s.VesselName != nil && strings.TrimSpace(*s.VesselName) != "" {
+		vessel = strings.TrimSpace(*s.VesselName)
+	}
+	eta := time.Now().Format("02 Jan")
+	if s.ETA != nil {
+		eta = s.ETA.Format("02 Jan")
+	}
+	return fmt.Sprintf("%s - %s", eta, vessel)
+}
 func (s *vesselScheduleService) nextScheduleCode(tx *gorm.DB, now time.Time, schedule *VesselSchedule) (string, error) {
 	if schedule.BranchCode == nil {
 		return "", fmt.Errorf("branch code is required to generate schedule code")
@@ -389,18 +497,35 @@ func (s *vesselScheduleService) nextScheduleCode(tx *gorm.DB, now time.Time, sch
 	return fmt.Sprintf("%s%06d", prefix, nextSequence), nil
 }
 
-func (s *vesselScheduleService) GetAuthLocation(ctx context.Context, userID uint64) (*VesselScheduleAuthLocation, error) {
-	const userQuery = `
-		SELECT branch_name, terminal_name
-		FROM posm_users
-		WHERE id = ?
-		LIMIT 1
-	`
-
-	var result VesselScheduleAuthLocation
-	if err := s.authDB.WithContext(ctx).Raw(userQuery, userID).Scan(&result).Error; err != nil {
-		return nil, err
+func actorFromSchedule(schedule *VesselSchedule) string {
+	if schedule == nil {
+		return "SYSTEM"
 	}
+	if schedule.LastUpdatedBy != nil && strings.TrimSpace(*schedule.LastUpdatedBy) != "" {
+		return strings.TrimSpace(*schedule.LastUpdatedBy)
+	}
+	if schedule.CreationBy != nil && strings.TrimSpace(*schedule.CreationBy) != "" {
+		return strings.TrimSpace(*schedule.CreationBy)
+	}
+	return "SYSTEM"
+}
 
-	return &result, nil
+func scheduleIDValue(schedule *VesselSchedule) uint64 {
+	if schedule == nil {
+		return 0
+	}
+	return schedule.ID
+}
+
+func scheduleCodeValue(schedule *VesselSchedule) string {
+	if schedule == nil || schedule.ScheduleCode == nil {
+		return ""
+	}
+	return strings.TrimSpace(*schedule.ScheduleCode)
+}
+
+func (s *vesselScheduleService) tryEnsureScheduleChatInitialized(ctx context.Context, schedule *VesselSchedule, actor string) {
+	if err := s.ensureScheduleChatInitialized(ctx, schedule, actor); err != nil {
+		slog.Warn("failed to initialize telegram schedule chat", "error", err, "schedule_id", scheduleIDValue(schedule), "schedule_code", scheduleCodeValue(schedule))
+	}
 }

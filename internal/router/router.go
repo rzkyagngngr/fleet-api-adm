@@ -24,6 +24,7 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/chat"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselrpk"
@@ -61,6 +62,8 @@ type RouterConfig struct {
 	FileHandler           *file.FileHandler
 	OpsPlanHandler        *op.OpsPlanHandler
 	VesselRpkHandler      *vesselrpk.VesselRpkHandler
+	ChatHandler           *chat.ChatHandler
+	InternalServiceToken  string
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -79,6 +82,14 @@ func SetupRouter(cfg *RouterConfig) {
 	})
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	if cfg.ChatHandler != nil {
+		r.POST("/webhook/telegram", cfg.ChatHandler.HandleTelegramWebhook)
+		internal := r.Group("/internal")
+		internal.Use(middleware.InternalServiceAuth(cfg.InternalServiceToken))
+		{
+			internal.POST("/chat/vessel-calls", cfg.ChatHandler.CreateVesselCall)
+		}
+	}
 
 	v1 := r.Group("/api/v1")
 	v1.Use(middleware.AuthMiddleware(cfg.JWTUtil))
@@ -290,6 +301,7 @@ func SetupRouter(cfg *RouterConfig) {
 				vesselSchedule.GET("", cfg.VesselScheduleHandler.GetByScheduleCode)
 				vesselSchedule.PUT("", cfg.VesselScheduleHandler.Update)
 				vesselSchedule.PUT("/status", cfg.VesselScheduleHandler.UpdateStatus)
+				vesselSchedule.POST("/init-chat", cfg.VesselScheduleHandler.InitChatGroup)
 				//vesselSchedule.GET("/detail", cfg.VesselScheduleHandler.GetByScheduleCode)
 				//vesselSchedule.PUT("/detail", cfg.VesselScheduleHandler.Update)
 				//vesselSchedule.GET("/:schedule_code", cfg.VesselScheduleHandler.GetByScheduleCode)
@@ -337,6 +349,26 @@ func SetupRouter(cfg *RouterConfig) {
 				vesselRpk.PUT("", cfg.VesselRpkHandler.Update)
 				vesselRpk.DELETE("", cfg.VesselRpkHandler.Delete)
 			}
+		}
+
+		if cfg.ChatHandler != nil {
+			chatGroup := v1.Group("/chat")
+			{
+				chatGroup.POST("/vessel-calls", cfg.ChatHandler.CreateVesselCall)
+				chatGroup.GET("/vessel-calls", cfg.ChatHandler.ListVesselCalls)
+				chatGroup.POST("/vessel-calls/:id/suspend", cfg.ChatHandler.SuspendVesselCall)
+				chatGroup.POST("/vessel-calls/:id/continue", cfg.ChatHandler.ContinueVesselCall)
+				chatGroup.PUT("/vessel-calls/:id/rename", cfg.ChatHandler.RenameVesselCall)
+				chatGroup.GET("/vessel-calls/:id/participants", cfg.ChatHandler.ListParticipants)
+				chatGroup.DELETE("/vessel-calls/:id/participants/:user_id", cfg.ChatHandler.RemoveParticipant)
+				chatGroup.POST("/participants", cfg.ChatHandler.AddParticipant)
+				chatGroup.POST("/vessel-calls/:id/invite", cfg.ChatHandler.Invite)
+
+				chatGroup.POST("/send-message", cfg.ChatHandler.SendMessage)
+				chatGroup.GET("/vessel-calls/:id/messages", cfg.ChatHandler.ListMessages)
+				chatGroup.POST("/vessel-calls/:id/archive", cfg.ChatHandler.ArchiveVesselCall)
+			}
+
 		}
 
 		dermagas := v1.Group("/dermaga")

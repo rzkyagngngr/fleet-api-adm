@@ -12,12 +12,15 @@ import (
 )
 
 type Registry struct {
-	ADM  *gorm.DB
-	PLAN *gorm.DB
-	RLS  *gorm.DB
-	BILL *gorm.DB
-	MREP *gorm.DB
+	Common *gorm.DB
+	CHAT   *gorm.DB
+	ADM    *gorm.DB
+	PLAN   *gorm.DB
+	RLS    *gorm.DB
+	BILL   *gorm.DB
+	MREP   *gorm.DB
 }
+
 
 func NewRegistry(cfg *config.Config) (*Registry, error) {
 	gormConfig := &gorm.Config{}
@@ -28,10 +31,19 @@ func NewRegistry(cfg *config.Config) (*Registry, error) {
 	reg := &Registry{}
 	var err error
 
+	reg.Common, err = openIfConfigured(cfg, cfg.Database.Common, gormConfig)
+	if err != nil {
+		return nil, fmt.Errorf("connect common db: %w", err)
+	}
+	reg.CHAT, err = openIfConfigured(cfg, cfg.Database.Chat, gormConfig)
+	if err != nil {
+		return nil, fmt.Errorf("connect chat db: %w", err)
+	}
 	reg.ADM, err = openIfConfigured(cfg, cfg.Database.Adm, gormConfig)
 	if err != nil {
 		return nil, fmt.Errorf("connect adm db: %w", err)
 	}
+
 	reg.PLAN, err = openIfConfigured(cfg, cfg.Database.Plan, gormConfig)
 	if err != nil {
 		return nil, fmt.Errorf("connect plan db: %w", err)

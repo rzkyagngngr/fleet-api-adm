@@ -13,6 +13,7 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	Storage  StorageConfig
+	Chat     ChatConfig
 }
 
 type AppConfig struct {
@@ -34,21 +35,24 @@ type ModuleDBConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host    string
-	Port    string
-	Name    string
-	SSLMode string
-	MaxOpen int
-	MaxIdle int
-	MaxLife int
+	Host        string
+	Port        string
+	Name        string
+	SSLMode     string
+	MaxOpen     int
+	MaxIdle     int
+	MaxLife     int
 	MaxIdleTime int
 
-	Adm  ModuleDBConfig
-	Plan ModuleDBConfig
-	Rls  ModuleDBConfig
-	Bill ModuleDBConfig
-	Mrep ModuleDBConfig
+	Common ModuleDBConfig
+	Chat   ModuleDBConfig
+	Adm    ModuleDBConfig
+	Plan   ModuleDBConfig
+	Rls    ModuleDBConfig
+	Bill   ModuleDBConfig
+	Mrep   ModuleDBConfig
 }
+
 
 type JWTConfig struct {
 	Secret      string
@@ -60,6 +64,12 @@ type StorageConfig struct {
 	S3Region   string
 	S3BaseURL  string
 	S3Endpoint string
+}
+
+type ChatConfig struct {
+	TelegramParentChatID int64
+	InternalBaseURL      string
+	InternalToken        string
 }
 
 func (d DatabaseConfig) DSN(module ModuleDBConfig) string {
@@ -86,12 +96,17 @@ func Load() (*Config, error) {
 		fmt.Println("CRITICAL: DB_ADM_USER is missing from environment")
 	}
 
+	fmt.Printf("DEBUG: DB_HOST=%s, DB_USER=%s, DB_NAME=%s\n", 
+		getEnv("DB_HOST", "localhost"), 
+		getEnv("DB_USER", ""), 
+		getEnv("DB_NAME", "omniport"))
+
 	cfg := &Config{
 		App: AppConfig{
-			Port:     getEnv("APP_PORT", "8080"),
-			Env:      getEnv("APP_ENV", "development"),
-			LogLevel: getEnv("APP_LOG_LEVEL", "INFO"),
-			Mode:     getEnv("APP_MODE", "monolith"),
+			Port:              getEnv("APP_PORT", "8080"),
+			Env:               getEnv("APP_ENV", "development"),
+			LogLevel:          getEnv("APP_LOG_LEVEL", "INFO"),
+			Mode:              getEnv("APP_MODE", "monolith"),
 			ReadHeaderTimeout: getEnvAsInt("APP_READ_HEADER_TIMEOUT_SEC", 5),
 			ReadTimeout:       getEnvAsInt("APP_READ_TIMEOUT_SEC", 15),
 			WriteTimeout:      getEnvAsInt("APP_WRITE_TIMEOUT_SEC", 30),
@@ -105,14 +120,26 @@ func Load() (*Config, error) {
 			},
 		},
 		Database: DatabaseConfig{
-			Host:    getEnv("DB_HOST", "localhost"),
-			Port:    getEnv("DB_PORT", "5432"),
-			Name:    getEnv("DB_NAME", "omniport"),
-			SSLMode: getEnv("DB_SSLMODE", "disable"),
-			MaxOpen: getEnvAsInt("DB_MAX_OPEN_CONNS", 40),
-			MaxIdle: getEnvAsInt("DB_MAX_IDLE_CONNS", 20),
-			MaxLife: getEnvAsInt("DB_CONN_MAX_LIFETIME_MIN", 30),
+			Host:        getEnv("DB_HOST", "localhost"),
+			Port:        getEnv("DB_PORT", "5432"),
+			Name:        getEnv("DB_NAME", "omniport"),
+			SSLMode:     getEnv("DB_SSLMODE", "disable"),
+			MaxOpen:     getEnvAsInt("DB_MAX_OPEN_CONNS", 40),
+			MaxIdle:     getEnvAsInt("DB_MAX_IDLE_CONNS", 20),
+			MaxLife:     getEnvAsInt("DB_CONN_MAX_LIFETIME_MIN", 30),
 			MaxIdleTime: getEnvAsInt("DB_CONN_MAX_IDLE_TIME_MIN", 10),
+			Common: ModuleDBConfig{
+				User:     getEnv("DB_USER", "omniport"),
+				Password: getEnv("DB_PASSWORD", "0mn1p0rt"),
+				Schema:   getEnv("DB_SCHEMA", "public"),
+			},
+			Chat: ModuleDBConfig{
+				User:     getEnv("DB_CHAT_USER", "omnichannel"),
+				Password: getEnv("DB_CHAT_PASSWORD", "omn1ch4nn3l"),
+				Schema:   getEnv("DB_CHAT_SCHEMA", "chnl"),
+			},
+
+
 			Adm: ModuleDBConfig{
 				User:     getEnv("DB_ADM_USER", ""),
 				Password: getEnv("DB_ADM_PASSWORD", ""),
@@ -149,6 +176,11 @@ func Load() (*Config, error) {
 			S3BaseURL:  getEnv("AWS_S3_BASE_URL", ""),
 			S3Endpoint: getEnv("AWS_S3_ENDPOINT", ""),
 		},
+		Chat: ChatConfig{
+			TelegramParentChatID: getEnvAsInt64("TELEGRAM_PARENT_CHAT_ID", 0),
+			InternalBaseURL:      getEnv("CHAT_INTERNAL_BASE_URL", ""),
+			InternalToken:        getEnv("INTERNAL_SERVICE_TOKEN", ""),
+		},
 	}
 
 	return cfg, nil
@@ -177,6 +209,18 @@ func getEnvAsInt(key string, fallback int) int {
 		return fallback
 	}
 	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func getEnvAsInt64(key string, fallback int64) int64 {
+	value, ok := os.LookupEnv(key)
+	if !ok {
+		return fallback
+	}
+	parsed, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return fallback
 	}
