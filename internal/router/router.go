@@ -24,7 +24,6 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
-	"omniport-api/internal/modules/chat"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselrpk"
@@ -62,8 +61,6 @@ type RouterConfig struct {
 	FileHandler           *file.FileHandler
 	OpsPlanHandler        *op.OpsPlanHandler
 	VesselRpkHandler      *vesselrpk.VesselRpkHandler
-	ChatHandler           *chat.ChatHandler
-	InternalServiceToken  string
 }
 
 func SetupRouter(cfg *RouterConfig) {
@@ -348,6 +345,16 @@ func SetupRouter(cfg *RouterConfig) {
 				vesselRpk.GET("", cfg.VesselRpkHandler.GetByID)
 				vesselRpk.PUT("", cfg.VesselRpkHandler.Update)
 				vesselRpk.DELETE("", cfg.VesselRpkHandler.Delete)
+			}
+
+			// Vessel RPK Manual
+			vesselRpkManual := plan.Group("/vessel-rpk-manual")
+			{
+				vesselRpkManual.POST("/search", cfg.VesselRpkManualHandler.Search)
+				vesselRpkManual.POST("", cfg.VesselRpkManualHandler.Create)
+				vesselRpkManual.GET("", cfg.VesselRpkManualHandler.GetByID)
+				vesselRpkManual.PUT("", cfg.VesselRpkManualHandler.Update)
+				vesselRpkManual.DELETE("", cfg.VesselRpkManualHandler.Delete)
 			}
 		}
 

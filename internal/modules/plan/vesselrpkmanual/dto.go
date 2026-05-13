@@ -1,4 +1,4 @@
-package vesselrpk
+package vesselrpkmanual
 
 import "time"
 
@@ -67,7 +67,6 @@ type VesselRpkResponse struct {
 	ID                     uint64                `json:"id"`
 	NoPkk                  string                `json:"no_pkk"`
 	NoPpk                  string                `json:"no_ppk"`
-	VesselName             string                `json:"vessel_name"`
 	LocationCodeInaportnet string                `json:"location_code_inaportnet"`
 	RpkType                string                `json:"rpk_type"`
 	BerthPosition          string                `json:"berth_position"`

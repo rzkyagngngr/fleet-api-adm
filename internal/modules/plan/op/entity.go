@@ -39,9 +39,10 @@ type LoadingUnloadingPlan struct {
 	LastUpdatedDate   *time.Time `gorm:"column:last_updated_date" json:"last_updated_date"`
 	LastUpdatedBy     string     `gorm:"column:last_updated_by" json:"last_updated_by"`
 	ProgramName       string     `gorm:"column:program_name;not null" json:"program_name"`
+	VesselRpkID       uint64     `gorm:"-" json:"vessel_rpk_id"`
 }
 
-func (LoadingUnloadingPlan) TableName() string { return "plan.post_loading_unloading_plans" }
+func (LoadingUnloadingPlan) TableName() string { return "plan.post_vessel_plan" }
 
 type LoadingUnloadingPlanDetail struct {
 	ID                int64      `gorm:"primaryKey;autoIncrement" json:"id"`
@@ -85,7 +86,7 @@ type LoadingUnloadingPlanDetail struct {
 	CargoNature       string     `gorm:"column:cargo_nature" json:"cargo_nature"`
 	CargoNatureDesc   string     `gorm:"column:cargo_nature_desc" json:"cargo_nature_desc"`
 	PlanDetailCode    string     `gorm:"column:plan_detail_code" json:"plan_detail_code"`
-	DeterminationCode string     `gorm:"column:determination_code" json:"determination_code"`
+	DeterminationCode string     `gorm:"column:confirmed_plan_code" json:"confirmed_plan_code"`
 	WorkOrderCode     string     `gorm:"column:work_order_code" json:"work_order_code"`
 	FromDockCode      string     `gorm:"column:from_dock_code" json:"from_dock_code"`
 	FromBerthCode     string     `gorm:"column:from_berth_code" json:"from_berth_code"`
@@ -97,7 +98,7 @@ type LoadingUnloadingPlanDetail struct {
 }
 
 func (LoadingUnloadingPlanDetail) TableName() string {
-	return "plan.post_loading_unloading_plans_d"
+	return "plan.post_vessel_plan_d"
 }
 
 type PostEquipmentPlan struct {
@@ -135,7 +136,7 @@ type PostEquipmentPlan struct {
 }
 
 func (PostEquipmentPlan) TableName() string {
-	return "plan.post_equipment_plans"
+	return "plan.post_vessel_equipment_plan"
 }
 
 type LoadingUnloadingDetermination struct {
@@ -155,8 +156,8 @@ type LoadingUnloadingDetermination struct {
 	RequestCode       string     `gorm:"column:request_code" json:"request_code"`
 	PlanCode          string     `gorm:"column:plan_code;not null" json:"plan_code"`
 	PlanDate          time.Time  `gorm:"column:plan_date;not null" json:"plan_date"`
-	DeterminationCode string     `gorm:"column:determination_code;not null" json:"determination_code"`
-	DeterminationDate time.Time  `gorm:"column:determination_date;not null" json:"determination_date"`
+	DeterminationCode string     `gorm:"column:confirmed_plan_code;not null" json:"confirmed_plan_code"`
+	DeterminationDate time.Time  `gorm:"column:confirmed_plan_date;not null" json:"confirmed_plan_date"`
 	ETA               *time.Time `gorm:"column:eta" json:"eta"`
 	ETD               *time.Time `gorm:"column:etd" json:"etd"`
 	TGH               *int       `gorm:"column:tgh" json:"tgh"`
@@ -178,14 +179,14 @@ type LoadingUnloadingDetermination struct {
 }
 
 func (LoadingUnloadingDetermination) TableName() string {
-	return "plan.post_loading_unloading_determinations"
+	return "plan.post_vessel_confirmed_plan"
 }
 
 type LoadingUnloadingDeterminationDetail struct {
 	ID                int64      `gorm:"primaryKey;autoIncrement" json:"id"`
 	BranchCode        int        `gorm:"column:branch_code;not null" json:"branch_code"`
 	TerminalCode      int        `gorm:"column:terminal_code;not null" json:"terminal_code"`
-	DeterminationCode string     `gorm:"column:determination_code;not null" json:"determination_code"`
+	DeterminationCode string     `gorm:"column:confirmed_plan_code;not null" json:"confirmed_plan_code"`
 	RequestCode       string     `gorm:"column:request_code;not null" json:"request_code"`
 	WorkOrderCode     string     `gorm:"column:work_order_code;not null" json:"work_order_code"`
 	SequenceNo        int        `gorm:"column:sequence_no;not null" json:"sequence_no"`
@@ -227,7 +228,7 @@ type LoadingUnloadingDeterminationDetail struct {
 }
 
 func (LoadingUnloadingDeterminationDetail) TableName() string {
-	return "plan.post_loading_unloading_determinations_d"
+	return "plan.post_vessel_confirmed_plan_d"
 }
 
 type PostEquipmentDetermination struct {
@@ -235,7 +236,7 @@ type PostEquipmentDetermination struct {
 	BranchCode        int        `gorm:"column:branch_code;not null" json:"branch_code"`
 	TerminalCode      int        `gorm:"column:terminal_code;not null" json:"terminal_code"`
 	RequestCode       string     `gorm:"column:request_code;not null" json:"request_code"`
-	DeterminationCode string     `gorm:"column:determination_code;not null" json:"determination_code"`
+	DeterminationCode string     `gorm:"column:confirmed_plan_code;not null" json:"confirmed_plan_code"`
 	SequenceNo        int        `gorm:"column:sequence_no;not null" json:"sequence_no"`
 	EquipmentCode     string     `gorm:"column:equipment_code;not null" json:"equipment_code"`
 	EquipmentName     string     `gorm:"column:equipment_name" json:"equipment_name"`
@@ -263,5 +264,5 @@ type PostEquipmentDetermination struct {
 }
 
 func (PostEquipmentDetermination) TableName() string {
-	return "plan.post_equipment_determinations"
+	return "plan.post_vessel_equipment_confirmed_plan"
 }

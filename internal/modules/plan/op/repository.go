@@ -205,7 +205,10 @@ func (r *opsPlanRepository) GetDataOp(ctx context.Context, branchCode, terminalC
 func (r *opsPlanRepository) GetDetailOp(ctx context.Context, branchCode, terminalCode int, planCode string) (*LoadingUnloadingPlan, []LoadingUnloadingPlanDetail, []PostEquipmentPlan, error) {
 	var header LoadingUnloadingPlan
 	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND plan_code = ?", branchCode, terminalCode, planCode).
+		Table("plan.post_vessel_plan a").
+		Select("a.*, COALESCE(rpk.id, 0) AS vessel_rpk_id").
+		Joins("LEFT JOIN plan.post_vessel_rpk rpk ON a.plan_code = rpk.ops_plan_code AND a.branch_code = rpk.branch_code AND a.terminal_code = rpk.terminal_code").
+		Where("a.branch_code = ? AND a.terminal_code = ? AND a.plan_code = ?", branchCode, terminalCode, planCode).
 		First(&header).Error; err != nil {
 		return nil, nil, nil, err
 	}
@@ -233,27 +236,27 @@ func (r *opsPlanRepository) GetDetailDetermination(ctx context.Context, branchCo
 	determinationCode := strings.TrimSpace(input.DeterminationCode)
 	workOrderCode := strings.TrimSpace(input.WorkOrderCode)
 	if determinationCode == "" && workOrderCode == "" {
-		return nil, nil, nil, fmt.Errorf("determination_code or work_order_code is required")
+		return nil, nil, nil, fmt.Errorf("confirmed_plan_code or work_order_code is required")
 	}
 
 	var headers []LoadingUnloadingDetermination
 	headerQuery := r.db.WithContext(ctx).
 		Where("branch_code = ? AND terminal_code = ?", branchCode, terminalCode)
 	if determinationCode != "" {
-		headerQuery = headerQuery.Where("determination_code = ?", determinationCode)
+		headerQuery = headerQuery.Where("confirmed_plan_code = ?", determinationCode)
 	}
 	if workOrderCode != "" {
 		headerQuery = headerQuery.Where(`
-			determination_code IN (
-				SELECT determination_code
-				FROM plan.post_loading_unloading_determinations_d
+			confirmed_plan_code IN (
+				SELECT confirmed_plan_code
+				FROM plan.post_vessel_confirmed_plan_d
 				WHERE branch_code = ?
 					AND terminal_code = ?
 					AND work_order_code = ?
 			)
 		`, branchCode, terminalCode, workOrderCode)
 	}
-	if err := headerQuery.Order("determination_code ASC").Find(&headers).Error; err != nil {
+	if err := headerQuery.Order("confirmed_plan_code ASC").Find(&headers).Error; err != nil {
 		return nil, nil, nil, err
 	}
 	if len(headers) == 0 {
@@ -267,16 +270,16 @@ func (r *opsPlanRepository) GetDetailDetermination(ctx context.Context, branchCo
 
 	var details []LoadingUnloadingDeterminationDetail
 	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND determination_code IN ?", branchCode, terminalCode, determinationCodes).
-		Order("determination_code ASC, sequence_no ASC").
+		Where("branch_code = ? AND terminal_code = ? AND confirmed_plan_code IN ?", branchCode, terminalCode, determinationCodes).
+		Order("confirmed_plan_code ASC, sequence_no ASC").
 		Find(&details).Error; err != nil {
 		return nil, nil, nil, err
 	}
 
 	var detailsEquipment []PostEquipmentDetermination
 	if err := r.db.WithContext(ctx).
-		Where("branch_code = ? AND terminal_code = ? AND determination_code IN ?", branchCode, terminalCode, determinationCodes).
-		Order("determination_code ASC, sequence_no ASC").
+		Where("branch_code = ? AND terminal_code = ? AND confirmed_plan_code IN ?", branchCode, terminalCode, determinationCodes).
+		Order("confirmed_plan_code ASC, sequence_no ASC").
 		Find(&detailsEquipment).Error; err != nil {
 		return nil, nil, nil, err
 	}
@@ -430,7 +433,7 @@ func (r *opsPlanRepository) GetDataVesel(ctx context.Context, vesselCode string)
 
 func (r *opsPlanRepository) Create(ctx context.Context, header *LoadingUnloadingPlan, details []LoadingUnloadingPlanDetail, equipmentPlans []PostEquipmentPlan) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Exec("LOCK TABLE plan.post_loading_unloading_plans IN EXCLUSIVE MODE").Error; err != nil {
+		if err := tx.Exec("LOCK TABLE plan.post_vessel_plan IN EXCLUSIVE MODE").Error; err != nil {
 			return err
 		}
 		planNumber, err := r.nextPlanNumber(tx, header.BranchCode, header.TerminalCode, header.PlanDate)
@@ -751,7 +754,7 @@ type planPBMDeterminationCodes struct {
 
 func (r *opsPlanRepository) CreateDeterminations(ctx context.Context, builds []determinationBuild) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Exec("LOCK TABLE plan.post_loading_unloading_determinations IN EXCLUSIVE MODE").Error; err != nil {
+		if err := tx.Exec("LOCK TABLE plan.post_vessel_confirmed_plan IN EXCLUSIVE MODE").Error; err != nil {
 			return err
 		}
 
@@ -877,8 +880,8 @@ func (r *opsPlanRepository) CreateDeterminations(ctx context.Context, builds []d
 					key.PBMCode,
 				).
 				Updates(map[string]interface{}{
-					"determination_code": codes.DeterminationCode,
-					"work_order_code":    codes.WorkOrderCode,
+					"confirmed_plan_code": codes.DeterminationCode,
+					"work_order_code":     codes.WorkOrderCode,
 				}).Error; err != nil {
 				return err
 			}
@@ -1043,7 +1046,7 @@ func (r *opsPlanRepository) UpdateDeterminedPlan(ctx context.Context, branchCode
 			branchCode,
 			terminalCode,
 			planCode,
-		).Order("determination_code ASC").Find(&determinations).Error; err != nil {
+		).Order("confirmed_plan_code ASC").Find(&determinations).Error; err != nil {
 			return err
 		}
 		if len(determinations) == 0 {
@@ -1191,7 +1194,7 @@ func (r *opsPlanRepository) UpdateDeterminedPlan(ctx context.Context, branchCode
 
 		if replaceDetails {
 			if err := tx.Where(
-				"branch_code = ? AND terminal_code = ? AND determination_code IN ?",
+				"branch_code = ? AND terminal_code = ? AND confirmed_plan_code IN ?",
 				branchCode,
 				terminalCode,
 				determinationCodes,
@@ -1216,7 +1219,7 @@ func (r *opsPlanRepository) UpdateDeterminedPlan(ctx context.Context, branchCode
 
 		if replaceEquipmentPlans {
 			if err := tx.Where(
-				"branch_code = ? AND terminal_code = ? AND determination_code IN ?",
+				"branch_code = ? AND terminal_code = ? AND confirmed_plan_code IN ?",
 				branchCode,
 				terminalCode,
 				determinationCodes,
@@ -1255,7 +1258,7 @@ func (r *opsPlanRepository) nextPlanNumber(tx *gorm.DB, branchCode, terminalCode
 	var lastSequence int
 	if err := tx.Raw(`
 		SELECT COALESCE(MAX(CAST(SUBSTRING(plan_code FROM ? FOR 6) AS INTEGER)), 0)
-		FROM plan.post_loading_unloading_plans
+		FROM plan.post_vessel_plan
 		WHERE plan_code LIKE ?
 			AND SUBSTRING(plan_code FROM ? FOR 6) ~ '^[0-9]{6}$'
 	`, startPosition, prefix+"%", startPosition).Scan(&lastSequence).Error; err != nil {
@@ -1277,7 +1280,7 @@ func (r *opsPlanRepository) nextPlanDetailSequence(tx *gorm.DB, branchCode, term
 	var lastSequence int
 	if err := tx.Raw(`
 		SELECT COALESCE(MAX(CAST(SUBSTRING(plan_detail_code FROM ? FOR 6) AS INTEGER)), 0)
-		FROM plan.post_loading_unloading_plans_d
+		FROM plan.post_vessel_plan_d
 		WHERE plan_detail_code LIKE ?
 			AND SUBSTRING(plan_detail_code FROM ? FOR 6) ~ '^[0-9]{6}$'
 	`, startPosition, prefix+"%", startPosition).Scan(&lastSequence).Error; err != nil {
@@ -1298,10 +1301,10 @@ func (r *opsPlanRepository) nextDeterminationCode(tx *gorm.DB, branchCode, termi
 
 	var lastSequence int
 	if err := tx.Raw(`
-		SELECT COALESCE(MAX(CAST(SUBSTRING(determination_code FROM ? FOR 6) AS INTEGER)), 0)
-		FROM plan.post_loading_unloading_determinations
-		WHERE determination_code LIKE ?
-			AND SUBSTRING(determination_code FROM ? FOR 6) ~ '^[0-9]{6}$'
+		SELECT COALESCE(MAX(CAST(SUBSTRING(confirmed_plan_code FROM ? FOR 6) AS INTEGER)), 0)
+		FROM plan.post_vessel_confirmed_plan
+		WHERE confirmed_plan_code LIKE ?
+			AND SUBSTRING(confirmed_plan_code FROM ? FOR 6) ~ '^[0-9]{6}$'
 	`, startPosition, prefix+"%", startPosition).Scan(&lastSequence).Error; err != nil {
 		return "", err
 	}
@@ -1321,7 +1324,7 @@ func (r *opsPlanRepository) nextWorkOrderSequence(tx *gorm.DB, branchCode, termi
 	var lastSequence int
 	if err := tx.Raw(`
 		SELECT COALESCE(MAX(CAST(SUBSTRING(work_order_code FROM ? FOR 6) AS INTEGER)), 0)
-		FROM plan.post_loading_unloading_determinations_d
+		FROM plan.post_vessel_confirmed_plan_d
 		WHERE work_order_code LIKE ?
 			AND SUBSTRING(work_order_code FROM ? FOR 6) ~ '^[0-9]{6}$'
 	`, startPosition, prefix+"%", startPosition).Scan(&lastSequence).Error; err != nil {
@@ -1349,7 +1352,7 @@ func (r *opsPlanRepository) findExistingWorkOrderByPBM(tx *gorm.DB, branchCode, 
 	var rows []workOrderPBMRow
 	if err := tx.Raw(`
 		SELECT pbm_code, work_order_code
-		FROM plan.post_loading_unloading_plans_d
+		FROM plan.post_vessel_plan_d
 		WHERE branch_code = ?
 			AND terminal_code = ?
 			AND plan_code = ?
@@ -1741,7 +1744,7 @@ func getDataOpQuery(whereClause string) string {
 	return fmt.Sprintf(`
 		WITH selected_plans AS (
 			SELECT a.*
-			FROM plan.post_loading_unloading_plans a
+			FROM plan.post_vessel_plan a
 			WHERE %s
 		),
 		detail_rows AS (
@@ -1753,9 +1756,9 @@ func getDataOpQuery(whereClause string) string {
 				NULLIF(TRIM(b.berth_name), '') AS berth_name,
 				NULLIF(TRIM(b.pbm_code), '') AS pbm_code,
 				NULLIF(TRIM(b.pbm_name), '') AS pbm_name,
-				NULLIF(TRIM(b.determination_code), '') AS determination_code,
+				NULLIF(TRIM(b.confirmed_plan_code), '') AS confirmed_plan_code,
 				NULLIF(TRIM(b.work_order_code), '') AS work_order_code
-			FROM plan.post_loading_unloading_plans_d b
+			FROM plan.post_vessel_plan_d b
 			JOIN selected_plans a
 				ON a.plan_code = b.plan_code
 				AND a.branch_code = b.branch_code
@@ -1777,7 +1780,7 @@ func getDataOpQuery(whereClause string) string {
 				plan_code,
 				pbm_code,
 				(ARRAY_AGG(pbm_name ORDER BY sequence_no) FILTER (WHERE pbm_name IS NOT NULL))[1] AS pbm_name,
-				(ARRAY_AGG(determination_code ORDER BY sequence_no) FILTER (WHERE determination_code IS NOT NULL))[1] AS determination_code,
+				(ARRAY_AGG(confirmed_plan_code ORDER BY sequence_no) FILTER (WHERE confirmed_plan_code IS NOT NULL))[1] AS confirmed_plan_code,
 				(ARRAY_AGG(work_order_code ORDER BY sequence_no) FILTER (WHERE work_order_code IS NOT NULL))[1] AS work_order_code,
 				MIN(sequence_no) AS sort_no
 			FROM detail_rows
@@ -1791,7 +1794,7 @@ func getDataOpQuery(whereClause string) string {
 				plan_code,
 				STRING_AGG(pbm_code, '; ' ORDER BY sort_no, pbm_code) AS pbm_code,
 				STRING_AGG(COALESCE(pbm_name, ''), '; ' ORDER BY sort_no, pbm_code) AS pbm_name,
-				STRING_AGG(COALESCE(determination_code, ''), '; ' ORDER BY sort_no, pbm_code) AS determination_code,
+				STRING_AGG(COALESCE(confirmed_plan_code, ''), '; ' ORDER BY sort_no, pbm_code) AS confirmed_plan_code,
 				STRING_AGG(COALESCE(work_order_code, ''), '; ' ORDER BY sort_no, pbm_code) AS work_order_code
 			FROM detail_by_pbm
 			GROUP BY branch_code, terminal_code, plan_code
@@ -1816,10 +1819,15 @@ func getDataOpQuery(whereClause string) string {
 			COALESCE(ba.berth_name, '') AS berth_name,
 			COALESCE(pa.pbm_code, '') AS pbm_code,
 			COALESCE(pa.pbm_name, '') AS pbm_name,
-			COALESCE(pa.determination_code, '') AS determination_code,
+			COALESCE(pa.confirmed_plan_code, '') AS confirmed_plan_code,
 			COALESCE(pa.work_order_code, '') AS work_order_code,
-			a.status
+			a.status,
+			COALESCE(rpk.id, 0) AS vessel_rpk_id
 		FROM selected_plans a
+		LEFT JOIN plan.post_vessel_rpk rpk
+			ON a.plan_code = rpk.ops_plan_code
+			AND a.branch_code = rpk.branch_code
+			AND a.terminal_code = rpk.terminal_code
 		LEFT JOIN berth_agg ba
 			ON a.plan_code = ba.plan_code
 			AND a.branch_code = ba.branch_code

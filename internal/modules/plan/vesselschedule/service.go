@@ -194,13 +194,12 @@ func (s *vesselScheduleService) withPlans(ctx context.Context, rows []VesselSche
 	}
 
 	var plans []VesselSchedulePlanResponse
-	query := `
-		SELECT ppk_number, plan_code, plan_date, activity_code, activity_name, activity_start_date, activity_end_date 
-		FROM plan.post_loading_unloading_plans 
-		WHERE ppk_number IN (?) 
-		ORDER BY ppk_number ASC, plan_date DESC, id DESC`
-
-	if err := s.db.WithContext(ctx).Raw(query, ppkNumbers).Scan(&plans).Error; err != nil {
+	if err := s.db.WithContext(ctx).
+		Table("plan.post_loading_unloading_plans").
+		Select("ppk_number, plan_code, plan_date, activity_code, activity_name, activity_start_date, activity_end_date").
+		Where("ppk_number IN ?", ppkNumbers).
+		Order("ppk_number ASC, plan_date DESC, id DESC").
+		Find(&plans).Error; err != nil {
 		return nil, err
 	}
 

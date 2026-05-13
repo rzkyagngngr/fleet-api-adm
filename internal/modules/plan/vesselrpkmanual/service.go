@@ -1,4 +1,4 @@
-package vesselrpk
+package vesselrpkmanual
 
 import (
 	"context"
@@ -147,7 +147,6 @@ func (s *vesselRpkService) mapEntityToResponse(v *VesselRpk) *VesselRpkResponse 
 		ID:                     v.ID,
 		NoPkk:                  v.NoPkk,
 		NoPpk:                  v.NoPpk,
-		VesselName:             v.VesselName,
 		LocationCodeInaportnet: v.LocationCodeInaportnet,
 		RpkType:                v.RpkType,
 		BerthPosition:          v.BerthPosition,

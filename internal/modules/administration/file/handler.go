@@ -16,6 +16,18 @@ func NewFileHandler(service FileService) *FileHandler {
 	return &FileHandler{service: service}
 }
 
+// GetUploadSignature godoc
+// @Summary      Create upload signature
+// @Description  Generate an upload signature for a file
+// @Tags         storage
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        payload body file.UploadSignatureRequest true "Upload signature payload"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /storage/upload-signature [post]
 func (h *FileHandler) GetUploadSignature(c *gin.Context) {
 	var req UploadSignatureRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -33,6 +45,17 @@ func (h *FileHandler) GetUploadSignature(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "Upload signature generated", res)
 }
 
+// CommitUpload godoc
+// @Summary      Commit upload
+// @Description  Mark an uploaded file as committed
+// @Tags         storage
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "File ID"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      500 {object} helper.Response
+// @Router       /storage/commit/{id} [post]
 func (h *FileHandler) CommitUpload(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -49,6 +72,17 @@ func (h *FileHandler) CommitUpload(c *gin.Context) {
 	helper.SuccessResponse(c, http.StatusOK, "File committed successfully", nil)
 }
 
+// GetFileDetail godoc
+// @Summary      Get file detail
+// @Description  Get uploaded file detail by id
+// @Tags         storage
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "File ID"
+// @Success      200 {object} helper.Response
+// @Failure      400 {object} helper.Response
+// @Failure      404 {object} helper.Response
+// @Router       /storage/file/{id} [get]
 func (h *FileHandler) GetFileDetail(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)

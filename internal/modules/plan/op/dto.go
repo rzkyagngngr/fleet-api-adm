@@ -82,33 +82,33 @@ func (r GetDetailOpInput) PlanIdentifier() string {
 }
 
 type GetDetailDeterminationInput struct {
-	DeterminationCode string `json:"determination_code"`
+	DeterminationCode string `json:"confirmed_plan_code"`
 	WorkOrderCode     string `json:"work_order_code"`
 	PlanCode          string `json:"plan_code"`
 }
 
 type ReadyOpsPlanResponse struct {
-	BranchCode         *int       `json:"branch_code"`
-	TerminalCode       *int       `json:"terminal_code"`
-	TerminalName       string     `json:"terminal_name"`
-	RequestDate        *time.Time `json:"request_date"`
-	RequestCode        string     `json:"request_code"`
-	PPKNumber          string     `json:"ppk_number"`
-	VesselCode         string     `json:"vessel_code"`
-	VesselName         string     `json:"vessel_name"`
-	AgentName          string     `json:"agent_name"`
-	VoyageType         string     `json:"voyage_type"`
-	GRT                *float64   `json:"grt"`
-	LOA                *float64   `json:"loa"`
-	VesselType         string     `json:"vessel_type"`
-	PBMCode            string     `json:"pbm_code"`
-	PBMName            string     `json:"pbm_name"`
-	ActivityName       string     `json:"activity_name"`
-	ActivityCode       string     `json:"activity_code"`
-	CargoNameList      string     `json:"cargo_name_list"`
-	TotalList          string     `json:"total_list"`
-	CargoUnitList      string     `json:"cargo_unit_list"`
-	Total              *float64   `json:"total"`
+	BranchCode    *int       `json:"branch_code"`
+	TerminalCode  *int       `json:"terminal_code"`
+	TerminalName  string     `json:"terminal_name"`
+	RequestDate   *time.Time `json:"request_date"`
+	RequestCode   string     `json:"request_code"`
+	PPKNumber     string     `json:"ppk_number"`
+	VesselCode    string     `json:"vessel_code"`
+	VesselName    string     `json:"vessel_name"`
+	AgentName     string     `json:"agent_name"`
+	VoyageType    string     `json:"voyage_type"`
+	GRT           *float64   `json:"grt"`
+	LOA           *float64   `json:"loa"`
+	VesselType    string     `json:"vessel_type"`
+	PBMCode       string     `json:"pbm_code"`
+	PBMName       string     `json:"pbm_name"`
+	ActivityName  string     `json:"activity_name"`
+	ActivityCode  string     `json:"activity_code"`
+	CargoNameList string     `json:"cargo_name_list"`
+	TotalList     string     `json:"total_list"`
+	CargoUnitList string     `json:"cargo_unit_list"`
+	Total         *float64   `json:"total"`
 }
 
 type ReadyOpDetailResponse struct {
@@ -150,9 +150,10 @@ type GetDataOpResponse struct {
 	BerthName         string     `json:"berth_name"`
 	PBMCode           string     `json:"pbm_code"`
 	PBMName           string     `json:"pbm_name"`
-	DeterminationCode string     `json:"determination_code"`
+	DeterminationCode string     `json:"confirmed_plan_code" gorm:"column:confirmed_plan_code"`
 	WorkOrderCode     string     `json:"work_order_code"`
 	Status            *int       `json:"status"`
+	VesselRpkID       uint64     `json:"vessel_rpk_id"`
 }
 
 type RawJSONResponse struct {
@@ -286,8 +287,8 @@ type CreateLoadingUnloadingDeterminationInput struct {
 	PlanCode          string                                      `json:"plan_code"`
 	PlanNumber        string                                      `json:"plan_number"`
 	PlanDate          time.Time                                   `json:"plan_date"`
-	DeterminationCode string                                      `json:"determination_code"`
-	DeterminationDate time.Time                                   `json:"determination_date"`
+	DeterminationCode string                                      `json:"confirmed_plan_code"`
+	DeterminationDate time.Time                                   `json:"confirmed_plan_date"`
 	ETA               *time.Time                                  `json:"eta"`
 	ETD               *time.Time                                  `json:"etd"`
 	TGH               *int                                        `json:"tgh"`

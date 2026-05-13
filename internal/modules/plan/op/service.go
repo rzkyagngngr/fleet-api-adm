@@ -80,7 +80,7 @@ func (s *opsPlanService) GetDetailDetermination(ctx context.Context, branchCode,
 	input.DeterminationCode = strings.TrimSpace(input.DeterminationCode)
 	input.WorkOrderCode = strings.TrimSpace(input.WorkOrderCode)
 	if input.DeterminationCode == "" && input.WorkOrderCode == "" {
-		return nil, errors.New("determination_code or work_order_code is required")
+		return nil, errors.New("confirmed_plan_code or work_order_code is required")
 	}
 
 	headers, details, detailsEquipment, err := s.repo.GetDetailDetermination(ctx, branchCode, terminalCode, input)
@@ -302,7 +302,7 @@ func (s *opsPlanService) CreateDetermination(
 		return nil, errors.New("plan_date is required")
 	}
 	if input.DeterminationDate.IsZero() {
-		return nil, errors.New("determination_date is required")
+		return nil, errors.New("confirmed_plan_date is required")
 	}
 	if len(input.Details) == 0 {
 		return nil, errors.New("at least one detail is required")

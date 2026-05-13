@@ -1,4 +1,4 @@
-package vesselrpk
+package vesselrpkmanual
 
 import (
 	"database/sql/driver"
@@ -32,7 +32,6 @@ type VesselRpk struct {
 	ID                     uint64        `gorm:"primaryKey;autoIncrement" json:"id"`
 	NoPkk                  string        `gorm:"column:no_pkk;not null" json:"no_pkk"`
 	NoPpk                  string        `gorm:"column:no_ppk" json:"no_ppk"`
-	VesselName             string        `gorm:"-" json:"vessel_name"`
 	LocationCodeInaportnet string        `gorm:"column:location_code_inaportnet" json:"location_code_inaportnet"`
 	RpkType                string        `gorm:"column:rpk_type" json:"rpk_type"`
 	BerthPosition          string        `gorm:"column:berth_position" json:"berth_position"`
@@ -85,9 +84,9 @@ type VesselRpkOpDetail struct {
 	VesselRpkOpID      uint64 `gorm:"column:vessel_rpk_op_id" json:"vessel_rpk_op_id"`
 	RkbmMuatNumber    string `gorm:"column:rkbm_muat_number" json:"rkbm_muat_number"`
 	RkbmBongkarNumber string `gorm:"column:rkbm_bongkar_number" json:"rkbm_bongkar_number"`
-	Loading           string     `gorm:"column:loading" json:"loading"`
-	Discharging       string     `gorm:"column:discharging" json:"discharging"`
-	Commodity         string     `gorm:"column:commodity" json:"commodity"`
+	Loading           string `gorm:"column:loading" json:"loading"`
+	Discharging       string `gorm:"column:discharging" json:"discharging"`
+	Commodity         string `gorm:"column:commodity" json:"commodity"`
 }
 
 func (VesselRpkOpDetail) TableName() string { return "plan.post_vessel_rpk_op_detail" }
