@@ -42,7 +42,7 @@ func (r *repository) SaveChatMessage(ctx context.Context, message *ChatMessage) 
 		) ON CONFLICT DO NOTHING`
 
 	return r.chatDB.WithContext(ctx).Exec(query,
-		message.CallID, message.TelegramMessageID, fmt.Sprintf("%d", message.TelegramChatID), fmt.Sprintf("%d", message.TelegramTopicID),
+		message.CallID, message.TelegramMessageID, message.TelegramChatID, message.TelegramTopicID,
 		message.SenderID, message.SenderName, message.SenderNameLocal, message.Text, message.Attatchment,
 		message.MessageTimestamp, message.RawPayload, message.IsAuthorized,
 	).Error
@@ -83,7 +83,7 @@ func (r *repository) CreateParticipant(ctx context.Context, p *CallParticipant) 
 			last_updated_date = CURRENT_TIMESTAMP`
 
 	return r.chatDB.WithContext(ctx).Exec(query,
-		p.CallID, fmt.Sprintf("%d", p.TelegramChatID), fmt.Sprintf("%d", p.TelegramTopicID), p.InternalUserID,
+		p.CallID, p.TelegramChatID, p.TelegramTopicID, p.InternalUserID,
 		p.TelegramUserID, p.Role, p.Status, p.CreationBy,
 	).Error
 }

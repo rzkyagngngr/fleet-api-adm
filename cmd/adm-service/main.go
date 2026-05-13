@@ -40,6 +40,8 @@ import (
 	"omniport-api/internal/modules/plan/vesselrpkmanual"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
+	"omniport-api/internal/wire/modules/ChatToPlan"
+	"omniport-api/internal/wire/modules/PlanToChat"
 
 	"github.com/gin-gonic/gin"
 )
@@ -65,6 +67,10 @@ func main() {
 	}
 	if reg.PLAN == nil {
 		slog.Error("Plan database connection is not configured")
+		os.Exit(1)
+	}
+	if reg.CHAT == nil {
+		slog.Error("Chat database connection is not configured")
 		os.Exit(1)
 	}
 
@@ -125,7 +131,25 @@ func main() {
 	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	vesselRpkService := vesselrpk.NewVesselRpkService(vesselRpkRepo)
-	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db)
+	vesselRpkManualService := vesselrpkmanual.NewVesselRpkService(vesselRpkManualRepo)
+
+	// Bridge: Chat -> Plan (Clean & Dumb Wire)
+	directProvider := chattoplan.NewDirectVesselProvider(nil)
+	vesselProvider := chattoplan.NewChatToPlanWire(cfg.App.Mode, directProvider, nil)
+
+	chatService := chat.NewService(chatRepo, chat.NewTelegramClientFromEnv(), s3Provider, cfg.Storage.S3Bucket, cfg.Chat.TelegramParentChatID, vesselProvider)
+	chatInit := plantochat.NewPlanToChatWire(
+		cfg.App.Mode,
+		plantochat.NewDirectPlanToChatWire(chatService),
+		plantochat.NewRestPlanToChatWire(resolveChatInternalBaseURL(cfg), cfg.Chat.InternalToken),
+	)
+	vesselScheduleService := vesselschedule.NewVesselScheduleService(reg.PLAN, db, vesselschedule.ChatInitSettings{
+		Initializer:          chatInit,
+		TelegramParentChatID: cfg.Chat.TelegramParentChatID,
+	})
+
+	// Finalize Bridge: Inject Plan service into Chat's direct provider
+	directProvider.SetPlanService(vesselScheduleService)
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -187,6 +211,9 @@ func main() {
 		FileHandler:           fileHandler,
 		OpsPlanHandler:        opsPlanHandler,
 		VesselRpkHandler:      vesselRpkHandler,
+		VesselRpkManualHandler: vesselRpkManualHandler,
+		ChatHandler:           chatHandler,
+		InternalServiceToken:  cfg.Chat.InternalToken,
 	})
 
 	serve(cfg, "adm-service", cfg.App.PortFor("ADM"), r)

@@ -38,11 +38,11 @@ import (
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselrpk"
+	"omniport-api/internal/modules/plan/vesselrpkmanual"
 	"omniport-api/internal/modules/plan/vesselschedule"
 	"omniport-api/internal/router"
-	"omniport-api/internal/wire/modules/PlanToChat"
 	"omniport-api/internal/wire/modules/ChatToPlan"
-
+	"omniport-api/internal/wire/modules/PlanToChat"
 
 	"github.com/gin-gonic/gin"
 )
@@ -91,7 +91,6 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -109,8 +108,6 @@ func main() {
 	vesselRepo := vessel.NewVesselRepository(dbRegistry.ADM)
 	companyRepo := company.NewCompanyRepository(dbRegistry.ADM)
 	chatRepo := chat.NewRepository(dbRegistry.CHAT)
-
-
 
 	accessService := access.NewAccessService(accessRepo)
 	authService := auth.NewAuthService(userRepo, dbRegistry.ADM, jwtUtil)
@@ -134,17 +131,19 @@ func main() {
 	postRequestRepo := postrequest.NewPostRequestRepository(dbRegistry.PLAN)
 	opsPlanRepo := op.NewOpsPlanRepository(dbRegistry.PLAN, dbRegistry.ADM)
 	vesselRpkRepo := vesselrpk.NewVesselRpkRepository(dbRegistry.PLAN)
+	vesselRpkManualRepo := vesselrpkmanual.NewVesselRpkRepository(dbRegistry.PLAN)
 	fileRepo := file.NewFileRepository(dbRegistry.ADM)
 	s3Provider, _ := helper.NewS3Provider(context.Background(), cfg.Storage.S3Region, cfg.Storage.S3Endpoint)
 	fileService := file.NewFileService(fileRepo, s3Provider, cfg.Storage)
 	postRequestService := postrequest.NewPostRequestService(postRequestRepo, fileService)
 	opsPlanService := op.NewOpsPlanService(opsPlanRepo)
 	vesselRpkService := vesselrpk.NewVesselRpkService(vesselRpkRepo)
-	
+	vesselRpkManualService := vesselrpkmanual.NewVesselRpkService(vesselRpkManualRepo)
+
 	// Bridge: Chat -> Plan (Clean & Dumb Wire)
 	directProvider := chattoplan.NewDirectVesselProvider(nil)
-	vesselProvider := chattoplan.NewChatToPlanWire(cfg.App.Mode, directProvider, nil) // Microservice provider can be added later
-	
+	vesselProvider := chattoplan.NewChatToPlanWire(cfg.App.Mode, directProvider, nil)
+
 	chatService := chat.NewService(chatRepo, chat.NewTelegramClientFromEnv(), s3Provider, cfg.Storage.S3Bucket, cfg.Chat.TelegramParentChatID, vesselProvider)
 	chatInit := plantochat.NewPlanToChatWire(
 		cfg.App.Mode,
@@ -158,8 +157,6 @@ func main() {
 
 	// Finalize Bridge: Inject Plan service into Chat's direct provider
 	directProvider.SetPlanService(vesselScheduleService)
-
-
 
 	authHandler := auth.NewAuthHandler(authService)
 	userHandler := user.NewUserHandler(userService)
@@ -184,6 +181,7 @@ func main() {
 	postRequestHandler := postrequest.NewPostRequestHandler(postRequestService)
 	opsPlanHandler := op.NewOpsPlanHandler(opsPlanService)
 	vesselRpkHandler := vesselrpk.NewVesselRpkHandler(vesselRpkService)
+	vesselRpkManualHandler := vesselrpkmanual.NewVesselRpkHandler(vesselRpkManualService)
 	vesselScheduleHandler := vesselschedule.NewVesselScheduleHandler(vesselScheduleService)
 	chatHandler := chat.NewChatHandler(chatService)
 
@@ -216,6 +214,7 @@ func main() {
 		PostRequestHandler:    postRequestHandler,
 		OpsPlanHandler:        opsPlanHandler,
 		VesselRpkHandler:      vesselRpkHandler,
+		VesselRpkManualHandler: vesselRpkManualHandler,
 		ChatHandler:           chatHandler,
 		InternalServiceToken:  cfg.Chat.InternalToken,
 	})

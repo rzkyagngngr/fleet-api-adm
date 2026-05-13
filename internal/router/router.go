@@ -24,6 +24,7 @@ import (
 	"omniport-api/internal/modules/administration/user"
 	"omniport-api/internal/modules/administration/vessel"
 	"omniport-api/internal/modules/administration/warehouse"
+	"omniport-api/internal/modules/chat"
 	"omniport-api/internal/modules/plan/op"
 	"omniport-api/internal/modules/plan/postrequest"
 	"omniport-api/internal/modules/plan/vesselrpk"
@@ -60,8 +61,18 @@ type RouterConfig struct {
 	PostRequestHandler    *postrequest.PostRequestHandler
 	FileHandler           *file.FileHandler
 	OpsPlanHandler        *op.OpsPlanHandler
-	VesselRpkHandler      *vesselrpk.VesselRpkHandler
+	VesselRpkHandler       *vesselrpk.VesselRpkHandler
+	VesselRpkManualHandler interface {
+		Search(c *gin.Context)
+		Create(c *gin.Context)
+		GetByID(c *gin.Context)
+		Update(c *gin.Context)
+		Delete(c *gin.Context)
+	}
+	ChatHandler          *chat.ChatHandler
+	InternalServiceToken string
 }
+
 
 func SetupRouter(cfg *RouterConfig) {
 	r := cfg.Engine
